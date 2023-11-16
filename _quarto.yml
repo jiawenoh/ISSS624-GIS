@@ -1,19 +1,161 @@
 project:
   type: website
 
+metadata-files:
+  - _sidebar.yml
+
 website:
-  title: "ISSS624"
+  title: ""
+  image: images/logo.png
+  repo-url: https://github.com/devitocodes/devitocodes.github.io
+  repo-actions: [issue]
+  page-navigation: true
+  reader-mode: true
+  google-analytics: "UA-66708188-1"
+  search:
+    type: overlay
+
+  page-footer:
+    center:
+      - text: "2023 Copyright (c) Oh Jia Wen "
+    right:
+      - icon: twitter
+        href: https://twitter.com/jiaweno
+        aria-label: Twitter
+      - icon: github
+        href: https://github.com/jiawenoh/ISSS624-GIS
+        aria-label: GitHub
+      - icon: envelope-at-fill
+        href: mailto:jiawen_oh@hotmail.com
+      - icon: globe
+        href: https://isss608-ohjiawen.netlify.app/
+
   navbar:
+    logo: images/logo.png
+    collapse-below: lg
+    background: light
+
+    tools:
+      - icon: github
+        menu:
+          - text: Github
+            href: https://github.com/jiawenoh/ISSS624-GIS
+      - icon: twitter
+        href: https://twitter.com/jiaweno
+      - icon: linkedin
+        href: https://www.linkedin.com/company/devitocodes
+      - icon: envelope-at-fill
+        href: mailto:jiawen_oh@hotmail.com
+      - icon: globe
+        href: https://www.devitocodes.com/
+  
     left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
+      - file: index.qmd
+        text: "Home"
+      - href: tutorials.qmd
+        text: Hands-on Exercises
+      - file: publications.qmd
+        text: "Take-Home Exercises"
+  sidebar:
+    - id: tuto
+      style: "floating"
+      title: "Take-Home Exercises"
+      collapse-level: 1
+      contents:
+          - section: Take-Home Exercises
+            href: tutorials.qmd
+            contents:
+              - section: "User API"
+                contents: "examples/userapi/*.ipynb"
+              - section: "Compiler"
+                contents: "examples/compiler/*.ipynb"
+              - section: "Performance tips"
+                contents: "examples/performance/*.ipynb"
+              - section: "Seismic modeling and inversion"
+                contents:
+                  - auto: "examples/seismic/tutorials/*.ipynb"
+                  - auto: "examples/seismic/self_adjoint/*.ipynb"
+                  - "examples/seismic/acoustic/accuracy.ipynb"
+              - section: "CFD"
+                contents: "examples/cfd/*.ipynb"
+              - section: "Finance"
+                contents: "examples/finance/*.ipynb"
 
 format:
   html:
-    theme: cosmo
-    css: styles.css
+    theme:
+      light: cosmo
+      dark: cyborg
+    css: assets/css/main.scss
     toc: true
+    link-external-newwindow: True
+    code-copy: true
+    code-fold: false
+    execute: 
+      enabled: false
+  ipynb: default
 
-editor: visual
+quartodoc:
+  style: pkgdown
+  dir: api
+  package: devito
+  sidebar: _sidebar.yml
 
+  options:
+    signature_name: short
+
+  renderer:
+    style: markdown
+    display_name: name
+
+  dynamic: true
+  
+  sections:
+  - title: "Types"
+    desc: ""
+    contents:
+      - Dimension
+      - ConditionalDimension
+      - SubDimension
+      - Grid
+      - CustomTopology
+      - SubDomain
+      - Constant
+      - Function
+      - TimeFunction
+      - VectorFunction
+      - VectorTimeFunction
+      - TensorFunction
+      - TensorTimeFunction
+      - SparseFunction
+      - SparseTimeFunction
+      - PrecomputedSparseFunction
+      - PrecomputedSparseTimeFunction
+
+  - title: "Operator"
+    desc: ""
+    contents:
+      - Operator
+      - Eq
+
+  - title: "Finite differences"
+    desc: ""
+    contents:
+      - div
+      - grad
+      - curl
+      - diag
+      - laplace
+      - Derivative
+      - Coefficient
+      - Substitutions
+
+  - title: "Utilities"
+    desc: ""
+    contents:
+      - smooth
+      - initialize_function
+      - mmin
+      - mmax
+      - sum
+      - norm
