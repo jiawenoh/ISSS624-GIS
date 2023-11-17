@@ -27,8 +27,10 @@ website:
          
       - section: "Hands-on Exercise"
         contents:
-          - text: "Hands-on Exercise 1"
+          - text: "Exercise 1A: Geospatial Data Wrangling"
             href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html"
+          - text: "Exercise 1B: Choropleth Mapping"
+            href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html"
 
       - section: "In-class Exercise"
         contents:
