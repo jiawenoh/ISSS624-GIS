@@ -52,9 +52,9 @@ website:
     left:
       - file: index.qmd
         text: "Home"
-      - href: tutorials.qmd
-        text: Hands-on Exercises
-      - file: publications.qmd
+      - file: Hands-on_Ex01.qmd
+        text: "Hands-on Exercise 1"
+      - file: index.qmd
         text: "Take-Home Exercises"
   sidebar:
     - id: tuto
@@ -110,52 +110,3 @@ quartodoc:
 
   dynamic: true
   
-  sections:
-  - title: "Types"
-    desc: ""
-    contents:
-      - Dimension
-      - ConditionalDimension
-      - SubDimension
-      - Grid
-      - CustomTopology
-      - SubDomain
-      - Constant
-      - Function
-      - TimeFunction
-      - VectorFunction
-      - VectorTimeFunction
-      - TensorFunction
-      - TensorTimeFunction
-      - SparseFunction
-      - SparseTimeFunction
-      - PrecomputedSparseFunction
-      - PrecomputedSparseTimeFunction
-
-  - title: "Operator"
-    desc: ""
-    contents:
-      - Operator
-      - Eq
-
-  - title: "Finite differences"
-    desc: ""
-    contents:
-      - div
-      - grad
-      - curl
-      - diag
-      - laplace
-      - Derivative
-      - Coefficient
-      - Substitutions
-
-  - title: "Utilities"
-    desc: ""
-    contents:
-      - smooth
-      - initialize_function
-      - mmin
-      - mmax
-      - sum
-      - norm
