@@ -1,112 +1,57 @@
 project:
   type: website
 
-metadata-files:
-  - _sidebar.yml
-
 website:
-  title: ""
-  image: images/logo.png
-  repo-url: https://github.com/devitocodes/devitocodes.github.io
-  repo-actions: [issue]
   page-navigation: true
   reader-mode: true
-  google-analytics: "UA-66708188-1"
-  search:
-    type: overlay
-
-  page-footer:
-    center:
-      - text: "2023 Copyright (c) Oh Jia Wen "
-    right:
-      - icon: twitter
-        href: https://twitter.com/jiaweno
-        aria-label: Twitter
-      - icon: github
-        href: https://github.com/jiawenoh/ISSS624-GIS
-        aria-label: GitHub
-      - icon: envelope-at-fill
-        href: mailto:jiawen_oh@hotmail.com
-      - icon: globe
-        href: https://isss608-ohjiawen.netlify.app/
-
-  navbar:
-    logo: images/logo.png
-    collapse-below: lg
-    background: light
-
-    tools:
-      - icon: github
-        menu:
-          - text: Github
-            href: https://github.com/jiawenoh/ISSS624-GIS
-      - icon: twitter
-        href: https://twitter.com/jiaweno
-      - icon: linkedin
-        href: https://www.linkedin.com/company/devitocodes
-      - icon: envelope-at-fill
-        href: mailto:jiawen_oh@hotmail.com
-      - icon: globe
-        href: https://www.devitocodes.com/
-  
-    left:
-      - file: index.qmd
-        text: "Home"
-      - file: Hands-on_Ex01.qmd
-        text: "Hands-on Exercise 1"
-      - file: index.qmd
-        text: "Take-Home Exercises"
   sidebar:
-    - id: tuto
-      style: "floating"
-      title: "Take-Home Exercises"
-      collapse-level: 1
-      contents:
-          - section: Take-Home Exercises
-            href: tutorials.qmd
-            contents:
-              - section: "User API"
-                contents: "examples/userapi/*.ipynb"
-              - section: "Compiler"
-                contents: "examples/compiler/*.ipynb"
-              - section: "Performance tips"
-                contents: "examples/performance/*.ipynb"
-              - section: "Seismic modeling and inversion"
-                contents:
-                  - auto: "examples/seismic/tutorials/*.ipynb"
-                  - auto: "examples/seismic/self_adjoint/*.ipynb"
-                  - "examples/seismic/acoustic/accuracy.ipynb"
-              - section: "CFD"
-                contents: "examples/cfd/*.ipynb"
-              - section: "Finance"
-                contents: "examples/finance/*.ipynb"
+    style: "docked"
+    search: true
+    title: " "
+    tools:
+      - icon: house-fill
+        href: https://isss608-ohjiawen.netlify.app/
+      - icon: github
+        href: https://github.com/jiawenoh/ISSS608-VAA
+      - icon: linkedin
+        href: https://www.linkedin.com/in/jia-wen-oh/
+        
+    background: light
+    reader-mode: true
+    collapse-level: 1
+    contents:
+      - section: "About"
+        contents: 
+          - text: "Home"
+            href: "index.qmd"
+         
+      - section: "Hands-on Exercise"
+        contents:
+          - text: "Hands-on Exercise 1"
+            href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html"
+
+      - section: "In-class Exercise"
+        contents:
+          - text: "In-class Exercise 1"
+            href: "In-class_Ex/In-class_Ex01/In-class_Ex01.html"
+
+            
+      - section: "Take Home Exercise"
+        contents:
+          - text: "Take Home Exercise 1"
+            href: "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html"
+          - text: "Take Home Exercise 2"
+            href: "Take-Home_Ex/Take_Home_Ex02/Take-Home_Ex02.html"
+
 
 format:
   html:
     theme:
-      light: cosmo
-      dark: cyborg
-    css: assets/css/main.scss
+      light: [flatly, theme-light.scss]
+      dark: [darkly, theme-dark.scss]
     toc: true
-    link-external-newwindow: True
-    code-copy: true
+    css: styles.css         
     code-fold: false
-    execute: 
-      enabled: false
-  ipynb: default
-
-quartodoc:
-  style: pkgdown
-  dir: api
-  package: devito
-  sidebar: _sidebar.yml
-
-  options:
-    signature_name: short
-
-  renderer:
-    style: markdown
-    display_name: name
-
-  dynamic: true
-  
+    code-summary: "Show the code"
+    
+editor: visual

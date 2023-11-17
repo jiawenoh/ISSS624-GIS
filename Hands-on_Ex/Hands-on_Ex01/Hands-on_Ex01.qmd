@@ -90,18 +90,21 @@ head(mpsz, n=5)
 The code chunk below uses `plot()` of R Graphic to visualize the geospatial features.
 
 ```{r}
+#| code-fold: true
 plot(mpsz)
 ```
 
 By default, the sf object is a multi-plot of all attributes. It is possible to plot only only the geometry by using the code chunk below.
 
 ```{r}
+#| code-fold: true
 plot(st_geometry(mpsz))
 ```
 
 Alternatively, we are able to choose the plot of sf object. For example, we could like to plot **PLN_AREA_N**.
 
 ```{r}
+#| code-fold: true
 plot(mpsz["PLN_AREA_N"])
 ```
 
@@ -299,6 +302,7 @@ To observe the distribution of PreSch Density, a histogram is insightful. We can
 ### 7.1.1 Histogram using hist()
 
 ```{r}
+#| code-fold: true
 hist(mpsz3414$`PreSch Density`)
 ```
 
@@ -307,6 +311,7 @@ Despite the easy syntax, the output is far from ideal as it limits further custo
 ### 7.1.2 Histogram using ggplot2()
 
 ```{r}
+#| code-fold: true
 ggplot(data=mpsz3414, 
        aes(x= as.numeric(`PreSch Density`)))+
   geom_histogram(bins=20, 
@@ -323,6 +328,7 @@ ggplot(data=mpsz3414,
 To observe the relationship between Pre-school Density and Pre-school count, a scatterplot could be ideal.
 
 ```{r}
+#| code-fold: true
 ggplot(data=mpsz3414, 
        aes(y = `PreSch Count`, 
            x= as.numeric(`PreSch Density`)))+
