@@ -1,0 +1,28 @@
+---
+title: "In-class Exercise 1"
+author: "Oh Jia Wen"
+date: 11/18/2023
+date-modified: "last-modified"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
+
+# 1. Getting Started
+
+## 1.1 Install and launching R packages
+
+The code chunk below uses **p_load()** of pacman package to check if `tmap`, `sf`, `tidyverse` packages are installed into the R environment. If they are, then they will be launched into R.
+
+```{r}
+pacman::p_load(tmap, sf, tidyverse)
+```
+
+## 1.2 Importing the OD data
+
+Firstly, we will import the [Passenger Volume by Origin Destination Bus Stops]{.underline} data set downloaded from LTA DataMall by
+
+```{r}
+odbus <- read_csv("data/origin_destination_bus_202308.csv")
+```

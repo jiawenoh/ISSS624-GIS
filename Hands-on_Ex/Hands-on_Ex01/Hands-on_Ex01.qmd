@@ -2,7 +2,11 @@
 title: "Exercise 1A: Geospatial Data Wrangling"
 author: "Oh Jia Wen"
 date: 11/17/2023
-date-modified: 11/17/2023
+date-modified: "last-modified"
+execute: 
+  echo: true
+  eval: true
+  warning: false
 ---
 
 # 1. Getting Started
@@ -291,11 +295,11 @@ mpsz3414 <- mpsz3414 %>%
   mutate(`PreSch Density` = `PreSch Count`/Area * 1000000)
 ```
 
-# 7. Exploratory Data Analysis (EDA) 
+# 7. Exploratory Data Analysis (EDA)
 
 In this section, we will explore the data through `ggplot2` functions. We will create functional and insightful statistical graphs to aid in our exploratory progress. We will plot a histogram and a scatterplot.
 
-## 7.1 Plotting Histogram 
+## 7.1 Plotting Histogram
 
 To observe the distribution of PreSch Density, a histogram is insightful. We can used `hist()` of R graphics or `ggplot2` to plot.
 
@@ -323,7 +327,7 @@ ggplot(data=mpsz3414,
       y = "Frequency")
 ```
 
-## 7.2 Plotting Scatterplot 
+## 7.2 Plotting Scatterplot
 
 To observe the relationship between Pre-school Density and Pre-school count, a scatterplot could be ideal.
 

@@ -2,7 +2,11 @@
 title: "Exercise 1B: Choropleth Mapping"
 author: "Oh Jia Wen"
 date: 11/17/2023
-date-modified: 11/17/2023
+date-modified: "last-modified"
+execute: 
+  echo: true
+  eval: true
+  warning: false
 ---
 
 # 1. Getting Started
@@ -39,7 +43,7 @@ mpsz
 
 ### 1.2.2 Importing Attribute Data into R
 
-We will be using `read_csv()` function of readr package to import `respopagsex2010to2020.csv` into R and save the file as a dataframe called `popagsex`.
+We will be using `read_csv()` function of readr package to import `respopagsex2010to2020.csv` into R and save the file as a dataframe called `popdata`.
 
 ```{r}
 popdata <- read_csv("data/aspatial/respopagesextod2011to2020.csv")
@@ -401,7 +405,7 @@ In **tmap**, small multiple maps can be plotted in three ways:
 
 -   by creating multiple stand-alone maps with *`tmap_arrange()`*.
 
-### 2.6.1 Assign multiple values 
+### 2.6.1 Assign multiple values
 
 In this example, small multiple choropleth maps are created by defining ***ncols*** in **`tm_fill()`** :
 

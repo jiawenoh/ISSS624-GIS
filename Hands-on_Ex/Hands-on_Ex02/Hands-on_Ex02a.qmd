@@ -1,0 +1,22 @@
+---
+title: "Exercise 2A: Spatial Weights and Applications"
+author: "Oh Jia Wen"
+date: 11/18/2023
+date-modified: "last-modified"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
+
+# 1. Getting Started
+
+## 1.1 Install and launching R packages
+
+The code chunk below uses **p_load()** of pacman package to check if `sf`, `spdep`, `tmap`, `tidyverse` , and `knitr` packages are installed into the R environment. If they are, then they will be launched into R.
+
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse, knitr)
+```
+
+## 1.2 Importing the OD data
