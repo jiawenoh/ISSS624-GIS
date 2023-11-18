@@ -10,9 +10,9 @@ website:
     title: " "
     tools:
       - icon: house-fill
-        href: https://isss608-ohjiawen.netlify.app/
+        href: https://isss624-ohjiawen.netlify.app/
       - icon: github
-        href: https://github.com/jiawenoh/ISSS608-VAA
+        href: https://github.com/jiawenoh/ISSS624-GIS
       - icon: linkedin
         href: https://www.linkedin.com/in/jia-wen-oh/
         
@@ -20,10 +20,8 @@ website:
     reader-mode: true
     collapse-level: 1
     contents:
-      - section: "About"
-        contents: 
-          - text: "Home"
-            href: "index.qmd"
+      - text: "Home"
+        href: "index.qmd"
          
       - section: "Hands-on Exercise"
         contents:
