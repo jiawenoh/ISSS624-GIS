@@ -345,8 +345,6 @@ In this section, we will derive a spatial weight matrix based on Inversed Distan
 
 2.  Assign weights to each neighboring polygon (by using `nb2listw()` of **spdep**)
 
-3.  Plot fixed distance weight matrix
-
 ::: panel-tabset
 ## Compute Distance
 
