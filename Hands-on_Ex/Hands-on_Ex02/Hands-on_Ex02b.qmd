@@ -1,0 +1,148 @@
+---
+title: "Exercise 2B: Global Measures of Spatial Autocorrelation"
+author: "Oh Jia Wen"
+date: 11/20/2023
+date-modified: "last-modified"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
+
+# 1. Getting Started
+
+## 1.1 Install and launching R packages
+
+The code chunk below uses **p_load()** of pacman package to check if `sf`, `spdep`, `tmap`, and `tidyverse` packages are installed into the R environment. If they are, then they will be launched into R.
+
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse)
+```
+
+## 1.2 Importing the OD data
+
+We will be using two data sets for this exercise. Data were retrieved on 19th Nov 2023. They are :
+
+1.  **Hunan country boundary layer\***. *(data is in ESRI shapefile format) - Geospatial data*
+2.  **Hunan_2012.csv\*.** *(data is in csv file) - Attribute table*
+
+In this exercise, we are interested to examine the spatial pattern of GDPPC (a.k.a GPD per Capital) of Hunan Provice, People Republic of China.
+
+### 1.2.1 Importing Hunan country boundary layer
+
+The code chunk below uses `st_read()` of **sf** package to import the [1st data set]{.underline} into R. The imported shapefile will be simple features object of sf.
+
+```{r}
+hunan <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+
+### 1.2.2 Importing Hunan_2012.csv
+
+Next, we will import the [2nd dataset (csv)]{.underline} into R. We will use `read_csv()` of **readr** package. The output is in R dataframe class.
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+## 1.3 Performing relational join
+
+After importing, we will update the attribute table of **hunan**'s Spatial Polygons Data Frame with the attribute fields of **hunan2012** dataframe. We will performed a `left_join()` with the aid of **dplyr** package.
+
+```{r}
+hunan <- left_join(hunan,hunan2012) %>%
+  select(1:4,7,15)
+```
+
+We will be joining both tables by County. By doing the left_join, we will combined the 8 variables from **hunan**, with 29 variables from **hunan2012** and uses `select()` to filter for the variables that we are interested in.
+
+## 1.4 Visualising Regional Development Indicator
+
+After joining, we will do a quick visualization. We will be using the `qtm()` of **tmap** package to prepare a basemap and a choropleth map to see the distribution of ***GDPPC 2012***.
+
+```{r}
+#| code-fold: true
+equal <- tm_shape(hunan) +
+  tm_fill("GDPPC",
+          n = 5,
+          style = "equal") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Equal interval classification")
+
+quantile <- tm_shape(hunan) +
+  tm_fill("GDPPC",
+          n = 5,
+          style = "quantile") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Equal quantile classification")
+
+tmap_arrange(equal, 
+             quantile, 
+             asp=1, 
+             ncol=2)
+```
+
+# 2. Global Spatial Autocorrelation
+
+In this section, we will compute global spatial autocorrelation statistics and to perform spatial complete randomness test for global spatial autocorrelation.
+
+## 2.1 Computing Contiguity Spatial Weights
+
+To begin with, we are require to construct a spatial weights of the study area. The spatial weights is used to define the neighborhood relationships between the geographical units (i.e. county) in the study area. We will be using `poly2nb()` of **spdep** package to compute ***QUEEN*** contiguity weight matrices for the study area.
+
+```{r}
+wm_q <- poly2nb(hunan, 
+                queen=TRUE)
+summary(wm_q)
+```
+
+**Observations:**
+
+-   Summary report highlights 88 area units in Hunan.
+
+-   1 most connected region with 11 neighbors, and
+
+-   2 least connected regions with only 1 neighbor.
+
+## 2.2 Row-standardised weights matrix
+
+Next, we would need to assign weights to each neighboring polygon. Weights are assigned based on the fraction of 1/#no.of neighbors to each neighboring country then summing the weighted income values.
+
+For the example below, we will used [*style = 'W'*]{.underline} option *(note: there are robust options available). By adding '**Zero.police = TRUE',** we are allowing list of non-neighbors.*
+
+```{r}
+rswm_q <- nb2listw(wm_q, 
+                   style="W", 
+                   zero.policy = TRUE)
+rswm_q
+```
+
+::: {.callout-note title="Note about nb2listw() " collapse="true"}
+## Note about `nb2listw()`
+
+`nb2listw()` has two major arguments, namely **style** and **zero.policy**.
+
+**There are 6 Styles, namely:**
+
+1.  "W" : row standardize (sum over all links to n)
+
+2.  "B" : basic binary coding
+
+3.  "C" : globally standardised (sum over all links to n)
+
+4.  "U" : is equal to C divided by the number of neighbors (sum over all links to unity)
+
+5.  "minmax" : the min, and max
+
+6.  "S" : variance-stabilizing coding scheme
+
+**The default setting for zero.policy**:
+
+-   'NULL' : **(default)**, uses global option value
+
+-   'TRUE' : permit the weights list to be formed with zero-length weights vectors
+
+-   'FALSE' : stop with error for any empty neighbors sets
+
+Refer [here](https://r-spatial.github.io/spdep/reference/nb2listw.html) for more information.
+:::
