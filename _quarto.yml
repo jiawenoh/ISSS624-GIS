@@ -29,6 +29,12 @@ website:
             href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html"
           - text: "Exercise 1B: Choropleth Mapping"
             href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01b.html"
+          - text: "Exercise 2A: Spatial Weights and Applications"
+            href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02a.html"
+          - text: "Exercise 2B: Global Measures of Spatial Autocorrelation"
+            href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02b.html"
+          - text: "Exercise 2C: Local Measures of Spatial Autocorrelation"
+            href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html"
 
       - section: "In-class Exercise"
         contents:
