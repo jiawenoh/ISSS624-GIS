@@ -146,3 +146,158 @@ rswm_q
 
 Refer [here](https://r-spatial.github.io/spdep/reference/nb2listw.html) for more information.
 :::
+
+## 2.3 Moran's I Statistics test
+
+There are two tests that we could perform. In this section, we will cover the Moran's I test. We will be using `moran.test()` of **spdep** to perform the statistical test.
+
+::: panel-tabset
+# Moran's I Test
+
+We will perform Moran's I statistical testing using `moran.test()` of **spdep**:
+
+```{r}
+#| code-fold: true
+moran.test(hunan$GDPPC, 
+           listw=rswm_q, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
+
+As observed, we can reject the null hypothesis (Ho) as the p-value is smaller than the alpha value.
+
+# Monte Carlo Moran's I
+
+We will perform permutation test for Moran's statistic by using `moran.mc()` of **spdep**. A total of 1000 simulation will be performed:
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+bperm= moran.mc(hunan$GDPPC, 
+                listw=rswm_q, 
+                nsim=999, 
+                zero.policy = TRUE, 
+                na.action=na.omit)
+bperm
+```
+
+As observed, we can reject the null hypothesis (Ho) as the p-value is smaller than the alpha value.
+
+# Visualisation
+
+We will be examining the simulated Moran's I test statistic by plotting the distribution of the statistical values through a histogram:
+
+```{r}
+#| code-fold: true
+#print mean
+cat('The mean is:', mean(bperm$res[1:999]),'\n')
+#print variance
+cat('The variance is:', var(bperm$res[1:999]), '\n')
+#print summary
+cat('Summary Report\n')
+summary(bperm$res[1:999])
+```
+
+```{r}
+#| code-fold: true
+hist(bperm$res, 
+     freq=TRUE, 
+     breaks=20, 
+     xlab="Simulated Moran's I")
+abline(v=0, 
+       col="red") 
+```
+:::
+
+## 2.4 Geary's Statistics Test
+
+In this section, we will cover the Geary's C test. We will be using `geary.test()` of **spdep** to perform the statistical test.
+
+::: panel-tabset
+# Geary's C Test
+
+We will perform Geary's C statistical testing using `geary.test()` of **spdep**:
+
+```{r}
+#| code-fold: true
+geary.test(hunan$GDPPC, listw=rswm_q)
+```
+
+# Monte Carlo Geary's C
+
+We will perform permutation test for Geary's statistic by using `geary.mc()` of **spdep**. A total of 1000 simulation will be performed:
+
+```{r}
+#| code-fold: true
+set.seed(1234)
+gperm=geary.mc(hunan$GDPPC, 
+               listw=rswm_q, 
+               nsim=999)
+gperm
+```
+
+# Visualisation
+
+We will be examining the simulated Geary's C test statistic by plotting the distribution of the statistical values through a histogram:
+
+```{r}
+#| code-fold: true
+#print mean
+cat('The mean is:', mean(gperm$res[1:999]),'\n')
+#print variance
+cat('The variance is:', var(gperm$res[1:999]), '\n')
+#print summary
+cat('Summary Report\n')
+summary(gperm$res[1:999])
+```
+
+```{r}
+#| code-fold: true
+hist(bperm$res, freq=TRUE, breaks=20, xlab="Simulated Geary c")
+abline(v=1, col="red") 
+```
+:::
+
+# 3. Spatial Correlogram
+
+In this section, we will use `sp.correlogram()` of **spdep** package to compute a 6-lag spatial correlogram of GDPPC.
+
+## 3.1 Compute Moran's I correlogram
+
+The global spatial autocorrelation used in Moran's I. For the graph, we will use `plot()` of base graph.
+
+```{r}
+#| code-fold: true
+MI_corr <- sp.correlogram(wm_q, 
+                          hunan$GDPPC, 
+                          order=6, 
+                          method="I", 
+                          style="W")
+plot(MI_corr)
+```
+
+To get a better interpretation of the output, we can examine the full analysis by printing the results.
+
+```{r}
+print(MI_corr)
+```
+
+## 3.2 Compute Geary's C correlogram
+
+The global spatial autocorrelation used in Geary's C. For the graph, we will use `plot()` of base graph.
+
+```{r}
+#| code-fold: true
+GC_corr <- sp.correlogram(wm_q, 
+                          hunan$GDPPC, 
+                          order=6, 
+                          method="C", 
+                          style="W")
+plot(GC_corr)
+```
+
+To get a better analysis,
+
+```{r}
+print(GC_corr)
+```
