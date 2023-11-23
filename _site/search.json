@@ -278,5 +278,89 @@
     "title": "",
     "section": "",
     "text": "<!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’>     dataset\n\n\n        0 0     false"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "",
+    "text": "The code chunk below uses p_load() of pacman package to check if sf, spdep, tmap, and tidyverse packages are installed into the R environment. If they are, then they will be launched into R.\n\npacman::p_load(sf, spdep, tmap, tidyverse)\n\n\n\n\nWe will be using two data sets for this exercise. Data were retrieved on 19th Nov 2023. They are :\n\nHunan country boundary layer*. (data is in ESRI shapefile format) - Geospatial data\nHunan_2012.csv*. (data is in csv file) - Attribute table\n\nIn this exercise, we are interested to examine the spatial pattern of GDPPC (a.k.a GPD per Capital) of Hunan Provice, People Republic of China.\n\n\nThe code chunk below uses st_read() of sf package to import the 1st data set into R. The imported shapefile will be simple features object of sf.\n\nhunan <- st_read(dsn = \"data/geospatial\", \n                 layer = \"Hunan\")\n\nReading layer `Hunan' from data source \n  `/Users/smu/Rworkshop/jiawenoh/ISSS624/Hands-on_Ex/Hands-on_Ex02/data/geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 88 features and 7 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812\nGeodetic CRS:  WGS 84\n\n\n\n\n\nNext, we will import the 2nd dataset (csv) into R. We will use read_csv() of readr package. The output is in R dataframe class.\n\nhunan2012 <- read_csv(\"data/aspatial/Hunan_2012.csv\")\n\n\n\n\n\nAfter importing, we will update the attribute table of hunan’s Spatial Polygons Data Frame with the attribute fields of hunan2012 dataframe. We will performed a left_join() with the aid of dplyr package.\n\nhunan <- left_join(hunan,hunan2012) %>%\n  select(1:4,7,15)\n\nWe will be joining both tables by County. By doing the left_join, we will combined the 8 variables from hunan, with 29 variables from hunan2012 and uses select() to filter for the variables that we are interested in.\n\n\n\nAfter joining, we will do a quick visualization. We will be using the qtm() of tmap package to prepare a basemap and a choropleth map to see the distribution of GDPPC 2012.\n\n\nShow the code\nequal <- tm_shape(hunan) +\n  tm_fill(\"GDPPC\",\n          n = 5,\n          style = \"equal\") +\n  tm_borders(alpha = 0.5) +\n  tm_layout(main.title = \"Equal interval classification\")\n\nquantile <- tm_shape(hunan) +\n  tm_fill(\"GDPPC\",\n          n = 5,\n          style = \"quantile\") +\n  tm_borders(alpha = 0.5) +\n  tm_layout(main.title = \"Equal quantile classification\")\n\ntmap_arrange(equal, \n             quantile, \n             asp=1, \n             ncol=2)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-1-append-local-morans-i-with-spdf",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-1-append-local-morans-i-with-spdf",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 1: Append Local Moran’s I with SPDF",
+    "text": "Step 1: Append Local Moran’s I with SPDF\n\nhunan.localMI <- cbind(hunan,localMI) %>%\n  rename(Pr.Ii = Pr.z....E.Ii..)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-2-map-local-morans-i-values",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-2-map-local-morans-i-values",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 2: Map local Moran’s I values",
+    "text": "Step 2: Map local Moran’s I values\nUsing choropleth mapping function of tmap package, we can plot the local Moran’s I values:\n\n\nShow the code\ntm_shape(hunan.localMI) +\n  tm_fill(col = \"Ii\", \n          style = \"pretty\",\n          palette = \"RdBu\",\n          title = \"local moran statistics\") +\n  tm_borders(alpha = 0.5)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-3-map-local-morans-i-p-values",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-3-map-local-morans-i-p-values",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 3: Map local Moran’s I p-values",
+    "text": "Step 3: Map local Moran’s I p-values\nAs seen above, Ii contains both positive and negative values. Thus, it is useful for us to consider the p-values for each values.\n\n\nShow the code\ntm_shape(hunan.localMI) +\n  tm_fill(col = \"Pr.Ii\", \n          breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),\n          palette=\"-Blues\", \n          title = \"local Moran's I p-values\") +\n  tm_borders(alpha = 0.5)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-4-optional-map-both-local-morans-i-values-and-p-values",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-4-optional-map-both-local-morans-i-values-and-p-values",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 4 (Optional) : Map both local Moran’s I values and p-values",
+    "text": "Step 4 (Optional) : Map both local Moran’s I values and p-values\nFor effective interpretation, we can plot both I-values and corresponding p-values next to one another.\n\n\nShow the code\nlocalMI.map <- tm_shape(hunan.localMI) +\n  tm_fill(col = \"Ii\", \n          style = \"pretty\", \n          title = \"local moran statistics\") +\n  tm_borders(alpha = 0.5)\n\npvalue.map <- tm_shape(hunan.localMI) +\n  tm_fill(col = \"Pr.Ii\", \n          breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),\n          palette=\"-Blues\", \n          title = \"local Moran's I p-values\") +\n  tm_borders(alpha = 0.5)\n\ntmap_arrange(localMI.map, pvalue.map, asp=1, ncol=2)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-1-vectorize",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-1-vectorize",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 1: Vectorize",
+    "text": "Step 1: Vectorize\n\nquadrant <- vector(mode=\"numeric\",length=nrow(localMI))"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-2-derive-spatially-lagged-variable-of-interest-and-centers-it-around-its-mean",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-2-derive-spatially-lagged-variable-of-interest-and-centers-it-around-its-mean",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 2: Derive Spatially lagged variable of interest and centers it around its mean",
+    "text": "Step 2: Derive Spatially lagged variable of interest and centers it around its mean\n\nhunan$lag_GDPPC <- lag.listw(rswm_q, hunan$GDPPC)\nDV <- hunan$lag_GDPPC - mean(hunan$lag_GDPPC)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-3-center-the-local-morans-around-the-mean",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-3-center-the-local-morans-around-the-mean",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 3: Center the local Moran’s around the mean",
+    "text": "Step 3: Center the local Moran’s around the mean\n\nLM_I <- localMI[,1] - mean(localMI[,1])"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-4-set-statistical-significance-level-for-the-local-moran",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-4-set-statistical-significance-level-for-the-local-moran",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 4: Set statistical significance level for the local Moran",
+    "text": "Step 4: Set statistical significance level for the local Moran\n\nsignif <- 0.05"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-5-define-the-quadrants",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-5-define-the-quadrants",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 5: Define the quadrants",
+    "text": "Step 5: Define the quadrants\n1 = low-low 2 = low - high 3 = high - low 4 = high - high\n\nquadrant[DV <0 & LM_I>0] <- 1\nquadrant[DV >0 & LM_I<0] <- 2\nquadrant[DV <0 & LM_I<0] <- 3  \nquadrant[DV >0 & LM_I>0] <- 4"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-6-place-non-significant-moran-in-category-0",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#step-6-place-non-significant-moran-in-category-0",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Step 6: Place non-significant Moran in Category 0",
+    "text": "Step 6: Place non-significant Moran in Category 0\n\nquadrant[localMI[,5]>signif] <- 0"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#final-output",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html#final-output",
+    "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
+    "section": "Final Output:",
+    "text": "Final Output:\n\nquadrant <- vector(mode=\"numeric\",length=nrow(localMI))\nhunan$lag_GDPPC <- lag.listw(rswm_q, hunan$GDPPC)\nDV <- hunan$lag_GDPPC - mean(hunan$lag_GDPPC)     \nLM_I <- localMI[,1]   \nsignif <- 0.05       \nquadrant[DV <0 & LM_I>0] <- 1\nquadrant[DV >0 & LM_I<0] <- 2\nquadrant[DV <0 & LM_I<0] <- 3  \nquadrant[DV >0 & LM_I>0] <- 4    \nquadrant[localMI[,5]>signif] <- 0"
   }
 ]
