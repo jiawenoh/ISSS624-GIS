@@ -84,7 +84,7 @@ tmap_arrange(equal,
 
 # 2. Cluster and Outlier Analysis
 
-In Exercise 2B, we covered the Global Indicators of Spatial Association. 
+In Exercise 2B, we covered the Global Indicators of Spatial Association.
 
 ```{r}
 #| code-fold: true
@@ -275,10 +275,8 @@ signif <- 0.05
 ```
 
 ## Step 5: Define the quadrants
-1 = low-low
-2 = low - high
-3 = high - low
-4 = high - high
+
+1 = low-low 2 = low - high 3 = high - low 4 = high - high
 
 ```{r}
 quadrant[DV <0 & LM_I>0] <- 1
@@ -287,13 +285,13 @@ quadrant[DV <0 & LM_I<0] <- 3
 quadrant[DV >0 & LM_I>0] <- 4      
 ```
 
-## Step 6: Place non-significant Moran in Category 0 
+## Step 6: Place non-significant Moran in Category 0
 
 ```{r}
 quadrant[localMI[,5]>signif] <- 0
 ```
 
-## Final Output: 
+## Final Output:
 
 ```{r}
 quadrant <- vector(mode="numeric",length=nrow(localMI))
@@ -309,7 +307,8 @@ quadrant[localMI[,5]>signif] <- 0
 ```
 
 # 4) Plotting LISA map
-With the preparation, we can now plot the LISA map by plotting both local Moran's I values map and its corresponding p-values map next to one another. 
+
+With the preparation, we can now plot the LISA map by plotting both local Moran's I values map and its corresponding p-values map next to one another.
 
 ```{r}
 #| code-fold: true
@@ -337,4 +336,149 @@ tmap_arrange(gdppc, LISAmap,
 
 # 4. Hot Spot and Cold Spot Area Analysis
 
+Apart from detecting cluster and outliers, localised spatial statistics can also be used to detect hot spot and/or cold spot areas. By definition, hot spot refers to region or value that is higher relative to its surroundings.
 
+It consists of a three steps approach:
+
+::: panel-tabset
+
+# 1) Deriving spatial weight matrix 
+To begin, we need to define new set of neighbors. Instead of considering units through shared borders, **Getis-Ord** define neighbors based on distance. 
+
+There are two types of distance-based proximity matrix: 
+- fixed distance weight matrix, and 
+- adaptive distance weight matrix 
+
+## 1.1 Deriving the centriod 
+
+Before making our connectivity graph, we will need to associate each polygon. We will use a mapping function to get the longitude, latitude and thereafter, combine them together. 
+
+```{r}
+#get longitude
+longitude <- map_dbl(hunan$geometry, ~st_centroid(.x)[[1]])
+
+#get latitude
+latitude <- map_dbl(hunan$geometry, ~st_centroid(.x)[[2]])
+
+#combine
+coords <- cbind(longitude, latitude)
+```
+
+## 1.2 Determine the cut-off distance
+
+We need to determine the upper list for distance band by :
+
+- Return a matrix with the indices of points belonging to the set of the k nearest neighbours of each other by using `knearneigh()` of **spdep**.
+- Convert the knn object returned by `knearneigh()` into a neighbours list of class nb with a list of integer vectors containing neighbour region number ids by using `knn2nb()`.
+- Return the length of neighbour relationship edges by using `nbdists()` of **spdep**. The function returns in the units of the coordinates if the coordinates are projected, in km otherwise.
+- Remove the list structure of the returned object by using `unlist()`.
+
+```{r}
+#| code-fold: true
+#coords <- coordinates(hunan)
+k1 <- knn2nb(knearneigh(coords))
+k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
+summary(k1dists)
+```
+As seen above, the max distance is 61.79km. We can infer that all units will have at least one neighbour. 
+
+## 1.3 Compute fixed distance weight matrix 
+
+We will compute the distance weight matrix by using `dnearneigh()`:
+
+```{r}
+#| code-fold: true
+
+#compute distance weight matrix 
+wm_d62 <- dnearneigh(coords, 0, 62, longlat = TRUE)
+wm_d62
+```
+Next, `nb2listw()` is used to convert the nb object into spatial weights object.
+
+```{r}
+#| code-fold: true
+wm62_lw <- nb2listw(wm_d62, style = 'B')
+summary(wm62_lw)
+```
+
+## 1.4 Compute adaptive distance weight matrix 
+
+```{r}
+knn <- knn2nb(knearneigh(coords, k=8))
+knn
+```
+Next, nb2listw() is used to convert the nb object into spatial weights object.
+
+```{r}
+#| code-fold: true
+knn_lw <- nb2listw(knn, style = 'B')
+summary(knn_lw)
+```
+
+# 2) Computing Gi Statistics 
+
+## Gi Statistics using fixed distance 
+
+Notably, the output of `localG()` is a vector of G or Gstar values, with attributes **gstari** set to TRUE or FALSE. The Gi stats represents the z-score where greater values represent a greater intensity of clustering and the direction (positive or negative) indicates high or low clusters. 
+
+```{r}
+#| code-fold: true
+fips <- order(hunan$County)
+gi.fixed <- localG(hunan$GDPPC, wm62_lw)
+gi.fixed 
+```
+
+Next, we will join the Gi values to their corresponding hunan sf data frame by using the code chunk below by converting the output vector (gi.fixed) into r matrix object by using `as.matrix()`. Then, `cbind()` to join hunan data and gi.fixed matrix to produce a new Spatial Polygon Data Frame called hunan.gi. 
+
+Lastly, it will be rename to **gstat_fixed** by using `rename()`.
+
+```{r}
+hunan.gi <- cbind(hunan, as.matrix(gi.fixed)) %>%
+  rename(gstat_fixed = as.matrix.gi.fixed.)
+```
+
+# 3) Mapping Gi Statistics 
+
+## fixed distance weights 
+
+```{r}
+#| code-fold: true
+gdppc <- qtm(hunan, "GDPPC")
+
+Gimap <-tm_shape(hunan.gi) +
+  tm_fill(col = "gstat_fixed", 
+          style = "pretty",
+          palette="-RdBu",
+          title = "local Gi") +
+  tm_borders(alpha = 0.5)
+
+tmap_arrange(gdppc, Gimap, asp=1, ncol=2)
+```
+## adaptive distance weights 
+
+```{r}
+#| code-fold: true
+# compute the Gi value 
+fips <- order(hunan$County)
+gi.adaptive <- localG(hunan$GDPPC, knn_lw)
+hunan.gi <- cbind(hunan, as.matrix(gi.adaptive)) %>%
+  rename(gstat_adaptive = as.matrix.gi.adaptive.)
+
+
+gdppc<- qtm(hunan, "GDPPC")
+
+Gimap <- tm_shape(hunan.gi) + 
+  tm_fill(col = "gstat_adaptive", 
+          style = "pretty", 
+          palette="-RdBu", 
+          title = "local Gi") + 
+  tm_borders(alpha = 0.5)
+
+tmap_arrange(gdppc, 
+             Gimap, 
+             asp=1, 
+             ncol=2)
+```
+
+
+:::
