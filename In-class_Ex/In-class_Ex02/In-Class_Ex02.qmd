@@ -180,29 +180,57 @@ p <- ggplot(data = cbg,
 ggplotly(p)
 ```
 
+Note: we could need to install **kendall** package. *(Install packages via tools \> cran as I am not able to run on pacman due to version issues)*
+
+```{r}
+cbg %>%
+  summarise(mk = list(
+    unclass(
+      Kendall::MannKendall(gi_star)))) %>% 
+  tidyr::unnest_wider(mk)
+```
+
 ## 5. Perform Emerging Hotspot Analysis
 
 Lastly, we will perform EHSA analysis by using `emerging_hotspot_analysis()` of sfdep package. It takes a spacetime object c (i.e GDPPC_st), and the quoted name of the variable of interest (i.e. GDPPC) for .var argument. The k argument is used to specify the number of time lags which is set to 1 by default. Lastly, nsim map numbers of simulation is performed.
 
 ```{r}
-#ehsa <- emerging_hotspot_analysis(
-#  x = GDPPC_st,
-#  .var = "GDPPC",
-#  k = 1,
-#  nsim =99
-#)
+ehsa <- emerging_hotspot_analysis(
+  x = GDPPC_st,
+  .var = "GDPPC",
+  k = 1,
+  nsim =99
+  )
 ```
 
-Next, tmap functions will be used to plot a categorical choropleth map by using the code chunk below.
+```{r}
+ggplot(data = ehsa,
+       aes(x = classification)) +
+  geom_bar()
+```
+
+We could observe that the sporadic coldspot has the higher number of county.
+
+## Visualizing EHSA
+
+We will visualize the geographic distribution EHSA classes. Before we do so, we will need to join both *hunna* and *ehsa* together.
 
 ```{r}
-#ehsa_sig <- hunan_ehsa %>%
-#  filter(p_value <0.05)
-#tmap_mode("plot")
-#tm_shape(hunan_ehsa) +
-#  tm_polygons() +
-#  tm_borders(alpha =0.5) +
-#tm_shape(ehsa_sig) +
-#  tm_fill("classification") +
-#  tm_borders(alpha = 0.4)
+hunan_ehsa <- hunan %>%
+  left_join(ehsa,
+            by = join_by(County == location))
+```
+
+Next, **tmap** functions will be used to plot a categorical choropleth map by using the code chunk below.
+
+```{r}
+ehsa_sig <- hunan_ehsa %>%
+  filter(p_value <0.05)
+tmap_mode("plot")
+tm_shape(hunan_ehsa) +
+  tm_polygons() +
+  tm_borders(alpha =0.5) +
+tm_shape(ehsa_sig) +
+  tm_fill("classification") +
+  tm_borders(alpha = 0.4)
 ```

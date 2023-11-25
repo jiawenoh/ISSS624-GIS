@@ -445,13 +445,20 @@
     "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#mann-kendall-test",
     "title": "In-class Exercise 2",
     "section": "4. Mann-Kendall Test",
-    "text": "4. Mann-Kendall Test\nWith these Gi* measures, we can evaluate each location for a trend using the Mann-Kendall test. The code chunk below uses Changsha county.\n\ncbg <- gi_stars %>%\n  ungroup() %>%\n  filter(County == \"Changsha\") |>\n  select(County, Year, gi_star)\n\nNext, we will plot the result by using ggplot2 functions.\n\np <- ggplot(data = cbg,\n            aes(x = Year,\n                y = gi_star)) +\n  geom_line() + \n  theme_light()\n \nggplotly(p)"
+    "text": "4. Mann-Kendall Test\nWith these Gi* measures, we can evaluate each location for a trend using the Mann-Kendall test. The code chunk below uses Changsha county.\n\ncbg <- gi_stars %>%\n  ungroup() %>%\n  filter(County == \"Changsha\") |>\n  select(County, Year, gi_star)\n\nNext, we will plot the result by using ggplot2 functions.\n\np <- ggplot(data = cbg,\n            aes(x = Year,\n                y = gi_star)) +\n  geom_line() + \n  theme_light()\n \nggplotly(p)\n\n\n\n\n\nNote: we could need to install kendall package. (Install packages via tools > cran as I am not able to run on pacman due to version issues)\n\ncbg %>%\n  summarise(mk = list(\n    unclass(\n      Kendall::MannKendall(gi_star)))) %>% \n  tidyr::unnest_wider(mk)\n\n# A tibble: 1 × 5\n    tau      sl     S     D  varS\n  <dbl>   <dbl> <dbl> <dbl> <dbl>\n1 0.485 0.00742    66  136.  589."
   },
   {
     "objectID": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#perform-emerging-hotspot-analysis",
     "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#perform-emerging-hotspot-analysis",
     "title": "In-class Exercise 2",
     "section": "5. Perform Emerging Hotspot Analysis",
-    "text": "5. Perform Emerging Hotspot Analysis\nLastly, we will perform EHSA analysis by using emerging_hotspot_analysis() of sfdep package. It takes a spacetime object c (i.e GDPPC_st), and the quoted name of the variable of interest (i.e. GDPPC) for .var argument. The k argument is used to specify the number of time lags which is set to 1 by default. Lastly, nsim map numbers of simulation is performed.\n\n#ehsa <- emerging_hotspot_analysis(\n#  x = GDPPC_st,\n#  .var = \"GDPPC\",\n#  k = 1,\n#  nsim =99\n#)\n\nNext, tmap functions will be used to plot a categorical choropleth map by using the code chunk below.\n\n#ehsa_sig <- hunan_ehsa %>%\n#  filter(p_value <0.05)\n#tmap_mode(\"plot\")\n#tm_shape(hunan_ehsa) +\n#  tm_polygons() +\n#  tm_borders(alpha =0.5) +\n#tm_shape(ehsa_sig) +\n#  tm_fill(\"classification\") +\n#  tm_borders(alpha = 0.4)"
+    "text": "5. Perform Emerging Hotspot Analysis\nLastly, we will perform EHSA analysis by using emerging_hotspot_analysis() of sfdep package. It takes a spacetime object c (i.e GDPPC_st), and the quoted name of the variable of interest (i.e. GDPPC) for .var argument. The k argument is used to specify the number of time lags which is set to 1 by default. Lastly, nsim map numbers of simulation is performed.\n\nehsa <- emerging_hotspot_analysis(\n  x = GDPPC_st,\n  .var = \"GDPPC\",\n  k = 1,\n  nsim =99\n  )\n\n\nggplot(data = ehsa,\n       aes(x = classification)) +\n  geom_bar()\n\n\n\n\nWe could observe that the sporadic coldspot has the higher number of county."
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#visualizing-ehsa",
+    "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#visualizing-ehsa",
+    "title": "In-class Exercise 2",
+    "section": "Visualizing EHSA",
+    "text": "Visualizing EHSA\nWe will visualize the geographic distribution EHSA classes. Before we do so, we will need to join both hunna and ehsa together.\n\nhunan_ehsa <- hunan %>%\n  left_join(ehsa,\n            by = join_by(County == location))\n\nNext, tmap functions will be used to plot a categorical choropleth map by using the code chunk below.\n\nehsa_sig <- hunan_ehsa %>%\n  filter(p_value <0.05)\ntmap_mode(\"plot\")\ntm_shape(hunan_ehsa) +\n  tm_polygons() +\n  tm_borders(alpha =0.5) +\ntm_shape(ehsa_sig) +\n  tm_fill(\"classification\") +\n  tm_borders(alpha = 0.4)"
   }
 ]
