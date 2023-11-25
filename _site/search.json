@@ -411,5 +411,47 @@
     "title": "Exercise 2C: Local Measures of Spatial Autocorrelation",
     "section": "adaptive distance weights",
     "text": "adaptive distance weights\n\n\nShow the code\n# compute the Gi value \nfips <- order(hunan$County)\ngi.adaptive <- localG(hunan$GDPPC, knn_lw)\nhunan.gi <- cbind(hunan, as.matrix(gi.adaptive)) %>%\n  rename(gstat_adaptive = as.matrix.gi.adaptive.)\n\n\ngdppc<- qtm(hunan, \"GDPPC\")\n\nGimap <- tm_shape(hunan.gi) + \n  tm_fill(col = \"gstat_adaptive\", \n          style = \"pretty\", \n          palette=\"-RdBu\", \n          title = \"local Gi\") + \n  tm_borders(alpha = 0.5)\n\ntmap_arrange(gdppc, \n             Gimap, \n             asp=1, \n             ncol=2)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html",
+    "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html",
+    "title": "In-class Exercise 2",
+    "section": "",
+    "text": "The code chunk below load the following packages:\n\ntmap : for thematic mapping\nsf : for geospatial data handling\nsfdep : for spatial dependence for Simple Features\ntidyverse: for non-spatial data handling\nknitr : for dynamic report generation\nplotly : for creating interactive graphs\n\n\npacman::p_load(tmap, sf, sfdep, tidyverse, knitr,plotly)\n\n\n\n\nWe will be using two data sets for this exercise. Data were retrieved on 25th Nov 2023. They are :\n\nHunan , a geospatial data set in ESRI shapefile format, and\nHunan_2012.csv, an attribute data set in csv format\n\nIn this exercise, we are interested to examine the spatial pattern of GDPPC (a.k.a GPD per Capital) of Hunan Provice, People Republic of China.\n\n\nThe code chunk below uses st_read() of sf package to import the 1st data set into R. The imported shapefile will be simple features object of sf.\n\nhunan <- st_read(dsn = \"data/geospatial\", \n                 layer = \"Hunan\")\n\nReading layer `Hunan' from data source \n  `/Users/smu/Rworkshop/jiawenoh/ISSS624/In-class_Ex/In-class_Ex02/data/geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 88 features and 7 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812\nGeodetic CRS:  WGS 84\n\n\n\n\n\nNext, we will import the 2nd dataset (csv) into R. We will use read_csv() of readr package. The output is in R dataframe class.\n\nhunan2012 <- read_csv(\"data/aspatial/Hunan_2012.csv\")\n\n\n\n\n\nAfter importing, we will performed a left_join() with the aid of dplyr package.\n\nhunan_GDPPC <- left_join(hunan,hunan2012) %>%\n    select(1:4,7,15)\n\n\n\n\nWe will be using the qtm() of tmap package to prepare a basemap and a choropleth map to see the distribution of GDPPC 2012 as a form of quick visualization.\n\n\nShow the code\nbasemap <- tm_shape(hunan_GDPPC) +\n  tm_polygons() +\n  tm_text(\"NAME_3\", size=0.5)\n \ngdppc <- qtm(hunan_GDPPC, \"GDPPC\")\ntmap_arrange(basemap, gdppc, asp=1, ncol=2)\n\n\n\n\n\n\n\n\n\nQueen method is used to derive the contiguity weights:\n\nwm_q <- hunan_GDPPC %>%\n  mutate (nb = st_contiguity(geometry),\n          wt = st_weights(nb, \n                          style = \"W\"),\n          .before = 1)\n\n\n\n\nIn the code chunk below, we will compute local Moran’s I test.\n\nlisa <- wm_q %>%\n  mutate(local_moran = local_moran(\n    GDPPC, nb, wt, nsim = 99),\n    .before =1) %>%\n  unnest(local_moran) #to unnest individual columns"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#importing-the-data",
+    "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#importing-the-data",
+    "title": "In-class Exercise 2",
+    "section": "1. Importing the data",
+    "text": "1. Importing the data\nWe will be using the Hunan_GDPPC data for this exercise.\n\nGDPPC <- read_csv(\"data/aspatial/Hunan_GDPPC.csv\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#create-a-time-series-cube",
+    "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#create-a-time-series-cube",
+    "title": "In-class Exercise 2",
+    "section": "2. Create a time series cube",
+    "text": "2. Create a time series cube\nTo get the concept of spatio-temporal cube, we will be using the spacetime() of sfdep to create a spacetime cube.\n\nGDPPC_st <- spacetime(GDPPC, hunan, \n                       .loc_col = \"County\",\n                       .time_col = \"Year\")\n\nTo confirm if it is spacetime cube, we can check through the following code by using is_spacetime_cube() of sfdep package:\n\nis_spacetime_cube(GDPPC_st)\n\n[1] TRUE"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#compute-gi",
+    "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#compute-gi",
+    "title": "In-class Exercise 2",
+    "section": "3. Compute Gi*",
+    "text": "3. Compute Gi*\n\nGDPPC_nb <- GDPPC_st %>%\n  activate(\"geometry\") %>% #must-do this first to activate \n  mutate(nb = include_self(st_contiguity(geometry)),\n         wt = st_inverse_distance(nb,geometry,\n                                  scale = 1,\n                                  alpha = 1),\n         .before = 1) %>%\n  set_nbs(\"nb\") %>%\n  set_wts(\"wt\")\n\nWe can use the new columns to manually calculate the local Gi*. We can do so by grouping by year and using local_gstar_perm() of spdep. Thereafter, we will use unnest() to unnest gi_star column of the newly created gi_starts data frame.\n\ngi_stars <- GDPPC_nb %>%\n  group_by(Year) %>%\n  mutate(gi_star = local_gstar_perm(\n    GDPPC, nb, wt)) %>%\n  tidyr::unnest(gi_star)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#mann-kendall-test",
+    "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#mann-kendall-test",
+    "title": "In-class Exercise 2",
+    "section": "4. Mann-Kendall Test",
+    "text": "4. Mann-Kendall Test\nWith these Gi* measures, we can evaluate each location for a trend using the Mann-Kendall test. The code chunk below uses Changsha county.\n\ncbg <- gi_stars %>%\n  ungroup() %>%\n  filter(County == \"Changsha\") |>\n  select(County, Year, gi_star)\n\nNext, we will plot the result by using ggplot2 functions.\n\np <- ggplot(data = cbg,\n            aes(x = Year,\n                y = gi_star)) +\n  geom_line() + \n  theme_light()\n \nggplotly(p)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#perform-emerging-hotspot-analysis",
+    "href": "In-class_Ex/In-class_Ex02/In-Class_Ex02.html#perform-emerging-hotspot-analysis",
+    "title": "In-class Exercise 2",
+    "section": "5. Perform Emerging Hotspot Analysis",
+    "text": "5. Perform Emerging Hotspot Analysis\nLastly, we will perform EHSA analysis by using emerging_hotspot_analysis() of sfdep package. It takes a spacetime object c (i.e GDPPC_st), and the quoted name of the variable of interest (i.e. GDPPC) for .var argument. The k argument is used to specify the number of time lags which is set to 1 by default. Lastly, nsim map numbers of simulation is performed.\n\n#ehsa <- emerging_hotspot_analysis(\n#  x = GDPPC_st,\n#  .var = \"GDPPC\",\n#  k = 1,\n#  nsim =99\n#)\n\nNext, tmap functions will be used to plot a categorical choropleth map by using the code chunk below.\n\n#ehsa_sig <- hunan_ehsa %>%\n#  filter(p_value <0.05)\n#tmap_mode(\"plot\")\n#tm_shape(hunan_ehsa) +\n#  tm_polygons() +\n#  tm_borders(alpha =0.5) +\n#tm_shape(ehsa_sig) +\n#  tm_fill(\"classification\") +\n#  tm_borders(alpha = 0.4)"
   }
 ]
