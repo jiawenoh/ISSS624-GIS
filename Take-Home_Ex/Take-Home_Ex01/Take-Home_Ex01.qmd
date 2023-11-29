@@ -1,0 +1,372 @@
+---
+title: "Take Home Exercise 1"
+author: "Oh Jia Wen"
+date: 11/25/2023
+date-modified: "last-modified"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
+
+# 1. Overview
+
+The digitization of city-wide urban infrastructures such as buses,mass rapid transit enable collection of massive data sets on patterns such as human movement and behaviors within the city. In real-world practices, the use of these data are confined to simple tracking and mapping with GIS applications due to the lack of functions in conventional GIS.
+
+## 1.1 The Task
+
+This exercise aims to reveals the spatial and spatio-temporal mobility patterns of public bus passengers in Singapore using appropriate geovisualisation techniques and analysis.
+
+The original data set was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops.
+
+A total of three files were downloaded :
+
+-   origin_destination_bus_202308.csv
+
+-   origin_destination_bus_202309.csv
+
+-   origin_destination_bus_202310.csv
+
+The focus of the study will be on the **August data**.
+
+# 2. Data preparation
+
+## 2.1 Install R packages
+
+The code chunk below uses `pacman:: p_load()` to load and install the following libraries:
+
+-   `mapview` : Used to create interactive visualization of spatial data
+
+-   `knitr`: Used for dynamic report generation
+
+-   `patchwork` : Used to combine multiple ggplot graphs into the same graphic
+
+-   **`sf`** : Used for geospatial data handling
+
+-   `sfdep` : Used to compute spatial weights and autocorrelation **(to revise)**
+
+-   **`tidyverse`**: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis
+
+-   **`tmap`** : Used for thematic mapping
+
+```{r}
+pacman::p_load(mapview, knitr, patchwork, sf, sfdep, tidyverse, tmap)
+```
+
+## 2.2 Import and Load Dataset
+
+Three geospatial data will be used for this study, they are:
+
+-   `origin_destination_bus_202308.csv` : A csv file containing information about all the bus stops currently being serviced by bus, which includes bus stop identifier, and location coordinates.
+
+-   `MPSZ-2019`: A ESRI shapefile format, based on URA Master Plan 2019.
+
+-   `hexagon` : A hexagon layer of 250m to replace the relative coarse and irregular Master Plan 2019 Planning Sub-Zone GIS data of URA
+
+### 2.2.1 Importing Aspatial data
+
+First, we will import the [Passenger Volume by Origin Destination Bus Stops]{.underline} data set for **August** by using `readr::read_csv()` and store it in variable **odbus**. Also, we will be using `glimpse()` report to reveal the data type of each field.
+
+*Point to note: `ORIGIN_PT_CODE` and `DESTINATION_PT_CODE` are in `<chr>` format.*
+
+```{r}
+#| code-fold: true
+odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
+glimpse(odbus)
+```
+
+### 2.2.2 Importing Geospatial data
+
+Thereafter, we will import the [Passenger Volume by Origin Destination Bus Stops]{.underline} data set for **August** and the sub-zone boundary of URA Master Plan 2019.
+
+#### 2.2.2.1 Import Bus Stop data
+
+We will be using `sf::st_read()` to import and `sf::st_transform()` to ensure that the projected coordinate system is in the right format before storing in variable **busstop**. Also, we will be using `glimpse()` report to reveal the data type of each field.
+
+```{r}
+busstop <- st_read(dsn = "data/geospatial",layer = "BusStop") %>%
+    st_transform(crs = 3414)
+```
+
+The message above shows that there are a total of 5161 features and 3 fields in `busstop` point feature data frame and it is in **SVY21** projected coordinates system.
+
+```{r}
+glimpse(busstop)
+```
+
+::: {.callout-note title="Note about coordinates system " collapse="true"}
+## Note about coordinates system
+
+crs : to provide the coordinates system in EPSG format.
+
+EPSG: 4326 is wgs84 Geographic Coordinate System
+
+EPSG : 3414 is Singapore SVY21 Projected Coordinate System.
+
+For more information, do refer to [epsg.io](https://epsg.io/)
+:::
+
+## 2.3 Data Wrangling
+
+Looking at the section 2.2.1, we noticed a few problem:
+
+-   *`ORIGIN_PT_CODE`* : is in `<chr>` format.
+
+-   *`DESTINATION_PT_CODE`* : is in `<chr>` format.
+
+We will be using `dplyr::mutate()` to convert the `<chr>` data type to `<fct>` and store it in a new variable **odbus_new**.
+
+```{r}
+#| code-fold: true
+odbus_new <- odbus %>%
+ mutate(ORIGIN_PT_CODE = as.factor(ORIGIN_PT_CODE),
+        DESTINATION_PT_CODE = as.factor(DESTINATION_PT_CODE))
+
+glimpse(odbus_new)
+
+```
+
+Additionally, we confirmed that there are no missing values in the **odbus_new data set.**
+
+```{r}
+any(is.na(odbus_new))
+```
+
+### 2.3.1 Data Extraction
+
+In this section, we will extract commuting flows based on the table below.
+
+| Peak hour period             | Bus tap on time |
+|------------------------------|-----------------|
+| Weekday morning peak         | 6am to 9am      |
+| Weekday afternoon peak       | 5pm to 8pm      |
+| Weekend/holiday morning peak | 11am to 2pm     |
+| Weekend/holiday evening peak | 4pm to 7pm      |
+
+The code is extracted in the following manner:
+
+-   `filter()` is used to extract subset of data
+
+-   `between()` is used to express a range condition
+
+-   `group_by()` and `summarise()` are used to sum the total trips
+
+-   `arrange(desc())` to sort in descending order
+
+-   `ungroup()` is used to end a definition, often use with `group_by()`
+
+```{r}
+#| code-fold: true
+
+#weekday morning peak 
+wkd6_9 <- odbus_new %>%
+  filter(DAY_TYPE == "WEEKDAY",
+         between(TIME_PER_HOUR, 6, 9)) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS)) %>%
+  arrange(desc(TRIPS)) %>%
+  ungroup()
+
+#weekday afternoon peak 
+wkd17_20 <- odbus_new %>%
+  filter(DAY_TYPE == "WEEKDAY",
+         between(TIME_PER_HOUR, 17, 20)) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS)) %>%
+  arrange(desc(TRIPS)) %>%
+  ungroup()
+
+#weekend/holiday morning peak 
+wknd11_14 <- odbus_new %>%
+  filter(DAY_TYPE == "WEEKENDS/HOLIDAY",
+         between(TIME_PER_HOUR, 11, 14)) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS)) %>%
+  arrange(desc(TRIPS)) %>%
+  ungroup()
+
+#weekend/holiday afternoon peak 
+wknd16_19 <- odbus_new %>%
+  filter(DAY_TYPE == "WEEKENDS/HOLIDAY",
+         between(TIME_PER_HOUR, 16, 19)) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS)) %>%
+  arrange(desc(TRIPS)) %>%
+  ungroup()
+
+
+```
+
+::: panel-tabset
+# Weekday (0600-0900)
+
+```{r}
+#| eval: true
+kable(head(wkd6_9))
+```
+
+# Weekday (1700-2000)
+
+```{r}
+#| eval: true
+kable(head(wkd17_20))
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+#| eval: true
+kable(head(wknd11_14))
+```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+#| eval: true
+kable(head(wknd16_19))
+```
+:::
+
+Thereafter, we will save a copy of the output in rds format and reload it into the environment.
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+write_rds(wkd6_9, "data/rds/wkd6_9.rds")
+wkd6_9 <- read_rds("data/rds/wkd6_9.rds")
+
+#weekday afternoon peak 
+write_rds(wkd17_20, "data/rds/wkd17_20.rds")
+wkd17_20 <- read_rds("data/rds/wkd17_20.rds")
+
+#weekend/holiday morning peak 
+write_rds(wknd11_14, "data/rds/wknd11_14.rds")
+wknd11_14 <- read_rds("data/rds/wknd11_14.rds")
+
+#weekend/holiday afternoon peak 
+write_rds(wknd16_19, "data/rds/wknd16_19.rds")
+wknd16_19 <- read_rds("data/rds/wknd16_19.rds")
+```
+
+### 2.3.2 Combining Data
+
+Before we proceed, we will used `mapview()` as a default visualization.
+
+```{r}
+#| code-fold: true
+mapview_check = mapview(busstop, cex = 3, alpha = .5, popup = NULL)
+
+mapview_check
+```
+
+#### 2.3.2.1 Combine community flow into busstop
+
+After populating the community flow, we will combine it into **busstop** sf data frame.
+
+-   `st_intersection()` is used to perform point and polygon overly
+
+-   `dplyr::select()` is used to retain selected columns
+
+Thereafter, we will save a copy of the output in rds format and reload it into the environment.
+
+After running the code, we noticed that 5 bus stops have been excluded as it is beyond the boundary of Singapore.
+
+#### 2.3.2.2 Combine busstop_mpsz into commuting flows
+
+Next, we will append the planning subzone code from busstop_mpsz data frame into various commuting flows data frame as seen in section 2.3.1. To ensure that all bus stops are distinct, we added `unique()` function into our code.
+
+```{r}
+#weekday morning peak 
+origin_SZ_wkd6_9 <- left_join(busstop, wkd6_9,
+            by = c("BUS_STOP_N" = "ORIGIN_PT_CODE")) %>%
+      mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
+  unique() %>%
+  ungroup()
+```
+
+```
+
+### 2.3.2.3 Create Hexagon Layer
+
+```{r}
+
+honeycomb_grid = st_make_grid(origin_SZ_wkd6_9, c(550, 500), what = "polygons", square = FALSE)
+
+# To sf and add grid ID
+honeycomb_grid_sf = st_sf(honeycomb_grid) %>%
+  # add grid ID
+  mutate(grid_id = 1:length(lengths(honeycomb_grid)))
+
+intersections <- st_intersects(origin_SZ_wkd6_9, honeycomb_grid_sf)
+# remove grid without value of 0 (i.e. no points in side that grid)
+
+join_df <- st_join(honeycomb_grid_sf, origin_SZ_wkd6_9, by = intersections) %>%
+        mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
+  filter(TRIPS > 0) %>%
+  select(honeycomb_grid,grid_id, TRIPS)
+```
+
+```{r}
+
+origin_crs <- st_crs(join_df)
+```
+
+```{r}
+tm_shape(join_df) +
+  tm_borders(lwd = 0.5, alpha = 0.5) +
+  tm_fill("TRIPS", 
+          style = "quantile", 
+          palette = rev("Blues"),
+          title = "Passenger Trips ") +
+  tm_layout(main.title = "Weekday Evening Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_compass(type = "8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha = 0.2) +
+  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authority (URA)\n and Population data from Department of Statistics (DOS)", 
+             position = c("left", "bottom"))
+
+```
+
+#### 2.3.2.3 Combine commuting flows into mpsz
+
+With the incorporated result, we will do a `left_join()` to append the results from the previous section into the **mpsz** sf data frame. As there might be point without **BUS_STOP_N**, and **TRIPS**, `dplyr::mutate()` is used to force a zero.
+
+```{}
+```
+
+To validate that our sf data frame does not contain any missing value, we used `any(is.na())` to check :
+
+```{r}
+#| code-fold: true
+ 
+cat('Are there any missing value for Weekday Morning Peak?: ', any(is.na(origin_SZ_wkd6_9)),'\n')
+
+```
+
+# 3. Geovisualisation
+
+```{r}
+tmap_options(check.and.fix = TRUE)
+```
+
+```{r}
+```
+
+## HEXAGONS
+
+Hexagons are the densest way to pack circles in tessellation and reduce **edge effects**.
+
+```{r}
+
+```
+
+# References :
+
+https://datamall.lta.gov.sg/content/datamall/en.html
+
+https://urbandatapalette.com/post/2021-08-tessellation-sf/
