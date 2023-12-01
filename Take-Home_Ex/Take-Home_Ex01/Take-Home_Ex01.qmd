@@ -77,7 +77,7 @@ glimpse(odbus)
 
 ### 2.2.2 Importing Geospatial data
 
-Thereafter, we will import the [Passenger Volume by Origin Destination Bus Stops]{.underline} data set for **August** and the sub-zone boundary of URA Master Plan 2019.
+Thereafter, we will import the [Passenger Volume by Origin Destination Bus Stops]{.underline} data set for **August**.
 
 #### 2.2.2.1 Import Bus Stop data
 
@@ -259,6 +259,8 @@ mapview_check = mapview(busstop, cex = 3, alpha = .5, popup = NULL)
 mapview_check
 ```
 
+As observed, there are 5 bus stops that are not within Singapore Map. Thus, we will further process and remove \`
+
 #### 2.3.2.1 Combine community flow into busstop
 
 After populating the community flow, we will combine it into **busstop** sf data frame.
@@ -282,8 +284,6 @@ origin_SZ_wkd6_9 <- left_join(busstop, wkd6_9,
       mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
   unique() %>%
   ungroup()
-```
-
 ```
 
 ### 2.3.2.3 Create Hexagon Layer
@@ -336,7 +336,7 @@ tm_shape(join_df) +
 
 With the incorporated result, we will do a `left_join()` to append the results from the previous section into the **mpsz** sf data frame. As there might be point without **BUS_STOP_N**, and **TRIPS**, `dplyr::mutate()` is used to force a zero.
 
-```{}
+```         
 ```
 
 To validate that our sf data frame does not contain any missing value, we used `any(is.na())` to check :
@@ -352,9 +352,6 @@ cat('Are there any missing value for Weekday Morning Peak?: ', any(is.na(origin_
 
 ```{r}
 tmap_options(check.and.fix = TRUE)
-```
-
-```{r}
 ```
 
 ## HEXAGONS
