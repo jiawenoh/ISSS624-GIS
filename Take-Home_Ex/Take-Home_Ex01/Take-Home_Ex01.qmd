@@ -43,14 +43,16 @@ The code chunk below uses `pacman:: p_load()` to load and install the following 
 
 -   **`sf`** : Used for geospatial data handling
 
--   `sfdep` : Used to compute spatial weights and autocorrelation **(to revise)**
+-   `spdep` : Used to create spatial weights matrix objects
+
+-   `sfdep` : Used to integrate with `'sf'` objects and the `'tidyverse'`
 
 -   **`tidyverse`**: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis
 
 -   **`tmap`** : Used for thematic mapping
 
 ```{r}
-pacman::p_load(mapview, knitr, patchwork, sf, sfdep, tidyverse, tmap)
+pacman::p_load(mapview, knitr, patchwork, sf, spdep, sfdep, tidyverse, tmap)
 ```
 
 ## 2.2 Import and Load Dataset
@@ -259,84 +261,628 @@ mapview_check = mapview(busstop, cex = 3, alpha = .5, popup = NULL)
 mapview_check
 ```
 
-As observed, there are 5 bus stops that are not within Singapore Map that includes [Passenger Volume by Origin Destination Bus Stop.]{.underline} Although we might be able to filter and remove bus stops that are not within the Singapore Boundary, it might be interesting to observe the community flows from Singapore to Johor Bahru. As such we will not remove these data points.
+As observed, there are [5 bus stops]{.underline} that are not within Singapore Map that includes [Passenger Volume by Origin Destination Bus Stop.]{.underline} Although we are able to filter and remove bus stops that are not within the Singapore Boundary, it might be interesting to observe the community flows from Singapore to Johor Bahru. As such we will not remove these data points.
 
-#### 2.3.2.1 Combine community flow into busstop
+#### 2.3.2.1 Combine commuting flow into busstop
 
-After populating the community flow, we will combine it into **busstop** sf data frame. To ensure that all bus stops are distinct, we will be using `dplyr:: mutate()` to replace N/A to 0 and add `unique()` function into our code to keep distinct flows.
+After populating the commuting flow, we will combine it into **busstop** sf data frame. To ensure that all bus stops are distinct, we will be using `dplyr:: mutate()` to replace N/A to 0 and add `unique()` function into our code to keep distinct flows.
 
 ```{r}
+#| code-fold: true
 #weekday morning peak 
 origin_SZ_wkd6_9 <- left_join(busstop, wkd6_9,
             by = c("BUS_STOP_N" = "ORIGIN_PT_CODE")) %>%
       mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
   unique() %>%
   ungroup()
+
+#weekday afternoon peak 
+origin_SZ_wkd17_20 <- left_join(busstop, wkd17_20,
+            by = c("BUS_STOP_N" = "ORIGIN_PT_CODE")) %>%
+      mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
+  unique() %>%
+  ungroup()
+
+#weekend/holiday morning peak 
+origin_SZ_wknd11_14 <- left_join(busstop, wknd11_14,
+            by = c("BUS_STOP_N" = "ORIGIN_PT_CODE")) %>%
+      mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
+  unique() %>%
+  ungroup()
+
+#weekend/holiday afternoon peak 
+origin_SZ_wknd16_19 <- left_join(busstop, wknd16_19,
+            by = c("BUS_STOP_N" = "ORIGIN_PT_CODE")) %>%
+      mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
+  unique() %>%
+  ungroup()
 ```
 
-### 2.3.2.3 Create Hexagon Layer
+#### 2.3.2.2 Create Hexagon Layer
+
+Hexagons are the densest way to pack circles in tessellation and reduce **edge effects**. With reference to [Urban Data Palette](https://urbandatapalette.com/post/2021-08-tessellation-sf/), we will create honeycomb grid through the following steps:
+
+-   `st_make_grid()` : create a regular grid of spatial polygons. Revision have been done to the cell width and height to c(500,500).
+
+-   `st_sf()` : convert the honeycomb grid object to an sf object. Grid ID is created to count the number of bus stops and sum of trips in the grid.
+
+-   `st_intersects()` : determine whether two sets of spatial objects intersect.
+
+-   `st_join()` : join two spatial objects based on their spatial relationships by intersections.
 
 ```{r}
+#| code-fold: true
+#weekday morning peak 
+honeycomb_grid_wkd6_9 = st_make_grid(origin_SZ_wkd6_9, c(500, 500), #cell revised
+                              what = "polygons", square = FALSE)
+honeycomb_grid_sf_0609 = st_sf(honeycomb_grid_wkd6_9) %>%
+  mutate(grid_id = 1:length(lengths(honeycomb_grid_wkd6_9)))
+intersections0609 <- st_intersects(origin_SZ_wkd6_9, honeycomb_grid_sf_0609)
+join_df0609 <- st_join(honeycomb_grid_sf_0609, origin_SZ_wkd6_9, by = intersections0609)
 
-honeycomb_grid = st_make_grid(origin_SZ_wkd6_9, c(550, 500), what = "polygons", square = FALSE)
+#weekday afternoon peak 
+honeycomb_grid_wkd17_20 = st_make_grid(origin_SZ_wkd17_20, c(500, 500), 
+                              what = "polygons", square = FALSE)
+honeycomb_grid_sf_1720 = st_sf(honeycomb_grid_wkd17_20) %>%
+  mutate(grid_id = 1:length(lengths(honeycomb_grid_wkd17_20)))
+intersections1720 <- st_intersects(origin_SZ_wkd17_20, honeycomb_grid_sf_1720)
+join_df1720 <- st_join(honeycomb_grid_sf_1720, origin_SZ_wkd17_20, by = intersections1720)
 
-# To sf and add grid ID
-honeycomb_grid_sf = st_sf(honeycomb_grid) %>%
-  # add grid ID
-  mutate(grid_id = 1:length(lengths(honeycomb_grid)))
+#weekend/holiday morning peak 
+honeycomb_grid_wknd11_14 = st_make_grid(origin_SZ_wknd11_14, c(500, 500), 
+                              what = "polygons", square = FALSE)
+honeycomb_grid_sf_1114 = st_sf(honeycomb_grid_wknd11_14) %>%
+  mutate(grid_id = 1:length(lengths(honeycomb_grid_wknd11_14)))
+intersections1114 <- st_intersects(origin_SZ_wknd11_14, honeycomb_grid_sf_1114)
+join_df1114 <- st_join(honeycomb_grid_sf_1114, origin_SZ_wknd11_14, by = intersections1114)
 
-intersections <- st_intersects(origin_SZ_wkd6_9, honeycomb_grid_sf)
-# remove grid without value of 0 (i.e. no points in side that grid)
+#weekend/holiday afternoon peak 
+honeycomb_grid_wknd16_19 = st_make_grid(origin_SZ_wknd16_19, c(500, 500), 
+                              what = "polygons", square = FALSE)
+honeycomb_grid_sf_1619 = st_sf(honeycomb_grid_wknd16_19) %>%
+  mutate(grid_id = 1:length(lengths(honeycomb_grid_wknd16_19)))
+intersections1619 <- st_intersects(origin_SZ_wknd16_19, honeycomb_grid_sf_1619)
+join_df1619 <- st_join(honeycomb_grid_sf_1619, origin_SZ_wknd16_19, by = intersections1619)
 
-join_df <- st_join(honeycomb_grid_sf, origin_SZ_wkd6_9, by = intersections) %>%
+```
+
+#### 2.3.2.3 Extract Data
+
+After creating the joined data frame, we are interested in knowing the number of bus stops that is in the grid_id and the total number of trips. As such, we performed the following steps:
+
+-   `mutate()` : Used to replace TRIPS with N/A to 0.
+
+-   `filter()` : Used to remove data with 0 trip
+
+-   `group_by()`: Used to group data based on **grid_id**.
+
+-   `summarize()` :
+
+    -   `n()` : Used to count number of bus stops and save as *bus_stop_count*
+
+    -   `sum()` : Used to sum the TRIPS values and save as *total_trips*
+
+-   `ungroup()` : Used to end a definition, often use with `group_by()`
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+join_df_wkd6_9_group <- join_df0609 %>%
         mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
   filter(TRIPS > 0) %>%
-  select(honeycomb_grid,grid_id, TRIPS)
-```
+  group_by(grid_id) %>%
+  summarize(
+    bus_stop_count = n(),
+    total_trips = sum(TRIPS)
+  ) %>%
+  ungroup()
 
-```{r}
-tmap_mode("view")
-tm_shape(join_df) +
-  tm_borders(lwd = 0.5, alpha = 0.5) +
-  tm_fill("TRIPS", 
-          style = "quantile", 
-          palette = rev("Blues"),
-          title = "Passenger Trips ") +
-  tm_layout(main.title = "Weekday Evening Peak passenger trips by Origin",
-            main.title.position = "center",
-            main.title.size = 1.2,
-            legend.height = 0.45, 
-            legend.width = 0.35,
-            frame = TRUE) +
-  tm_compass(type = "8star", size = 2) +
-  tm_scale_bar() +
-  tm_grid(alpha = 0.2) +
-  tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authority (URA)\n and Population data from Department of Statistics (DOS)", 
-             position = c("left", "bottom"))
+#weekday afternoon peak 
+join_df_wkd17_20_group <- join_df1720 %>%
+        mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
+  filter(TRIPS > 0) %>%
+  group_by(grid_id) %>%
+  summarize(
+    bus_stop_count = n(),
+    total_trips = sum(TRIPS)
+  ) %>%
+  ungroup()
 
+#weekend/holiday morning peak 
+join_df_wknd11_14_group <- join_df1114 %>%
+        mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
+  filter(TRIPS > 0) %>%
+  group_by(grid_id) %>%
+  summarize(
+    bus_stop_count = n(),
+    total_trips = sum(TRIPS)
+  ) %>%
+  ungroup()
+
+#weekend/holiday afternoon peak 
+join_df_wknd16_19_group <- join_df1619 %>%
+        mutate(TRIPS = ifelse(is.na(TRIPS), 0, TRIPS)) %>%
+  filter(TRIPS > 0) %>%
+  group_by(grid_id) %>%
+  summarize(
+    bus_stop_count = n(),
+    total_trips = sum(TRIPS)
+  ) %>%
+  ungroup()
 ```
 
 To validate that our sf data frame does not contain any missing value, we used `any(is.na())` to check :
 
 ```{r}
 #| code-fold: true
- 
-cat('Are there any missing value for Weekday Morning Peak?: ', any(is.na(origin_SZ_wkd6_9)),'\n')
-
+cat('Are there any missing value for Weekday Morning Peak?: ', any(is.na(join_df_wkd6_9_group)),'\n')
+cat('Are there any missing value for Weekday Afternoon Peak?: ', any(is.na(join_df_wkd17_20_group)),'\n')
+cat('Are there any missing value for Weekend/Holiday Morning Peak?: ', any(is.na(join_df_wknd11_14_group)),'\n')
+cat('Are there any missing value for Weekend/Holiday Afternoon Peak?: ', any(is.na(join_df_wknd16_19_group)),'\n')
 ```
+
+We have confirmed that there are **no missing values** for any of data frame.
 
 # 3. Geovisualisation
 
+After extracting the data, we are able to observe the number of bus stops in each grid based on the **grid_id**. We will use the `ggplot()` funcion to visualize the distribution of bus stops in the hexagon grid.
+
+::: panel-tabset
+# Weekday (0600-0900)
+
 ```{r}
-tmap_options(check.and.fix = TRUE)
+#| code-fold: true
+ggplot(data= join_df_wkd6_9_group, 
+       aes(x= bus_stop_count)) +
+  geom_bar(aes(fill = bus_stop_count), show.legend = FALSE) +
+  geom_text(stat = 'count',
+           aes(label= paste0(stat(count), ', ', 
+                             round(stat(count)/sum(stat(count))*100, 
+                             2), '%')), vjust= -0.5, size= 2.0) +
+  labs(y= 'No. of Grids', x= 'Count',
+       title = "Distribution of Bus Stops in Hexagon Grid ") +
+  scale_x_continuous(breaks = join_df_wkd6_9_group$bus_stop_count) +
+  theme_minimal() 
 ```
 
-## HEXAGONS
-
-Hexagons are the densest way to pack circles in tessellation and reduce **edge effects**.
+# Weekday (1700-2000)
 
 ```{r}
+#| code-fold: true
+ggplot(data= join_df_wkd17_20_group, 
+       aes(x= bus_stop_count)) +
+  geom_bar(aes(fill = bus_stop_count), show.legend = FALSE) +
+  geom_text(stat = 'count',
+           aes(label= paste0(stat(count), ', ', 
+                             round(stat(count)/sum(stat(count))*100, 
+                             2), '%')), vjust= -0.5, size= 2.0) +
+  labs(y= 'No. of Grids', x= 'Count',
+       title = "Distribution of Bus Stops in Hexagon Grid ") +
+  scale_x_continuous(breaks = join_df_wkd17_20_group$bus_stop_count) +
+  theme_minimal() 
+```
 
+# Weekends/Holidays (1100-1400)
+
+```{r}
+#| code-fold: true
+ggplot(data= join_df_wknd11_14_group, 
+       aes(x= bus_stop_count)) +
+  geom_bar(aes(fill = bus_stop_count), show.legend = FALSE) +
+  geom_text(stat = 'count',
+           aes(label= paste0(stat(count), ', ', 
+                             round(stat(count)/sum(stat(count))*100, 
+                             2), '%')), vjust= -0.5, size= 2.0) +
+  labs(y= 'No. of Grids', x= 'Count',
+       title = "Distribution of Bus Stops in Hexagon Grid ") +
+  scale_x_continuous(breaks = join_df_wknd11_14_group$bus_stop_count) +
+  theme_minimal() 
+```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+#| code-fold: true
+ggplot(data= join_df_wknd16_19_group, 
+       aes(x= bus_stop_count)) +
+  geom_bar(aes(fill = bus_stop_count), show.legend = FALSE) +
+  geom_text(stat = 'count',
+           aes(label= paste0(stat(count), ', ', 
+                             round(stat(count)/sum(stat(count))*100, 
+                             2), '%')), vjust= -0.5, size= 2.0) +
+  labs(y= 'No. of Grids', x= 'Count',
+       title = "Distribution of Bus Stops in Hexagon Grid ") +
+  scale_x_continuous(breaks = join_df_wknd16_19_group$bus_stop_count) +
+  theme_minimal() 
+```
+:::
+
+From the graphs, we noticed that the distributions based on the commuting flow at any given time frame, are **right-skewed**. In comparison, the differences between various time period are not significant. 27% of the grids contain two bus stops while 75% of the grids range between one to four bus stops.
+
+## 3.1 Commuting flows
+
+We will now plot the choropleth map using **tmap** and compare between `quantile` and `jenks` classification. Quantile maps try **to arrange groups so they have the same quantity**. As a result, the shading will look equally distributed in quantile types of maps. Jenks map is an optimization method for choropleth maps as it arranges each grouping so there is **less variation in each class** or shading.
+
+In the code chuck below, we will use ***tmap*** to plot the spatial distribution of the passenger volume *(Total Trips)* based on the hexagon grid. We will use *`tmap_arrange()`* to show the plots together.
+
+::: panel-tabset
+# Quantile
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+plot0609 <- tm_shape(join_df_wkd6_9_group) +
+  tm_borders(alpha = 0.5) +
+  tm_fill("total_trips", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Total Trips") +
+  tm_layout(main.title = "Weekday Morning Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.fontface = "bold",
+            main.title.size = 0.6,
+            legend.height = 0.3, 
+            legend.width = 0.3,
+            frame = TRUE) +
+  tm_credits("Source: Population data from \n Department of Statistics (DOS)", 
+             fontface = "italic",  
+             size = 0.15, 
+             position = c("left", "bottom"))
+
+#weekday afternoon peak 
+plot1720 <- tm_shape(join_df_wkd17_20_group) +
+  tm_borders(alpha = 0.5) +
+  tm_fill("total_trips", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Total Trips") +
+  tm_layout(main.title = "Weekday Afternoon Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.fontface = "bold",
+            main.title.size = 0.6,
+            legend.height = 0.3, 
+            legend.width = 0.3,
+            frame = TRUE) +
+  tm_credits("Source: Population data from \n Department of Statistics (DOS)", 
+             fontface = "italic",  
+             size = 0.15, 
+             position = c("left", "bottom"))
+
+#weekend/holiday morning peak 
+plot1114 <- tm_shape(join_df_wknd11_14_group) +
+  tm_borders(alpha = 0.5) +
+  tm_fill("total_trips", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Total Trips") +
+  tm_layout(main.title = "Weekend/Holiday Morning Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.fontface = "bold",
+            main.title.size = 0.6,
+            legend.height = 0.3, 
+            legend.width = 0.3,
+            frame = TRUE) +
+  tm_credits("Source: Population data from \n Department of Statistics (DOS)", 
+             fontface = "italic",  
+             size = 0.15, 
+             position = c("left", "bottom"))
+
+#weekend/holiday afternoon peak 
+plot1619 <- tm_shape(join_df_wknd16_19_group) +
+  tm_borders(alpha = 0.5) +
+  tm_fill("total_trips", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Total Trips") +
+  tm_layout(main.title = "Weekend/Holiday Afternoon Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.fontface = "bold",
+            main.title.size = 0.6,
+            legend.height = 0.3, 
+            legend.width = 0.3,
+            frame = TRUE) +
+  tm_credits("Source: Population data from \n Department of Statistics (DOS)", 
+             fontface = "italic",  
+             size = 0.15,       
+             position = c("left", "bottom"))
+
+tmap_arrange(plot0609, plot1720, plot1114, plot1619, asp=2, ncol=2)
+```
+
+# Jenks
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+plot0609j <- tm_shape(join_df_wkd6_9_group) +
+  tm_borders(alpha = 0.5) +
+  tm_fill("total_trips", 
+          style = "jenks", 
+          palette = "Reds",
+          title = "Total Trips") +
+  tm_layout(main.title = "Weekday Morning Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.fontface = "bold",
+            main.title.size = 0.6,
+            legend.height = 0.3, 
+            legend.width = 0.3,
+            frame = TRUE) +
+  tm_credits("Source: Population data from \n Department of Statistics (DOS)", 
+             fontface = "italic",  
+             size = 0.15, 
+             position = c("left", "bottom"))
+
+#weekday afternoon peak 
+plot1720j <- tm_shape(join_df_wkd17_20_group) +
+  tm_borders(alpha = 0.5) +
+  tm_fill("total_trips", 
+          style = "jenks", 
+          palette = "Reds",
+          title = "Total Trips") +
+  tm_layout(main.title = "Weekday Afternoon Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.fontface = "bold",
+            main.title.size = 0.6,
+            legend.height = 0.3, 
+            legend.width = 0.3,
+            frame = TRUE) +
+  tm_credits("Source: Population data from \n Department of Statistics (DOS)", 
+             fontface = "italic",  
+             size = 0.15, 
+             position = c("left", "bottom"))
+
+#weekend/holiday morning peak 
+plot1114j <- tm_shape(join_df_wknd11_14_group) +
+  tm_borders(alpha = 0.5) +
+  tm_fill("total_trips", 
+          style = "jenks", 
+          palette = "Reds",
+          title = "Total Trips") +
+  tm_layout(main.title = "Weekend/Holiday Morning Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.fontface = "bold",
+            main.title.size = 0.6,
+            legend.height = 0.3, 
+            legend.width = 0.3,
+            frame = TRUE) +
+  tm_credits("Source: Population data from \n Department of Statistics (DOS)", 
+             fontface = "italic",  
+             size = 0.15, 
+             position = c("left", "bottom"))
+
+#weekend/holiday afternoon peak 
+plot1619j <- tm_shape(join_df_wknd16_19_group) +
+  tm_borders(alpha = 0.5) +
+  tm_fill("total_trips", 
+          style = "jenks", 
+          palette = "Reds",
+          title = "Total Trips") +
+  tm_layout(main.title = "Weekend/Holiday Afternoon Peak passenger trips by Origin",
+            main.title.position = "center",
+            main.title.fontface = "bold",
+            main.title.size = 0.6,
+            legend.height = 0.3, 
+            legend.width = 0.3,
+            frame = TRUE) +
+  tm_credits("Source: Population data from \n Department of Statistics (DOS)", 
+             fontface = "italic",  
+             size = 0.15,       
+             position = c("left", "bottom"))
+
+tmap_arrange(plot0609j, plot1720j, plot1114j, plot1619j, asp=2, ncol=2)
+
+```
+:::
+
+**Observations:**
+
+By looking at the **4 quantitle** chloropleth maps *(in blue)*, we could infer the following:
+
+-   Passenger volume is significantly higher on Weekday than Weekends/Holidays. It ranges around 400k-550k on Weekdays and 110k-150k on Weekends/Holidays.
+
+-   Majority of the bus stops in the Central and Southern region of Singapore have a relatively higher passenger volume compared to other regions.
+
+![](data/images/image01.png)
+
+-   A quick visualization from the mapview in Section 2.3.2 revealed the location in the red circle as Woodlands - Johor Bahru, Malaysia while the red rectangle is in Tanan Merah. Interestingly, as seen in the red circle, the volume have not declined regardless of time period. People are still travelling to Johor Bahru, Malaysia at any given point.
+
+-   On the contrary, as seen in the red rectangle, the volume changes. It peaks during the Weekend/Holiday period compared to Weekdays. which could be a popular hangout for people over the weekends.
+
+As observed in Section 3, our data are skewed to one end. Thus, it is not as ideal for us to use the quantile data classification method. We will look at the **4 jenks** chloropleth maps *(in red)*.
+
+![](data/images/image02.png)
+
+-   As identified earlier in the quantile map about the red rectangle at Tanan Merah, we noted the peak is only on the Weekend/Holiday Afternoon. Based on the natural grouping in the data, we are affirmed that the passenger volume towards Johor Bahru, Malaysia remains at the peak throughout the week, and throughout the day.
+
+-   From the Jenks Classification maps, we have two new observations. From the red and blue circle, we identified that the passenger volume surge on Weekday Morning Peak hour.
+
+-   In comparison, there are more bus stops with higher passenger volume in Weekday Morning followed by Weekend/Holiday Afternoon.
+
+# 4. GeoSpatial Autocorrelation
+
+In this section, we will explore the computation of Local Indicators of Spatial Association (LISA) Analysis by using the **sfdep** package. We will perform the Moran's I test which can be classified as positive, negative, and with no spatial auto-correlation.
+
+## 4.1 Define Neighborhood
+
+Prior to the test, we would need to determine which locations are considered neighbors. We used the queen method of the `spdep:: poly2nb()` package to compute contiguity spatial weights to identify adjacent neighbors.
+
+::: panel-tabset
+# Weekday (0600-0900)
+
+```{r}
+wm_q0609 <- poly2nb(join_df_wkd6_9_group, queen=TRUE)
+summary(wm_q0609)
+```
+
+# Weekday (1700-2000)
+
+```{r}
+wm_q1720 <- poly2nb(join_df_wkd17_20_group, queen=TRUE)
+summary(wm_q1720)
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+wm_q1114 <- poly2nb(join_df_wknd11_14_group, queen=TRUE)
+summary(wm_q1114)
+```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+wm_q1619 <- poly2nb(join_df_wknd16_19_group, queen=TRUE)
+summary(wm_q1619)
+```
+:::
+
+From the summary above, we can see that on average each area is contigious with about 4 other grids. However, there are 11/12 regions area which does not have any contigious neighbors. Therefore, we would not be using the above for further analysis.
+
+## 4.2 Deriving the centriod
+
+To begin, we will retrieve the centroid for each area of the commuting flows. We will used the `st_centroid()` function to calculate the geometric center of a spatial object.
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+coords0609 <- st_centroid(st_geometry(join_df_wkd6_9_group))
+coords0609[1]
+#weekday afternoon peak 
+coords1720 <- st_centroid(st_geometry(join_df_wkd17_20_group))
+coords1720[1]
+#weekend/holiday morning peak 
+coords1114 <- st_centroid(st_geometry(join_df_wknd11_14_group))
+coords1114[1]
+#weekend/holiday afternoon peak 
+coords1619 <- st_centroid(st_geometry(join_df_wknd16_19_group))
+coords1619[1]
+```
+
+## 4.3 Determine the cut-off distance
+
+We will be using `knearneigh()` of **spdep** to identify the k nearest neighbors of each other. If longlat = TRUE, it computes the Euclidean distance with a lower and upper bounds by doing the following:
+
+-   Return a matrix with the indices of points belonging to the set of the k nearest neighbours of each other by using `knearneigh()` of **spdep**.
+
+-   Convert the knn object returned by `knearneigh()` into a neighbours list of class nb with a list of integer vectors containing neighbour region number ids by using `knn2nb()`.
+
+-   Return the length of neighbour relationship edges by using nbdists() of spdep. The function returns in the units of the coordinates if the coordinates are projected, in km otherwise.
+
+-   Remove the list structure of the returned object by using unlist().
+
+::: panel-tabset
+# Weekday (0600-0900)
+
+```{r}
+k0609 <- knn2nb(knearneigh(coords0609, k = 1))
+k0609dists <- unlist(nbdists(k0609, coords0609))
+summary(k0609dists)
+```
+
+# Weekday (1700-2000)
+
+```{r}
+k1720 <- knn2nb(knearneigh(coords1720, k = 1))
+k1720dists <- unlist(nbdists(k1720, coords1720))
+summary(k1720dists)
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+k1114 <- knn2nb(knearneigh(coords1114, k = 1))
+k1114dists <- unlist(nbdists(k1114, coords1114))
+summary(k1114dists)
+```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+k1619 <- knn2nb(knearneigh(coords1619, k = 1))
+k1619dists <- unlist(nbdists(k1619, coords1619))
+summary(k1619dists)
+```
+:::
+
+From the summary reports above, the largest first nearest neighbor distance is 4,582km (lowest value among the four commuting flows). Thus, we will use this as the upper threshold such that all units will have at least one neighbor.
+
+As observed, the results for the commuting flows seems identical. As such, we will be showing  - **Weekday Morning Peak (0600-0900)** unless there are major differences.
+
+## 4.4 Computing Fixed distance weight matrix 
+
+With the upper threshold, we will be able to compute the fixed distance weight matrix. We will compute the distance weight matrix by using *`dnearneigh()`* as shown below.
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+wm_d0609 <- dnearneigh(coords0609,0,4582)
+#weekday afternoon peak 
+wm_d1720 <- dnearneigh(coords1720,0,4582)
+#weekend/holiday morning peak 
+wm_d1114 <- dnearneigh(coords1114,0,4582)
+#weekend/holiday afternoon peak 
+wm_d1619 <- dnearneigh(coords1619,0,4582)
+
+#example of 1 commuting flow 
+wm_d0609
+
+```
+
+Across the commuting flows, we identify an average of 153 neighbors per grid using the distance based weight matrix.
+
+Next, `nb2listw()` is used to convert the nb object into spatial weights object.
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+wm0609_lw <- nb2listw(wm_d0609, style = 'B',zero.policy = TRUE)
+
+#weekday afternoon peak 
+wm1720_lw <- nb2listw(wm_d1720, style = 'B',zero.policy = TRUE)
+
+#weekend/holiday morning peak 
+wm1114_lw <- nb2listw(wm_d1114, style = 'B',zero.policy = TRUE)
+
+#weekend/holiday afternoon peak 
+wm1619_lw <- nb2listw(wm_d1619, style = 'B',zero.policy = TRUE)
+
+
+```
+
+## **4.5 Computing Adaptive distance weight matrix**
+
+Alternatively, we could directly control the number of neighbors using k-nearest neighbors by using `knearneigh()` function. For our analysis, we will set the number of neighbors to **8.**
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+knn0609 <- knn2nb(knearneigh(coords0609, k=8))
+#weekday afternoon peak 
+knn1720 <- knn2nb(knearneigh(coords1720, k=8))
+#weekend/holiday morning peak 
+knn1114 <- knn2nb(knearneigh(coords1114, k=8))
+#weekend/holiday afternoon peak 
+knn1619 <- knn2nb(knearneigh(coords1619, k=8))
+
+#example of 1 commuting flow 
+knn0609
+```
+
+Next, `nb2listw()` is used to convert the nb object into spatial weights object.
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+knn0609_lw <- nb2listw(knn0609, style = 'B')
+#weekday afternoon peak 
+knn1720_lw <- nb2listw(knn1720, style = 'B')
+#weekend/holiday morning peak 
+knn1114_lw <- nb2listw(knn1114, style = 'B')
+#weekend/holiday afternoon peak 
+knn1619_lw <- nb2listw(knn1619, style = 'B')
+
+#example of 1 commuting flow 
+summary(knn0609_lw)
 ```
 
 # References :
@@ -344,3 +890,33 @@ Hexagons are the densest way to pack circles in tessellation and reduce **edge e
 https://datamall.lta.gov.sg/content/datamall/en.html
 
 https://urbandatapalette.com/post/2021-08-tessellation-sf/
+
+https://gisgeography.com/choropleth-maps-data-classification/
+
+https://gisgeography.com/spatial-autocorrelation-moran-i-gis/
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+#weekday afternoon peak 
+#weekend/holiday morning peak 
+#weekend/holiday afternoon peak 
+```
+
+For this study, we will be using the distance based spatial weights and they are:
+
+-   fixed distance weights,
+-   adaptive distance weights, and
+-   inverse distance weights (IDW).
+
+Noting that a bus route is pre-determined, we will be using inverse distance method where the closer two features (grid) are most likely to interact/influence each other.
+
+::: panel-tabset
+# Weekday (0600-0900)
+
+# Weekday (1700-2000)
+
+# Weekends/Holidays (1100-1400)
+
+# Weekends/Holidays (1600-1900)
+:::
