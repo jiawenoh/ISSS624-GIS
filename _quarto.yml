@@ -33,8 +33,12 @@ website:
             href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02a.html"
           - text: "Exercise 2B: Global Measures of Spatial Autocorrelation"
             href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02b.html"
+          - text: "Exercise 2C: Local Measures of Spatial Autocorrelation"
+            href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02c.html"
           - text: "Exercise 3: Processing and Visualizing Flow Data"
             href: "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html"
+          - text: "Exercise 4"
+            href: "Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html"
 
       - section: "In-class Exercise"
         contents:
