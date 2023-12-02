@@ -259,23 +259,11 @@ mapview_check = mapview(busstop, cex = 3, alpha = .5, popup = NULL)
 mapview_check
 ```
 
-As observed, there are 5 bus stops that are not within Singapore Map. Thus, we will further process and remove \`
+As observed, there are 5 bus stops that are not within Singapore Map that includes [Passenger Volume by Origin Destination Bus Stop.]{.underline} Although we might be able to filter and remove bus stops that are not within the Singapore Boundary, it might be interesting to observe the community flows from Singapore to Johor Bahru. As such we will not remove these data points.
 
 #### 2.3.2.1 Combine community flow into busstop
 
-After populating the community flow, we will combine it into **busstop** sf data frame.
-
--   `st_intersection()` is used to perform point and polygon overly
-
--   `dplyr::select()` is used to retain selected columns
-
-Thereafter, we will save a copy of the output in rds format and reload it into the environment.
-
-After running the code, we noticed that 5 bus stops have been excluded as it is beyond the boundary of Singapore.
-
-#### 2.3.2.2 Combine busstop_mpsz into commuting flows
-
-Next, we will append the planning subzone code from busstop_mpsz data frame into various commuting flows data frame as seen in section 2.3.1. To ensure that all bus stops are distinct, we added `unique()` function into our code.
+After populating the community flow, we will combine it into **busstop** sf data frame. To ensure that all bus stops are distinct, we will be using `dplyr:: mutate()` to replace N/A to 0 and add `unique()` function into our code to keep distinct flows.
 
 ```{r}
 #weekday morning peak 
@@ -307,11 +295,7 @@ join_df <- st_join(honeycomb_grid_sf, origin_SZ_wkd6_9, by = intersections) %>%
 ```
 
 ```{r}
-
-origin_crs <- st_crs(join_df)
-```
-
-```{r}
+tmap_mode("view")
 tm_shape(join_df) +
   tm_borders(lwd = 0.5, alpha = 0.5) +
   tm_fill("TRIPS", 
@@ -330,13 +314,6 @@ tm_shape(join_df) +
   tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authority (URA)\n and Population data from Department of Statistics (DOS)", 
              position = c("left", "bottom"))
 
-```
-
-#### 2.3.2.3 Combine commuting flows into mpsz
-
-With the incorporated result, we will do a `left_join()` to append the results from the previous section into the **mpsz** sf data frame. As there might be point without **BUS_STOP_N**, and **TRIPS**, `dplyr::mutate()` is used to force a zero.
-
-```         
 ```
 
 To validate that our sf data frame does not contain any missing value, we used `any(is.na())` to check :
