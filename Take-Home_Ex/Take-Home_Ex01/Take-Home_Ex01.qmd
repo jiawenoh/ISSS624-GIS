@@ -17,17 +17,9 @@ The digitization of city-wide urban infrastructures such as buses,mass rapid tra
 
 This exercise aims to reveals the spatial and spatio-temporal mobility patterns of public bus passengers in Singapore using appropriate geovisualisation techniques and analysis.
 
-The original data set was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops.
-
-A total of three files were downloaded :
+The original data set was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops. For the purpose of this exercise, we will be using the **August** data :
 
 -   origin_destination_bus_202308.csv
-
--   origin_destination_bus_202309.csv
-
--   origin_destination_bus_202310.csv
-
-The focus of the study will be on the **August data**.
 
 # 2. Data preparation
 
@@ -35,17 +27,17 @@ The focus of the study will be on the **August data**.
 
 The code chunk below uses `pacman:: p_load()` to load and install the following libraries:
 
--   `mapview` : Used to create interactive visualization of spatial data
+-   **`mapview`** : Used to create interactive visualization of spatial data
 
--   `knitr`: Used for dynamic report generation
+-   **`knitr`**: Used for dynamic report generation
 
--   `patchwork` : Used to combine multiple ggplot graphs into the same graphic
+-   **`patchwork`** : Used to combine multiple ggplot graphs into the same graphic
 
 -   **`sf`** : Used for geospatial data handling
 
 -   `spdep` : Used to create spatial weights matrix objects
 
--   `sfdep` : Used to integrate with `'sf'` objects and the `'tidyverse'`
+-   **`sfdep`** : Used to integrate with `'sf'` objects and the `'tidyverse'`
 
 -   **`tidyverse`**: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis
 
@@ -57,11 +49,9 @@ pacman::p_load(mapview, knitr, patchwork, sf, spdep, sfdep, tidyverse, tmap)
 
 ## 2.2 Import and Load Dataset
 
-Three geospatial data will be used for this study, they are:
+Aspatial data and a hexagon layer will be used for this study :
 
 -   `origin_destination_bus_202308.csv` : A csv file containing information about all the bus stops currently being serviced by bus, which includes bus stop identifier, and location coordinates.
-
--   `MPSZ-2019`: A ESRI shapefile format, based on URA Master Plan 2019.
 
 -   `hexagon` : A hexagon layer of 250m to replace the relative coarse and irregular Master Plan 2019 Planning Sub-Zone GIS data of URA
 
@@ -700,11 +690,11 @@ As observed in Section 3, our data are skewed to one end. Thus, it is not as ide
 
 # 4. GeoSpatial Autocorrelation
 
-In this section, we will explore the computation of Local Indicators of Spatial Association (LISA) Analysis by using the **sfdep** package. We will perform the Moran's I test which can be classified as positive, negative, and with no spatial auto-correlation.
+In this section, we will explore the computation of Global and Local Measures of Spatial Association, with further focus on Local Indicators of Spatial Association (LISA) Analysis through the **sfdep** package. We will perform the Moran's I test which can be classified as positive, negative, and with no spatial auto-correlation. The goal is our analysis is to understand more about the passenger volume across the time period.
 
 ## 4.1 Define Neighborhood
 
-Prior to the test, we would need to determine which locations are considered neighbors. We used the queen method of the `spdep:: poly2nb()` package to compute contiguity spatial weights to identify adjacent neighbors.
+Before we perform the Moran's I test, we would need to determine which locations are considered neighbors. As such, we will be using the ***queen method*** from the `spdep:: poly2nb()` package to compute contiguity spatial weights to identify adjacent neighbors.
 
 ::: panel-tabset
 # Weekday (0600-0900)
@@ -736,11 +726,11 @@ summary(wm_q1619)
 ```
 :::
 
-From the summary above, we can see that on average each area is contigious with about 4 other grids. However, there are 11/12 regions area which does not have any contigious neighbors. Therefore, we would not be using the above for further analysis.
+From the summary report above, the region range from 1,483 to 1,499. On average , each area is contigious with about 4 other grids. However, there are 11/12 regions that does not have any contigious neighbors. Therefore, we would not be using Contiguity-based Spatial Weights for further analysis.
 
-## 4.2 Deriving the centriod
+## 4.2 Deriving the centroid
 
-To begin, we will retrieve the centroid for each area of the commuting flows. We will used the `st_centroid()` function to calculate the geometric center of a spatial object.
+Instead, we are interested in the distanced-based contiguity. To begin, we will get the coordinates of polygon centroids for each area of the commuting flows. We will be using the `st_centroid()` function to calculate the geometric center of a spatial object.
 
 ```{r}
 #| code-fold: true
@@ -760,15 +750,15 @@ coords1619[1]
 
 ## 4.3 Determine the cut-off distance
 
-We will be using `knearneigh()` of **spdep** to identify the k nearest neighbors of each other. If longlat = TRUE, it computes the Euclidean distance with a lower and upper bounds by doing the following:
+Thereafter, we will need to determine the cut-off distance by looking at the upper bound. We will be using `knearneigh()` of **spdep** to identify the k nearest neighbors of each other. If longlat = TRUE, it computes the Euclidean distance with a lower and upper bounds by doing the following:
 
--   Return a matrix with the indices of points belonging to the set of the k nearest neighbours of each other by using `knearneigh()` of **spdep**.
+-   Return a matrix with the indices of points belonging to the set of the k nearest neighbors of each other by using `knearneigh()` of **spdep**.
 
--   Convert the knn object returned by `knearneigh()` into a neighbours list of class nb with a list of integer vectors containing neighbour region number ids by using `knn2nb()`.
+-   Convert the knn object returned by `knearneigh()` into a neighbors list of class nb with a list of integer vectors containing neighbor region number ids by using `knn2nb()`.
 
--   Return the length of neighbour relationship edges by using nbdists() of spdep. The function returns in the units of the coordinates if the coordinates are projected, in km otherwise.
+-   Return the length of neighbor relationship edges by using `nbdists()` of **spdep.** The function returns in the units of the coordinates if the coordinates are projected, in km otherwise.
 
--   Remove the list structure of the returned object by using unlist().
+-   Remove the list structure of the returned object by using `unlist()`.
 
 ::: panel-tabset
 # Weekday (0600-0900)
@@ -804,31 +794,51 @@ summary(k1619dists)
 ```
 :::
 
-From the summary reports above, the largest first nearest neighbor distance is 4,582km (lowest value among the four commuting flows). Thus, we will use this as the upper threshold such that all units will have at least one neighbor.
-
-As observed, the results for the commuting flows seems identical. As such, we will be showing - **Weekday Morning Peak (0600-0900)** unless there are major differences.
+From the summary reports above, the largest first nearest neighbor distance is **4,582km** *(lowest value among the four commuting flows)*. Thus, we will use this as the upper threshold such that all units will have at least one neighbor.
 
 ## 4.4 Computing Fixed distance weight matrix
 
-With the upper threshold, we will be able to compute the fixed distance weight matrix. We will compute the distance weight matrix by using *`dnearneigh()`* as shown below.
+Knowing the upper threshold, we will be able to compute the fixed distance weight matrix. We will compute the distance weight matrix by using *`dnearneigh()`* as shown below.
+
+::: panel-tabset
+# Weekday (0600-0900)
 
 ```{r}
 #| code-fold: true
 #weekday morning peak 
 wm_d0609 <- dnearneigh(coords0609,0,4582)
-#weekday afternoon peak 
-wm_d1720 <- dnearneigh(coords1720,0,4582)
-#weekend/holiday morning peak 
-wm_d1114 <- dnearneigh(coords1114,0,4582)
-#weekend/holiday afternoon peak 
-wm_d1619 <- dnearneigh(coords1619,0,4582)
-
-#example of 1 commuting flow 
 wm_d0609
-
 ```
 
-Across the commuting flows, we identify an average of 153 neighbors per grid using the distance based weight matrix.
+# Weekday (1700-2000)
+
+```{r}
+#| code-fold: true
+#weekday afternoon peak 
+wm_d1720 <- dnearneigh(coords1720,0,4582)
+wm_d1720
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+#| code-fold: true
+#weekend/holiday morning peak 
+wm_d1114 <- dnearneigh(coords1114,0,4582)
+wm_d1114
+```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+#| code-fold: true
+#weekend/holiday afternoon peak 
+wm_d1619 <- dnearneigh(coords1619,0,4582)
+wm_d1619
+```
+:::
+
+From the output across the commuting flows, we identify an average of [153 neighbors per grid]{.underline} using the distance based weight matrix.
 
 Next, `nb2listw()` is used to convert the nb object into spatial weights object.
 
@@ -852,48 +862,136 @@ wm1619_lw <- nb2listw(wm_d1619, style = 'B',zero.policy = TRUE)
 
 ## 4.5 Computing Adaptive distance weight matrix
 
-Alternatively, we could directly control the number of neighbors using k-nearest neighbors by using `knearneigh()` function. For our analysis, we will set the number of neighbors to **8.**
+Alternatively, we could directly control the number of neighbors using k-nearest neighbors by using `knearneigh()` function. For our analysis, we will set the number of neighbors to **8.** *(i.e., all grids will have 8 neighbors).*
+
+::: panel-tabset
+# Weekday (0600-0900)
 
 ```{r}
 #| code-fold: true
 #weekday morning peak 
 knn0609 <- knn2nb(knearneigh(coords0609, k=8))
-#weekday afternoon peak 
-knn1720 <- knn2nb(knearneigh(coords1720, k=8))
-#weekend/holiday morning peak 
-knn1114 <- knn2nb(knearneigh(coords1114, k=8))
-#weekend/holiday afternoon peak 
-knn1619 <- knn2nb(knearneigh(coords1619, k=8))
-
-#example of 1 commuting flow 
 knn0609
 ```
 
+# Weekday (1700-2000)
+
+```{r}
+#| code-fold: true
+#weekday afternoon peak 
+knn1720 <- knn2nb(knearneigh(coords1720, k=8))
+knn1720
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+#| code-fold: true
+#weekend/holiday morning peak 
+knn1114 <- knn2nb(knearneigh(coords1114, k=8))
+knn1114
+```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+#| code-fold: true
+#weekend/holiday afternoon peak 
+knn1619 <- knn2nb(knearneigh(coords1619, k=8))
+knn1619
+```
+:::
+
 Next, `nb2listw()` is used to convert the nb object into spatial weights object.
+
+::: panel-tabset
+# Weekday (0600-0900)
 
 ```{r}
 #| code-fold: true
 #weekday morning peak 
 knn0609_lw <- nb2listw(knn0609, style = 'B')
-#weekday afternoon peak 
-knn1720_lw <- nb2listw(knn1720, style = 'B')
-#weekend/holiday morning peak 
-knn1114_lw <- nb2listw(knn1114, style = 'B')
-#weekend/holiday afternoon peak 
-knn1619_lw <- nb2listw(knn1619, style = 'B')
-
-#example of 1 commuting flow 
 summary(knn0609_lw)
 ```
 
-```{r}
+# Weekday (1700-2000)
 
+```{r}
+#| code-fold: true
+#weekday afternoon peak 
+knn1720_lw <- nb2listw(knn1720, style = 'B')
+summary(knn1720_lw)
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+#| code-fold: true
+#weekend/holiday morning peak 
+knn1114_lw <- nb2listw(knn1114, style = 'B')
+summary(knn1114_lw)
+```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+#| code-fold: true
+#weekend/holiday afternoon peak 
+knn1619_lw <- nb2listw(knn1619, style = 'B')
+summary(knn1619_lw)
+```
+:::
+
+With the spatial weights objects, we are able to plot and compare the fixed and adaptive distance-based neighbors.
+
+::: panel-tabset
+# Weekday (0600-0900)
+
+```{r}
+#| code-fold: true
 par(mfrow=c(1,2))
 plot(join_df_wkd6_9_group$honeycomb_grid_wkd6_9, border="lightgrey", main="Adaptive Distance (8)")
 plot(knn0609, coords0609, add=TRUE, col="red", length=0.08)
 plot(join_df_wkd6_9_group$honeycomb_grid_wkd6_9, border="lightgrey", main="Fixed Distance")
 plot(wm_d0609, coords0609, add=TRUE, pch = 19, cex = 0.6)
 ```
+
+# Weekday (1700-2000)
+
+```{r}
+#| code-fold: true
+par(mfrow=c(1,2))
+plot(join_df_wkd17_20_group$honeycomb_grid_wkd17_20, border="lightgrey", main="Adaptive Distance (8)")
+plot(knn1720, coords1720, add=TRUE, col="red", length=0.08)
+plot(join_df_wkd17_20_group$honeycomb_grid_wkd17_20, border="lightgrey", main="Fixed Distance")
+plot(wm_d1720, coords1720, add=TRUE, pch = 19, cex = 0.6)
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+#| code-fold: true
+par(mfrow=c(1,2))
+plot(join_df_wknd11_14_group$honeycomb_grid_wknd11_14, border="lightgrey", main="Adaptive Distance (8)")
+plot(knn1114, coords1114, add=TRUE, col="red", length=0.08)
+plot(join_df_wknd11_14_group$honeycomb_grid_wknd11_14, border="lightgrey", main="Fixed Distance")
+plot(wm_d1114, coords1114, add=TRUE, pch = 19, cex = 0.6)
+```
+
+# Weekends/Holidays (1600-1900)
+
+
+```{r}
+#| code-fold: true
+par(mfrow=c(1,2))
+plot(join_df_wknd16_19_group$honeycomb_grid_wknd16_19, border="lightgrey", main="Adaptive Distance (8)")
+plot(knn1619, coords1619, add=TRUE, col="red", length=0.08)
+plot(join_df_wknd16_19_group$honeycomb_grid_wknd16_19, border="lightgrey", main="Fixed Distance")
+plot(wm_d1619, coords1619, add=TRUE, pch = 19, cex = 0.6)
+```
+
+:::
+
 
 ## 4.6 Computing Global Moran's I
 
@@ -908,19 +1006,8 @@ approximately zero: observations arranged randomly over space
 The below code chunk will perform the Moran's I test on both functional and non-functional water points.
 
 ::: panel-tabset
+
 # Weekday (0600-0900)
-
-## Fixed Distance
-
-```{r}
-#| code-fold: true
-moran.test(join_df_wkd6_9_group$total_trips, 
-           listw=wm0609_lw, 
-           zero.policy = TRUE, 
-           na.action=na.omit)
-```
-
-## Adaptive Distance
 
 ```{r}
 #| code-fold: true
@@ -932,18 +1019,6 @@ moran.test(join_df_wkd6_9_group$total_trips,
 
 # Weekday (1700-2000)
 
-## Fixed Distance
-
-```{r}
-#| code-fold: true
-moran.test(join_df_wkd17_20_group$total_trips, 
-           listw=wm1720_lw, 
-           zero.policy = TRUE, 
-           na.action=na.omit)
-```
-
-## Adaptive Distance
-
 ```{r}
 #| code-fold: true
 moran.test(join_df_wkd17_20_group$total_trips, 
@@ -954,17 +1029,6 @@ moran.test(join_df_wkd17_20_group$total_trips,
 
 # Weekends/Holidays (1100-1400)
 
-# Fixed Distance
-
-```{r}
-#| code-fold: true
-moran.test(join_df_wknd11_14_group$total_trips, 
-           listw=wm1114_lw, 
-           zero.policy = TRUE, 
-           na.action=na.omit)
-```
-
-## Adaptive Distance
 
 ```{r}
 #| code-fold: true
@@ -975,18 +1039,6 @@ moran.test(join_df_wknd11_14_group$total_trips,
 ```
 
 # Weekends/Holidays (1600-1900)
-
-## Fixed Distance
-
-```{r}
-#| code-fold: true
-moran.test(join_df_wknd16_19_group$total_trips, 
-           listw=wm1619_lw, 
-           zero.policy = TRUE, 
-           na.action=na.omit)
-```
-
-## Adaptive Distance
 
 ```{r}
 #| code-fold: true
@@ -1008,21 +1060,6 @@ The code chunk below performs permutation test for Moran's I statistic by using 
 ::: panel-tabset
 # Weekday (0600-0900)
 
-## Fixed Distance
-
-```{r}
-#| code-fold: true
-set.seed=123
-
-moran.mc(join_df_wkd6_9_group$total_trips, 
-         listw=wm0609_lw, 
-         nsim=999,
-         zero.policy = TRUE, 
-         na.action=na.exclude)
-```
-
-## Adaptive Distance
-
 ```{r}
 #| code-fold: true
 set.seed=123
@@ -1035,21 +1072,6 @@ moran.mc(join_df_wkd6_9_group$total_trips,
 ```
 
 # Weekday (1700-2000)
-
-## Fixed Distance
-
-```{r}
-#| code-fold: true
-set.seed=123
-
-moran.mc(join_df_wkd17_20_group$total_trips, 
-         listw=wm1720_lw, 
-         nsim=999,
-         zero.policy = TRUE, 
-         na.action=na.exclude)
-```
-
-## Adaptive Distance
 
 ```{r}
 #| code-fold: true
@@ -1064,21 +1086,6 @@ moran.mc(join_df_wkd17_20_group$total_trips,
 
 # Weekends/Holidays (1100-1400)
 
-## Fixed Distance
-
-```{r}
-#| code-fold: true
-set.seed=123
-
-moran.mc(join_df_wknd11_14_group$total_trips, 
-         listw=wm1114_lw, 
-         nsim=999,
-         zero.policy = TRUE, 
-         na.action=na.exclude)
-```
-
-## Adaptive Distance
-
 ```{r}
 #| code-fold: true
 set.seed=123
@@ -1091,21 +1098,6 @@ moran.mc(join_df_wknd11_14_group$total_trips,
 ```
 
 # Weekends/Holidays (1600-1900)
-
-## Fixed Distance
-
-```{r}
-#| code-fold: true
-set.seed=123
-
-moran.mc(join_df_wknd16_19_group$total_trips, 
-         listw=wm1619_lw, 
-         nsim=999,
-         zero.policy = TRUE, 
-         na.action=na.exclude)
-```
-
-## Adaptive Distance
 
 ```{r}
 #| code-fold: true
@@ -1143,9 +1135,7 @@ localMI_1619ad <- localmoran(join_df_wknd16_19_group$total_trips, knn1619_lw)
 ```
 
 ::: panel-tabset
-
 # Weekday (0600-0900)
-
 
 ```{r}
 head(localMI_0609ad)
@@ -1168,14 +1158,13 @@ head(localMI_1114ad)
 ```{r}
 head(localMI_1619ad)
 ```
-
 :::
 
 # add notes on localmoran() function
 
-### 4.8.1 Mapping the local Moran’s I
+### 4.8.1 Mapping the local Moran's I
 
-Next, we will append the local Moran’s I dataframe (i.e. localMI_func and localMI_nonfunc) onto nigeria SpatialPolygonDataFrame in preparation for the next part. This can be done using the code chunks below.
+Next, we will append the local Moran's I dataframe (i.e. localMI_func and localMI_nonfunc) onto nigeria SpatialPolygonDataFrame in preparation for the next part. This can be done using the code chunks below.
 
 ```{r}
 #| code-fold: true
@@ -1201,7 +1190,6 @@ join_df_wknd16_19_group.localMI_1619ad <- cbind(join_df_wknd16_19_group,localMI_
 ```
 
 ::: panel-tabset
-
 # Weekday (0600-0900)
 
 ```{r}
@@ -1300,7 +1288,6 @@ tmap_arrange(localMI_1114ad.map, pvalue_1114ad.map, asp = 1, ncol = 2)
 
 # Weekends/Holidays (1600-1900)
 
-
 ```{r}
 #| code-fold: true
 localMI_1619ad.map <- tm_shape(join_df_wknd16_19_group.localMI_1619ad) +
@@ -1330,10 +1317,9 @@ pvalue_1619ad.map <- tm_shape(join_df_wknd16_19_group.localMI_1619ad) +
 
 tmap_arrange(localMI_1619ad.map, pvalue_1619ad.map, asp = 1, ncol = 2)
 ```
-
 :::
 
-## Statistically Significant 
+## Statistically Significant
 
 ```{r}
 #| code-fold: true
@@ -1428,7 +1414,7 @@ tmap_arrange(localMI_0609sig_ad.map,localMI_1720sig_ad.map,
 
 ```
 
-Once we are done with the computation, we will plot the scatterplot using the variables above. 
+Once we are done with the computation, we will plot the scatterplot using the variables above.
 
 First, we will calculate the scaled attribute and the lagged scaled attribute using the scale() function and lag.listw() function.
 
@@ -1444,7 +1430,7 @@ DV1619ad <- scale(join_df_wknd16_19_group.localMI_1619ad$total_trips) %>%
   as.vector
 ```
 
-we will plot the Moran scatterplot using the standardised values and moran.plot() of spdep. 
+we will plot the Moran scatterplot using the standardised values and moran.plot() of spdep.
 
 ::: panel-tabset
 # Weekday (0600-0900)
@@ -1479,7 +1465,6 @@ nci_1114 <- moran.plot(DV1114ad, knn1114_lw,
 
 # Weekends/Holidays (1600-1900)
 
-
 ```{r}
 #| code-fold: true
 nci_1619 <- moran.plot(DV1619ad, knn1619_lw,
@@ -1487,7 +1472,6 @@ nci_1619 <- moran.plot(DV1619ad, knn1619_lw,
                   xlab = "Weekends/Holidays Afternoon Peak",
                   ylab = "Spatially Lag Weekends/Holidays Afternoon Peak")
 ```
-
 :::
 
 ## 4.9 LISA Clusters Map
@@ -1687,7 +1671,6 @@ LISAmap_1619 <- tm_shape(join_df_wknd16_19_group.localMI_1619ad) +
             legend.width = 0.35,
             frame = TRUE)
 ```
-
 :::
 
 ```{r}
@@ -1695,8 +1678,6 @@ LISAmap_1619 <- tm_shape(join_df_wknd16_19_group.localMI_1619ad) +
 tmap_arrange(LISAmap_0609, LISAmap_1720,
   LISAmap_1114, LISAmap_1619, ncol =2)
 ```
-
-
 
 ```{r}
 #| code-fold: true
@@ -1712,8 +1693,3 @@ tmap_arrange(localMI_1114sig_ad.map, LISAmap_1114,
              ncol =2)
 
 ```
-
-
-
-
-
