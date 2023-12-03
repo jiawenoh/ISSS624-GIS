@@ -256,9 +256,9 @@ Before we proceed, we will used `mapview()` as a default visualization.
 
 ```{r}
 #| code-fold: true
-mapview_check = mapview(busstop, cex = 3, alpha = .5, popup = NULL)
+#mapview_check = mapview(busstop, cex = 3, alpha = .5, popup = NULL)
 
-mapview_check
+#mapview_check
 ```
 
 As observed, there are [5 bus stops]{.underline} that are not within Singapore Map that includes [Passenger Volume by Origin Destination Bus Stop.]{.underline} Although we are able to filter and remove bus stops that are not within the Singapore Boundary, it might be interesting to observe the community flows from Singapore to Johor Bahru. As such we will not remove these data points.
@@ -806,9 +806,9 @@ summary(k1619dists)
 
 From the summary reports above, the largest first nearest neighbor distance is 4,582km (lowest value among the four commuting flows). Thus, we will use this as the upper threshold such that all units will have at least one neighbor.
 
-As observed, the results for the commuting flows seems identical. As such, we will be showing  - **Weekday Morning Peak (0600-0900)** unless there are major differences.
+As observed, the results for the commuting flows seems identical. As such, we will be showing - **Weekday Morning Peak (0600-0900)** unless there are major differences.
 
-## 4.4 Computing Fixed distance weight matrix 
+## 4.4 Computing Fixed distance weight matrix
 
 With the upper threshold, we will be able to compute the fixed distance weight matrix. We will compute the distance weight matrix by using *`dnearneigh()`* as shown below.
 
@@ -846,10 +846,11 @@ wm1114_lw <- nb2listw(wm_d1114, style = 'B',zero.policy = TRUE)
 #weekend/holiday afternoon peak 
 wm1619_lw <- nb2listw(wm_d1619, style = 'B',zero.policy = TRUE)
 
+#summary(wm0609_lw)
 
 ```
 
-## **4.5 Computing Adaptive distance weight matrix**
+## 4.5 Computing Adaptive distance weight matrix
 
 Alternatively, we could directly control the number of neighbors using k-nearest neighbors by using `knearneigh()` function. For our analysis, we will set the number of neighbors to **8.**
 
@@ -885,38 +886,425 @@ knn1619_lw <- nb2listw(knn1619, style = 'B')
 summary(knn0609_lw)
 ```
 
-# References :
-
-https://datamall.lta.gov.sg/content/datamall/en.html
-
-https://urbandatapalette.com/post/2021-08-tessellation-sf/
-
-https://gisgeography.com/choropleth-maps-data-classification/
-
-https://gisgeography.com/spatial-autocorrelation-moran-i-gis/
-
 ```{r}
-#| code-fold: true
-#weekday morning peak 
-#weekday afternoon peak 
-#weekend/holiday morning peak 
-#weekend/holiday afternoon peak 
+
+par(mfrow=c(1,2))
+plot(join_df_wkd6_9_group$honeycomb_grid_wkd6_9, border="lightgrey", main="Adaptive Distance (8)")
+plot(knn0609, coords0609, add=TRUE, col="red", length=0.08)
+plot(join_df_wkd6_9_group$honeycomb_grid_wkd6_9, border="lightgrey", main="Fixed Distance")
+plot(wm_d0609, coords0609, add=TRUE, pch = 19, cex = 0.6)
 ```
 
-For this study, we will be using the distance based spatial weights and they are:
+## 4.6 Computing Global Moran's I
 
--   fixed distance weights,
--   adaptive distance weights, and
--   inverse distance weights (IDW).
+We will perform Moran's I statistical testing by using moran.test() of spdep. Moran's I describe how features differ from the values in the study area as a whole. The Moran I statistic ranges from -1 to 1. If the Moran I is:
 
-Noting that a bus route is pre-determined, we will be using inverse distance method where the closer two features (grid) are most likely to interact/influence each other.
+positive (I\>0): Clustered, observations tend to be similar
+
+negative (I\<0): Disperse, observations tend to be dissimilar
+
+approximately zero: observations arranged randomly over space
+
+The below code chunk will perform the Moran's I test on both functional and non-functional water points.
 
 ::: panel-tabset
 # Weekday (0600-0900)
 
+## Fixed Distance
+
+```{r}
+#| code-fold: true
+moran.test(join_df_wkd6_9_group$total_trips, 
+           listw=wm0609_lw, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
+
+## Adaptive Distance
+
+```{r}
+#| code-fold: true
+moran.test(join_df_wkd6_9_group$total_trips, 
+           listw=knn0609_lw, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
+
 # Weekday (1700-2000)
+
+## Fixed Distance
+
+```{r}
+#| code-fold: true
+moran.test(join_df_wkd17_20_group$total_trips, 
+           listw=wm1720_lw, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
+
+## Adaptive Distance
+
+```{r}
+#| code-fold: true
+moran.test(join_df_wkd17_20_group$total_trips, 
+           listw=knn1720_lw, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
 
 # Weekends/Holidays (1100-1400)
 
+# Fixed Distance
+
+```{r}
+#| code-fold: true
+moran.test(join_df_wknd11_14_group$total_trips, 
+           listw=wm1114_lw, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
+
+## Adaptive Distance
+
+```{r}
+#| code-fold: true
+moran.test(join_df_wknd11_14_group$total_trips, 
+           listw=knn1114_lw, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
+
 # Weekends/Holidays (1600-1900)
+
+## Fixed Distance
+
+```{r}
+#| code-fold: true
+moran.test(join_df_wknd16_19_group$total_trips, 
+           listw=wm1619_lw, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
+
+## Adaptive Distance
+
+```{r}
+#| code-fold: true
+moran.test(join_df_wknd16_19_group$total_trips, 
+           listw=knn1619_lw, 
+           zero.policy = TRUE, 
+           na.action=na.omit)
+```
 :::
+
+**Interpretation of results**
+
+In both cases, since the p-value \< 0.05....
+
+## 4.7 Computing Monte Carlo Moran's I
+
+The code chunk below performs permutation test for Moran's I statistic by using moran.mc() of spdep. A total of 1000 simulation will be performed.
+
+::: panel-tabset
+# Weekday (0600-0900)
+
+## Fixed Distance
+
+```{r}
+#| code-fold: true
+set.seed=123
+
+moran.mc(join_df_wkd6_9_group$total_trips, 
+         listw=wm0609_lw, 
+         nsim=999,
+         zero.policy = TRUE, 
+         na.action=na.exclude)
+```
+
+## Adaptive Distance
+
+```{r}
+#| code-fold: true
+set.seed=123
+
+moran.mc(join_df_wkd6_9_group$total_trips, 
+         listw=knn0609_lw, 
+         nsim=999,
+         zero.policy = TRUE, 
+         na.action=na.exclude)
+```
+
+# Weekday (1700-2000)
+
+## Fixed Distance
+
+```{r}
+#| code-fold: true
+set.seed=123
+
+moran.mc(join_df_wkd17_20_group$total_trips, 
+         listw=wm1720_lw, 
+         nsim=999,
+         zero.policy = TRUE, 
+         na.action=na.exclude)
+```
+
+## Adaptive Distance
+
+```{r}
+#| code-fold: true
+set.seed=123
+
+moran.mc(join_df_wkd17_20_group$total_trips, 
+         listw=knn1720_lw, 
+         nsim=999,
+         zero.policy = TRUE, 
+         na.action=na.exclude)
+```
+
+# Weekends/Holidays (1100-1400)
+
+# Fixed Distance
+
+```{r}
+#| code-fold: true
+set.seed=123
+
+moran.mc(join_df_wknd11_14_group$total_trips, 
+         listw=wm1114_lw, 
+         nsim=999,
+         zero.policy = TRUE, 
+         na.action=na.exclude)
+```
+
+## Adaptive Distance
+
+```{r}
+#| code-fold: true
+set.seed=123
+
+moran.mc(join_df_wknd11_14_group$total_trips, 
+         listw=knn1114_lw, 
+         nsim=999,
+         zero.policy = TRUE, 
+         na.action=na.exclude)
+```
+
+# Weekends/Holidays (1600-1900)
+
+## Fixed Distance
+
+```{r}
+#| code-fold: true
+set.seed=123
+
+moran.mc(join_df_wknd16_19_group$total_trips, 
+         listw=wm1619_lw, 
+         nsim=999,
+         zero.policy = TRUE, 
+         na.action=na.exclude)
+```
+
+## Adaptive Distance
+
+```{r}
+#| code-fold: true
+set.seed=123
+
+moran.mc(join_df_wknd16_19_group$total_trips, 
+         listw=knn1619_lw, 
+         nsim=999,
+         zero.policy = TRUE, 
+         na.action=na.exclude)
+```
+:::
+
+The code chunk below performs permutation test for Moran's I statistic by using moran.mc() of spdep. A total of 1000 simulation will be performed.
+
+**Interpretation of results**
+
+In both cases, since the p-value \< 0.05, we have sufficient statistical evidence to reject the null hypothesis at the 95% level of confidence. This means that data is more spatially clustered than expected by chance alone. Since Moran I statistics are larger than 0, the observation are clustered, observations tend to be similar.
+
+## 4.8 Computing local Moran's I
+
+The code chunk below is used to compute the Local Moran's I of percentage of passenger trips at the hexagon level.
+
+```{r}
+#| code-fold: true
+fips <- order(join_df_wkd6_9_group$grid_id)
+#weekday morning peak 
+localMI_0609ad <- localmoran(join_df_wkd6_9_group$total_trips, knn0609_lw)
+#weekday afternoon peak 
+localMI_1720ad <- localmoran(join_df_wkd17_20_group$total_trips, knn1720_lw)
+#weekend/holiday morning peak 
+localMI_1114ad <- localmoran(join_df_wknd11_14_group$total_trips, knn1114_lw)
+#weekend/holiday afternoon peak 
+localMI_1619ad <- localmoran(join_df_wknd16_19_group$total_trips, knn1619_lw)
+```
+
+::: panel-tabset
+
+# Weekday (0600-0900)
+
+
+```{r}
+head(localMI_0609ad)
+```
+
+# Weekday (1700-2000)
+
+```{r}
+head(localMI_1720ad)
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+head(localMI_1114ad)
+```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+head(localMI_1619ad)
+```
+
+:::
+
+# add notes on localmoran() function
+
+## 4.9 Mapping the local Moran’s I
+
+Next, we will append the local Moran’s I dataframe (i.e. localMI_func and localMI_nonfunc) onto nigeria SpatialPolygonDataFrame in preparation for the next part. This can be done using the code chunks below.
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+join_df_wkd6_9_group.localMI_0609ad <- cbind(join_df_wkd6_9_group,localMI_0609ad) %>%
+  rename(Pr.Ii = Pr.z....E.Ii..)   #adaptive distance 
+
+#weekday afternoon peak 
+
+join_df_wkd17_20_group.localMI_1720ad <- cbind(join_df_wkd17_20_group,localMI_1720ad) %>%
+  rename(Pr.Ii = Pr.z....E.Ii..)   #adaptive distance 
+
+#weekend/holiday morning peak 
+
+join_df_wknd11_14_group.localMI_1114ad <- cbind(join_df_wknd11_14_group,localMI_1114ad) %>%
+  rename(Pr.Ii = Pr.z....E.Ii..)   #adaptive distance 
+
+#weekend/holiday afternoon peak 
+
+join_df_wknd16_19_group.localMI_1619ad <- cbind(join_df_wknd16_19_group,localMI_1619ad) %>%
+  rename(Pr.Ii = Pr.z....E.Ii..)   #adaptive distance 
+
+```
+
+::: panel-tabset
+
+# Weekday (0600-0900)
+
+```{r}
+#| code-fold: true
+localMI_0609ad.map <- tm_shape(join_df_wkd6_9_group.localMI_0609ad) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          title = "Local Moran I Statistics") +
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "Local Moran's I Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+pvalue_0609ad.map <- tm_shape(join_df_wkd6_9_group.localMI_0609ad) + 
+                tm_fill(col = "Pr.Ii",
+                       breaks = c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+                       palette = "-Blues",
+                       title = "Local Moran's I p-values") + 
+                tm_borders(alpha = 0.3)+ 
+  tm_layout(main.title = "Local Moran's I p-values Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+tmap_arrange(localMI_0609ad.map, pvalue_0609ad.map, asp = 1, ncol = 2)
+```
+
+# Weekday (1700-2000)
+
+```{r}
+
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+
+```
+
+# Weekends/Holidays (1600-1900)
+
+
+```{r}
+
+```
+
+:::
+
+
+## Statistically Significant 
+
+```{r}
+#| code-fold: true
+#weekday morning peak (Adaptive)
+
+join_df_wkd6_9_group.localMI_0609ad_sig <- join_df_wkd6_9_group.localMI_0609ad %>%
+  filter(Pr.Ii < 0.05)
+
+base <- tm_shape(join_df_wkd6_9_group) + 
+  tm_fill(col = 'gray98') + 
+  tm_borders(alpha = 0.3)
+
+localMI_0609sig_ad.map <- base + 
+  tm_shape(join_df_wkd6_9_group.localMI_0609ad_sig) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          title = "Local Moran I Statistics") +
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "Local Moran's I (Sig.) Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+#weekday afternoon peak 
+join_df_wkd17_20_group.localMI_1720ad_sig <- join_df_wkd17_20_group.localMI_1720ad%>%
+  filter(Pr.Ii < 0.05)
+
+base <- tm_shape(join_df_wkd17_20_group) + 
+  tm_fill(col = 'gray98') + 
+  tm_borders(alpha = 0.3)
+
+localMI_1720sig_ad.map <- base + 
+  tm_shape(join_df_wkd17_20_group.localMI_1720ad_sig) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          title = "Local Moran I Statistics") +
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "Local Moran's I (Sig.) Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+tmap_arrange(localMI_0609sig_ad.map,localMI_1720sig_ad.map,asp = 1, ncol = 2)
+
+```
+
+
