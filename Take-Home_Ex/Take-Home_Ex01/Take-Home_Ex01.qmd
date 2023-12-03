@@ -980,7 +980,6 @@ plot(wm_d1114, coords1114, add=TRUE, pch = 19, cex = 0.6)
 
 # Weekends/Holidays (1600-1900)
 
-
 ```{r}
 #| code-fold: true
 par(mfrow=c(1,2))
@@ -989,24 +988,27 @@ plot(knn1619, coords1619, add=TRUE, col="red", length=0.08)
 plot(join_df_wknd16_19_group$honeycomb_grid_wknd16_19, border="lightgrey", main="Fixed Distance")
 plot(wm_d1619, coords1619, add=TRUE, pch = 19, cex = 0.6)
 ```
-
 :::
 
+Due to the high volume, the graph have a high density that makes it hard to us to interpret. However, by looking at the commuting flow, we could see the changes in the neighbor links at the north regions.
+
+By looking at the fixed and adaptive distanced-based matrics, we noticed that there is a decrease in the percentage of nonzero weight, infering that there might be grid with more neighbors.
+
+As such, we will select **adaptive distanced-based spatial weight matrix** for our subsequent analysis.
 
 ## 4.6 Computing Global Moran's I
 
-We will perform Moran's I statistical testing by using moran.test() of spdep. Moran's I describe how features differ from the values in the study area as a whole. The Moran I statistic ranges from -1 to 1. If the Moran I is:
+We will perform Moran's I statistical testing by using `moran.test()` of **spdep** on the passenger volume at hexagon level to detect cluster and/or outlier. The global Moran's I will be performed on the adaptive distance weight matrix.
 
-positive (I\>0): Clustered, observations tend to be similar
+Moran's I describe how features differ from the values in the study area as a whole. The Moran I statistic ranges from -1 to 1. If the Moran's I is:
 
-negative (I\<0): Disperse, observations tend to be dissimilar
+-   **`positive (I>0)`**: Clustered, observations tend to be similar
 
-approximately zero: observations arranged randomly over space
+-   **`negative (I<0)`**: Disperse, observations tend to be dissimilar
 
-The below code chunk will perform the Moran's I test on both functional and non-functional water points.
+-   **`approximately zero`**: observations arranged randomly over space
 
 ::: panel-tabset
-
 # Weekday (0600-0900)
 
 ```{r}
@@ -1029,7 +1031,6 @@ moran.test(join_df_wkd17_20_group$total_trips,
 
 # Weekends/Holidays (1100-1400)
 
-
 ```{r}
 #| code-fold: true
 moran.test(join_df_wknd11_14_group$total_trips, 
@@ -1051,11 +1052,13 @@ moran.test(join_df_wknd16_19_group$total_trips,
 
 **Interpretation of results**
 
-In both cases, since the p-value \< 0.05....
+Based on the all the results above, we conclude that the p-value is below the alpha value of 0.05, therefore, we have sufficient statistical evidence to **reject** the null hypothesis at 95% confidence level that the attribute is randomly distributed.
+
+In addition, the Moran's I value is greater than 0. This shows that the observations are **clustered**, and tend to be similar to one another.
 
 ## 4.7 Computing Monte Carlo Moran's I
 
-The code chunk below performs permutation test for Moran's I statistic by using moran.mc() of spdep. A total of 1000 simulation will be performed.
+We will perform permutation test for Moran's statistic by using `moran.mc()` of **spdep**. A total of 1000 simulation will be performed through random assignment:
 
 ::: panel-tabset
 # Weekday (0600-0900)
@@ -1111,15 +1114,23 @@ moran.mc(join_df_wknd16_19_group$total_trips,
 ```
 :::
 
-The code chunk below performs permutation test for Moran's I statistic by using moran.mc() of spdep. A total of 1000 simulation will be performed.
-
 **Interpretation of results**
 
-In both cases, since the p-value \< 0.05, we have sufficient statistical evidence to reject the null hypothesis at the 95% level of confidence. This means that data is more spatially clustered than expected by chance alone. Since Moran I statistics are larger than 0, the observation are clustered, observations tend to be similar.
+Based on the all the results above, we have sufficient statistical evidence to **reject** the null hypothesis at 95% confidence level. This suggests that there are some degree of clustering in the commuting flows.
 
-## 4.8 Computing local Moran's I
+# 5. Cluster and Outlier Analysis
 
-The code chunk below is used to compute the Local Moran's I of percentage of passenger trips at the hexagon level.
+## 5.1 Computing local Moran's I
+
+We will perform Local Moran's I statistical testing using `localmoran()` of **spdep.** The code chunks below are used to compute local Moran's I of Passenger volume at the hexagon level *(grid_id)*.
+
+If the Local Moran's I value is:
+
+-   **`positive`**: Part of a cluster. Feature has neighboring features with similarly high/low attribute values
+
+-   **`negative`**: part of an outlier. Feature has neighboring features with dissimilar values.
+
+Before we map, we would need to compute them using `localmoran()` function of **spdep** package. Given a set of Z.Li values, it computes **Ii** , and a listw object providing neighbor weighting information for the polygon associated with the Z.Ii values.
 
 ```{r}
 #| code-fold: true
@@ -1133,6 +1144,8 @@ localMI_1114ad <- localmoran(join_df_wknd11_14_group$total_trips, knn1114_lw)
 #weekend/holiday afternoon peak 
 localMI_1619ad <- localmoran(join_df_wknd16_19_group$total_trips, knn1619_lw)
 ```
+
+The code chunk below is used to compute the passenger volume at hexagon level.
 
 ::: panel-tabset
 # Weekday (0600-0900)
@@ -1160,11 +1173,25 @@ head(localMI_1619ad)
 ```
 :::
 
-# add notes on localmoran() function
+::: {.callout-note title="Note about localmoran() " collapse="true"}
+## Note about `localmoran()`
 
-### 4.8.1 Mapping the local Moran's I
+`localmoran()` returns a matrix of values whose columns are:
 
-Next, we will append the local Moran's I dataframe (i.e. localMI_func and localMI_nonfunc) onto nigeria SpatialPolygonDataFrame in preparation for the next part. This can be done using the code chunks below.
+1.  "Ii" : the local Moran's I statistics
+
+2.  "E.Ii" : the **expectation** of local moran statistics under the randomisation hypothesis
+
+3.  "Var.Ii" : the **variance** of local moran statistic under the randomisation hypothesis
+
+4.  "Z.Ii" : the **standard deviation** of local moran statistic
+
+5.  "Pr()" : the **p-value** of local moran statistic
+:::
+
+## 5.2 Mapping the local Moran's I
+
+Next, we will be using `cbind()` function to combine the local Moran's dataframe *(e.g., localMI_0609ad)* with our existing spatial data frame *(e.g. join_df_wkd6_9\_group)* before plotting.
 
 ```{r}
 #| code-fold: true
@@ -1188,6 +1215,10 @@ join_df_wknd16_19_group.localMI_1619ad <- cbind(join_df_wknd16_19_group,localMI_
   rename(Pr.Ii = Pr.z....E.Ii..)   #adaptive distance 
 
 ```
+
+### 5.2.1 Mapping Local Moran's I values and p-values 
+
+Using the choropleth mapping function from the **tmap** package, we will do a visualization for the Local Moran's I values and its corresponding p-values.
 
 ::: panel-tabset
 # Weekday (0600-0900)
@@ -1319,7 +1350,11 @@ tmap_arrange(localMI_1619ad.map, pvalue_1619ad.map, asp = 1, ncol = 2)
 ```
 :::
 
-## Statistically Significant
+From the graphs above, we could see the gradient of the color that might not be that intuitive. Alternatively, we could look into the following section where we only retain grid that are statistically significant.
+
+#### 5.2.1.1 Areas that are Statistically Significant
+
+First, we will filter out all the areas that are not statistically significant (p-value \>=0.05), Then we will plot the base hexagon map and plot accordingly.
 
 ```{r}
 #| code-fold: true
@@ -1414,7 +1449,11 @@ tmap_arrange(localMI_0609sig_ad.map,localMI_1720sig_ad.map,
 
 ```
 
+From the Local Moran I plot, we can see that the
+
 Once we are done with the computation, we will plot the scatterplot using the variables above.
+
+## 5.3 Moran Scatterplot
 
 First, we will calculate the scaled attribute and the lagged scaled attribute using the scale() function and lag.listw() function.
 
@@ -1474,7 +1513,7 @@ nci_1619 <- moran.plot(DV1619ad, knn1619_lw,
 ```
 :::
 
-## 4.9 LISA Clusters Map
+## 5.4 LISA Clusters Map
 
 ::: panel-tabset
 # Weekday (0600-0900)
