@@ -15,11 +15,9 @@ The digitization of city-wide urban infrastructures such as buses,mass rapid tra
 
 ## 1.1 The Task
 
-This exercise aims to reveals the spatial and spatio-temporal mobility patterns of public bus passengers in Singapore using appropriate geovisualisation techniques and analysis.
+This exercise aims to reveals the spatial and spatio-temporal mobility patterns of public bus passengers in Singapore using appropriate geovisualisation techniques and analysis. Also, we would explore the computation of Local Indicators of Spatial Association (LISA) Analysis
 
-The original data set was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops. For the purpose of this exercise, we will be using the **August** data :
-
--   origin_destination_bus_202308.csv
+The original data set was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops. For the purpose of this exercise, we will be using the **August** data - origin_destination_bus_202308.csv.
 
 # 2. Data preparation
 
@@ -49,9 +47,11 @@ pacman::p_load(mapview, knitr, patchwork, sf, spdep, sfdep, tidyverse, tmap)
 
 ## 2.2 Import and Load Dataset
 
-Aspatial data and a hexagon layer will be used for this study :
+Two data and a hexagon layer will be used for this study :
 
 -   `origin_destination_bus_202308.csv` : A csv file containing information about all the bus stops currently being serviced by bus, which includes bus stop identifier, and location coordinates.
+
+-   *`Bus Stop Location`* . A geospatial file from LTA DataMall
 
 -   `hexagon` : A hexagon layer of 250m to replace the relative coarse and irregular Master Plan 2019 Planning Sub-Zone GIS data of URA
 
@@ -69,7 +69,7 @@ glimpse(odbus)
 
 ### 2.2.2 Importing Geospatial data
 
-Thereafter, we will import the [Passenger Volume by Origin Destination Bus Stops]{.underline} data set for **August**.
+Thereafter, we will import the [Bus Stops]{.underline} [Location]{.underline}.
 
 #### 2.2.2.1 Import Bus Stop data
 
@@ -1449,13 +1449,11 @@ tmap_arrange(localMI_0609sig_ad.map,localMI_1720sig_ad.map,
 
 ```
 
-From the Local Moran I plot, we can see that the
-
-Once we are done with the computation, we will plot the scatterplot using the variables above.
+As iterated earlier, a positive value indicates a cluster while a negative value indicates an outlier. From the maps above, we can see that most regions are orange in color which correspond to a negative value. We could see that there are multiple outliers instead of a cluster, inferring that there are more popular bus stops at various part of Singapore.
 
 ## 5.3 Moran Scatterplot
 
-First, we will calculate the scaled attribute and the lagged scaled attribute using the scale() function and lag.listw() function.
+After identifying the cluster and outlier, we are going to plot the scatterplot using the variables above. First, we will calculate the scaled attribute and the lagged scaled attribute using the `scale()` function and `lag.listw()` function.
 
 ```{r}
 #| code-fold: true
@@ -1469,7 +1467,7 @@ DV1619ad <- scale(join_df_wknd16_19_group.localMI_1619ad$total_trips) %>%
   as.vector
 ```
 
-we will plot the Moran scatterplot using the standardised values and moran.plot() of spdep.
+We will plot the Moran scatterplot using the standardised values and `moran.plot()` of **spdep.**
 
 ::: panel-tabset
 # Weekday (0600-0900)
@@ -1513,10 +1511,30 @@ nci_1619 <- moran.plot(DV1619ad, knn1619_lw,
 ```
 :::
 
-## 5.4 LISA Clusters Map
+From the figures above, we note that there are a huge number of grids in the scatterplot for us to draw any statistical conclusion. However, we observe that most of the points are scattered to the left.
+
+![](data/images/image03.png)
+
+Notably, there are four quadrants in the Moran Scatterplot:
+
+-   \"**High-High**\" - **Top right corner** : Positive Autocorrelation Cluster.
+
+-   **\"Low-High\"** - **Top left corner**: Negative Autocorrelation Cluster.
+
+-   **\"High-Low\" - Bottom right corner**: Negative Autocorrelation Cluster.
+
+-   \"**Low-Low**\" - **Bottom left corner** : Positive Autocorrelation Cluster.
+
+Unfortunately, we are not able to determine which points/regions are significant. Therefore, we could look into the LISA Cluster Maps.
+
+## 5.4 LISA Cluster Maps
+
+The LISA Cluster Maps is able to significant location color coded by type of spatial autocorrelation.
 
 ::: panel-tabset
 # Weekday (0600-0900)
+
+We will retrieve the quadrant for each area based on the following criteria and place non-significant Moran (p-value that are \<0.05) as 0.
 
 ```{r}
 #| code-fold: true
@@ -1539,6 +1557,8 @@ quadrant[DV_0609 >0 & LM_I_0609>0] <- 4 #high-high
 #Step 6
 quadrant[localMI_0609ad[,5]>signif] <- 0
 ```
+
+After running the code chunk above, we will plot the LISA map using **tmap**.
 
 ```{r}
 #| code-fold: true
@@ -1567,6 +1587,8 @@ LISAmap_0609 <- tm_shape(join_df_wkd6_9_group.localMI_0609ad) +
 
 # Weekday (1700-2000)
 
+We will retrieve the quadrant for each area based on the following criteria and place non-significant Moran (p-value that are \<0.05) as 0.
+
 ```{r}
 #| code-fold: true
 #weekday afternoon peak 
@@ -1587,6 +1609,8 @@ quadrant[DV_1720 >0 & LM_I_1720>0] <- 4 #high-high
 #Step 6
 quadrant[localMI_1720ad[,5]>signif] <- 0
 ```
+
+After running the code chunk above, we will plot the LISA map using **tmap**.
 
 ```{r}
 #| code-fold: true
@@ -1616,6 +1640,8 @@ LISAmap_1720 <- tm_shape(join_df_wkd17_20_group.localMI_1720ad) +
 
 # Weekends/Holidays (1100-1400)
 
+We will retrieve the quadrant for each area based on the following criteria and place non-significant Moran (p-value that are \<0.05) as 0.
+
 ```{r}
 #| code-fold: true
 #weekends/holidays morning peak 
@@ -1636,6 +1662,8 @@ quadrant[DV_1114 >0 & LM_I_1114>0] <- 4 #high-high
 #Step 6
 quadrant[localMI_1114ad[,5]>signif] <- 0
 ```
+
+After running the code chunk above, we will plot the LISA map using **tmap**.
 
 ```{r}
 #| code-fold: true
@@ -1665,6 +1693,8 @@ LISAmap_1114 <- tm_shape(join_df_wknd11_14_group.localMI_1114ad) +
 
 # Weekends/Holidays (1600-1900)
 
+We will retrieve the quadrant for each area based on the following criteria and place non-significant Moran (p-value that are \<0.05) as 0.
+
 ```{r}
 #| code-fold: true
 #weekends/holidays afternoon peak 
@@ -1685,6 +1715,8 @@ quadrant[DV_1619 >0 & LM_I_1619>0] <- 4 #high-high
 #Step 6
 quadrant[localMI_1619ad[,5]>signif] <- 0
 ```
+
+After running the code chunk above, we will plot the LISA map using **tmap**.
 
 ```{r}
 #| code-fold: true
@@ -1712,11 +1744,17 @@ LISAmap_1619 <- tm_shape(join_df_wknd16_19_group.localMI_1619ad) +
 ```
 :::
 
+We will be using `tmap_arrange()` to plot the LISA Cluster Map based on commuting flow.
+
 ```{r}
 #| code-fold: true
 tmap_arrange(LISAmap_0609, LISAmap_1720,
   LISAmap_1114, LISAmap_1619, ncol =2)
 ```
+
+We observed that majority of the quadrant are insignificant, while most falls to Low-High and High-High. For Weekdays, there are more High-High (in red), suggesting a cluster. We could infer that the bus stops in the route are popular due to the service it provides - i.e, feeder bus. There are not much differences during the weekends. However, it is important to monitor the Low-High area.
+
+Thereafter, we do a comparison to see between Local Moran's I and Lisa Cluster Map. by plotting them together. We would be able to observe the similarity between the shades regions.
 
 ```{r}
 #| code-fold: true
@@ -1732,3 +1770,19 @@ tmap_arrange(localMI_1114sig_ad.map, LISAmap_1114,
              ncol =2)
 
 ```
+
+There are multiple high high cluster areas. This regions in the grid have neighbors with similar volume in terms of passenger trips, with the largest cluster in the southern region.
+
+# 6. Conclusion
+
+In our exercise, we examine the commuting flow of passenger based on the total trips taken in August. We utilized visualiztion tools to generate insights that there are more outliers than clusters. Moreover, the use of LISA would allow us to better understand the geographical relationship and helped improve the decision-making process in terms of adjusting the bus frequency.
+
+# References 
+
+1.  DiBiase, D., DeMers, M., Johnson, A., Kemp, K., Luck, A. T., Plewe, B., & Wentz, E. (2023, October). Choropleth Maps: Data Classification. GIS Geography. Retrieved from <https://gisgeography.com/choropleth-maps-data-classification/>
+
+2.  DiBiase, D., DeMers, M., Johnson, A., Kemp, K., Luck, A. T., Plewe, B., & Wentz, E. (2023, November). Spatial Autocorrelation: Moran's I in GIS. GIS Geography. Retrieved from <https://gisgeography.com/spatial-autocorrelation-moran-i-gis/>
+
+3.  Land Transport Authority. (2023). DataMall. Retrieved from <https://datamall.lta.gov.sg/content/datamall/en.html>
+
+4.  Wong, K. (2021, August). Tessellation SF: A Map Design Pattern. Retrieved from <https://urbandatapalette.com/post/2021-08-tessellation-sf/>
