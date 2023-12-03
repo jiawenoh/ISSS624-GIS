@@ -256,9 +256,9 @@ Before we proceed, we will used `mapview()` as a default visualization.
 
 ```{r}
 #| code-fold: true
-#mapview_check = mapview(busstop, cex = 3, alpha = .5, popup = NULL)
+mapview_check = mapview(busstop, cex = 3, alpha = .5, popup = NULL)
 
-#mapview_check
+mapview_check
 ```
 
 As observed, there are [5 bus stops]{.underline} that are not within Singapore Map that includes [Passenger Volume by Origin Destination Bus Stop.]{.underline} Although we are able to filter and remove bus stops that are not within the Singapore Boundary, it might be interesting to observe the community flows from Singapore to Johor Bahru. As such we will not remove these data points.
@@ -1064,7 +1064,7 @@ moran.mc(join_df_wkd17_20_group$total_trips,
 
 # Weekends/Holidays (1100-1400)
 
-# Fixed Distance
+## Fixed Distance
 
 ```{r}
 #| code-fold: true
@@ -1173,7 +1173,7 @@ head(localMI_1619ad)
 
 # add notes on localmoran() function
 
-## 4.9 Mapping the local Moran’s I
+### 4.8.1 Mapping the local Moran’s I
 
 Next, we will append the local Moran’s I dataframe (i.e. localMI_func and localMI_nonfunc) onto nigeria SpatialPolygonDataFrame in preparation for the next part. This can be done using the code chunks below.
 
@@ -1237,24 +1237,101 @@ tmap_arrange(localMI_0609ad.map, pvalue_0609ad.map, asp = 1, ncol = 2)
 # Weekday (1700-2000)
 
 ```{r}
+#| code-fold: true
+localMI_1720ad.map <- tm_shape(join_df_wkd17_20_group.localMI_1720ad) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          title = "Local Moran I Statistics") +
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "Local Moran's I Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
 
+pvalue_1720ad.map <- tm_shape(join_df_wkd17_20_group.localMI_1720ad) + 
+                tm_fill(col = "Pr.Ii",
+                       breaks = c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+                       palette = "-Blues",
+                       title = "Local Moran's I p-values") + 
+                tm_borders(alpha = 0.3)+ 
+  tm_layout(main.title = "Local Moran's I p-values Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+tmap_arrange(localMI_1720ad.map, pvalue_1720ad.map, asp = 1, ncol = 2)
 ```
 
 # Weekends/Holidays (1100-1400)
 
 ```{r}
+#| code-fold: true
+localMI_1114ad.map <- tm_shape(join_df_wknd11_14_group.localMI_1114ad) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          title = "Local Moran I Statistics") +
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "Local Moran's I Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
 
+pvalue_1114ad.map <- tm_shape(join_df_wknd11_14_group.localMI_1114ad) + 
+                tm_fill(col = "Pr.Ii",
+                       breaks = c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+                       palette = "-Blues",
+                       title = "Local Moran's I p-values") + 
+                tm_borders(alpha = 0.3)+ 
+  tm_layout(main.title = "Local Moran's I p-values Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+tmap_arrange(localMI_1114ad.map, pvalue_1114ad.map, asp = 1, ncol = 2)
 ```
 
 # Weekends/Holidays (1600-1900)
 
 
 ```{r}
+#| code-fold: true
+localMI_1619ad.map <- tm_shape(join_df_wknd16_19_group.localMI_1619ad) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          title = "Local Moran I Statistics") +
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "Local Moran's I Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
 
+pvalue_1619ad.map <- tm_shape(join_df_wknd16_19_group.localMI_1619ad) + 
+                tm_fill(col = "Pr.Ii",
+                       breaks = c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+                       palette = "-Blues",
+                       title = "Local Moran's I p-values") + 
+                tm_borders(alpha = 0.3)+ 
+  tm_layout(main.title = "Local Moran's I p-values Map",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+tmap_arrange(localMI_1619ad.map, pvalue_1619ad.map, asp = 1, ncol = 2)
 ```
 
 :::
-
 
 ## Statistically Significant 
 
@@ -1275,10 +1352,10 @@ localMI_0609sig_ad.map <- base +
           style = "pretty",
           title = "Local Moran I Statistics") +
   tm_borders(alpha = 0.3) + 
-  tm_layout(main.title = "Local Moran's I (Sig.) Map",
+  tm_layout(main.title = "Local Moran's I (Sig.) Map \n (Weekday Morning)",
             main.title.size = 1,
             main.title.position = "center",
-            legend.height = 0.45, 
+            legend.height = 0.35, 
             legend.width = 0.35,
             frame = TRUE)
 
@@ -1296,15 +1373,347 @@ localMI_1720sig_ad.map <- base +
           style = "pretty",
           title = "Local Moran I Statistics") +
   tm_borders(alpha = 0.3) + 
-  tm_layout(main.title = "Local Moran's I (Sig.) Map",
+  tm_layout(main.title = "Local Moran's I (Sig.) Map \n (Weekday Afternoon)",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+#weekends/holiday morning peak 
+join_df_wknd11_14_group.localMI_1114ad_sig <- join_df_wknd11_14_group.localMI_1114ad%>%
+  filter(Pr.Ii < 0.05)
+
+base <- tm_shape(join_df_wknd11_14_group) + 
+  tm_fill(col = 'gray98') + 
+  tm_borders(alpha = 0.3)
+
+localMI_1114sig_ad.map <- base + 
+  tm_shape(join_df_wknd11_14_group.localMI_1114ad_sig) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          title = "Local Moran I Statistics") +
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "Local Moran's I (Sig.) Map \n (Weekends/Holidays Morning)",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+#weekends/holiday afternoon peak 
+join_df_wknd16_19_group.localMI_1619ad_sig <- join_df_wknd16_19_group.localMI_1619ad%>%
+  filter(Pr.Ii < 0.05)
+
+base <- tm_shape(join_df_wknd16_19_group) + 
+  tm_fill(col = 'gray98') + 
+  tm_borders(alpha = 0.3)
+
+localMI_1619sig_ad.map <- base + 
+  tm_shape(join_df_wknd16_19_group.localMI_1619ad_sig) +
+  tm_fill(col = "Ii", 
+          style = "pretty",
+          title = "Local Moran I Statistics") +
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "Local Moran's I (Sig.) Map \n (Weekends/Holidays Afternoon)",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            frame = TRUE)
+
+tmap_arrange(localMI_0609sig_ad.map,localMI_1720sig_ad.map,
+             localMI_1114sig_ad.map, localMI_1619sig_ad.map,
+            ncol = 2)
+
+```
+
+Once we are done with the computation, we will plot the scatterplot using the variables above. 
+
+First, we will calculate the scaled attribute and the lagged scaled attribute using the scale() function and lag.listw() function.
+
+```{r}
+#| code-fold: true
+DV0609ad <- scale(join_df_wkd6_9_group.localMI_0609ad$total_trips) %>%
+  as.vector 
+DV1720ad <- scale(join_df_wkd17_20_group.localMI_1720ad$total_trips) %>%
+  as.vector
+DV1114ad <- scale(join_df_wknd11_14_group.localMI_1114ad$total_trips) %>%
+  as.vector
+DV1619ad <- scale(join_df_wknd16_19_group.localMI_1619ad$total_trips) %>%
+  as.vector
+```
+
+we will plot the Moran scatterplot using the standardised values and moran.plot() of spdep. 
+
+::: panel-tabset
+# Weekday (0600-0900)
+
+```{r}
+#| code-fold: true
+nci_0609 <- moran.plot(DV0609ad, knn0609_lw,
+                  labels = as.character(join_df_wkd6_9_group$grid_id),
+                  xlab = "Weekday Morning Peak",
+                  ylab = "Spatially Lag Weekday Morning Peak")
+```
+
+# Weekday (1700-2000)
+
+```{r}
+#| code-fold: true
+nci_1720 <- moran.plot(DV1720ad, knn1720_lw,
+                  labels = as.character(join_df_wkd17_20_group$grid_id),
+                  xlab = "Weekday Afternoon Peak",
+                  ylab = "Spatially Lag Weekday Afternoon Peak")
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+#| code-fold: true
+nci_1114 <- moran.plot(DV1114ad, knn1114_lw,
+                  labels = as.character(join_df_wknd11_14_group$grid_id),
+                  xlab = "Weekends/Holidays Morning Peak",
+                  ylab = "Spatially Lag Weekends/Holidays Morning Peak")
+```
+
+# Weekends/Holidays (1600-1900)
+
+
+```{r}
+#| code-fold: true
+nci_1619 <- moran.plot(DV1619ad, knn1619_lw,
+                  labels = as.character(join_df_wknd16_19_group$grid_id),
+                  xlab = "Weekends/Holidays Afternoon Peak",
+                  ylab = "Spatially Lag Weekends/Holidays Afternoon Peak")
+```
+
+:::
+
+## 4.9 LISA Clusters Map
+
+::: panel-tabset
+# Weekday (0600-0900)
+
+```{r}
+#| code-fold: true
+
+#weekday morning peak 
+#Step 1
+quadrant <- vector(mode = 'numeric', length = nrow(localMI_0609ad))
+#Step 2
+join_df_wkd6_9_group$lag <- lag.listw(knn0609_lw,join_df_wkd6_9_group$total_trips)
+DV_0609 <- join_df_wkd6_9_group$lag - mean(join_df_wkd6_9_group$lag)
+#Step 3
+LM_I_0609 <- localMI_0609ad[,1] 
+#Step 4
+signif <- 0.05
+#Step 5
+quadrant[DV_0609 <0 & LM_I_0609>0] <- 1 #low-low
+quadrant[DV_0609 >0 & LM_I_0609<0] <- 2 #high-low
+quadrant[DV_0609 <0 & LM_I_0609<0] <- 3 #low-high
+quadrant[DV_0609 >0 & LM_I_0609>0] <- 4 #high-high
+#Step 6
+quadrant[localMI_0609ad[,5]>signif] <- 0
+```
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+#Assign each region  to its respective quardrant
+join_df_wkd6_9_group.localMI_0609ad$quadrant <- quadrant
+
+#Set the colours--one for each quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c") 
+
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISAmap_0609 <- tm_shape(join_df_wkd6_9_group.localMI_0609ad) + 
+  tm_fill(col = "quadrant",
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1],
+          labels = clusters[c(sort(unique(quadrant)))+1])  + 
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "LISA Cluster Map \n (Weekday Morning) ",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+```
+
+# Weekday (1700-2000)
+
+```{r}
+#| code-fold: true
+#weekday afternoon peak 
+#Step 1
+quadrant <- vector(mode = 'numeric', length = nrow(localMI_1720ad))
+#Step 2
+join_df_wkd17_20_group$lag <- lag.listw(knn1720_lw,join_df_wkd17_20_group$total_trips)
+DV_1720 <- join_df_wkd17_20_group$lag - mean(join_df_wkd17_20_group$lag)
+#Step 3
+LM_I_1720 <- localMI_1720ad[,1] 
+#Step 4
+signif <- 0.05
+#Step 5
+quadrant[DV_1720 <0 & LM_I_1720>0] <- 1 #low-low
+quadrant[DV_1720 >0 & LM_I_1720<0] <- 2 #high-low
+quadrant[DV_1720 <0 & LM_I_1720<0] <- 3 #low-high
+quadrant[DV_1720 >0 & LM_I_1720>0] <- 4 #high-high
+#Step 6
+quadrant[localMI_1720ad[,5]>signif] <- 0
+```
+
+```{r}
+#| code-fold: true
+#weekday morning peak 
+#Assign each region  to its respective quardrant
+join_df_wkd17_20_group.localMI_1720ad$quadrant <- quadrant
+
+#Set the colours--one for each quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c") 
+
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISAmap_1720 <- tm_shape(join_df_wkd17_20_group.localMI_1720ad) + 
+  tm_fill(col = "quadrant",
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1],
+          labels = clusters[c(sort(unique(quadrant)))+1])  + 
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "LISA Cluster Map \n (Weekday Afternoon) ",
             main.title.size = 1,
             main.title.position = "center",
             legend.height = 0.45, 
             legend.width = 0.35,
             frame = TRUE)
 
-tmap_arrange(localMI_0609sig_ad.map,localMI_1720sig_ad.map,asp = 1, ncol = 2)
+```
+
+# Weekends/Holidays (1100-1400)
+
+```{r}
+#| code-fold: true
+#weekends/holidays morning peak 
+#Step 1
+quadrant <- vector(mode = 'numeric', length = nrow(localMI_1114ad))
+#Step 2
+join_df_wknd11_14_group$lag <- lag.listw(knn1114_lw,join_df_wknd11_14_group$total_trips)
+DV_1114<- join_df_wknd11_14_group$lag - mean(join_df_wknd11_14_group$lag)
+#Step 3
+LM_I_1114 <- localMI_1114ad[,1] 
+#Step 4
+signif <- 0.05
+#Step 5
+quadrant[DV_1114 <0 & LM_I_1114>0] <- 1 #low-low
+quadrant[DV_1114 >0 & LM_I_1114<0] <- 2 #high-low
+quadrant[DV_1114 <0 & LM_I_1114<0] <- 3 #low-high
+quadrant[DV_1114 >0 & LM_I_1114>0] <- 4 #high-high
+#Step 6
+quadrant[localMI_1114ad[,5]>signif] <- 0
+```
+
+```{r}
+#| code-fold: true
+#weekends/holiday morning peak 
+#Assign each region  to its respective quardrant
+join_df_wknd11_14_group.localMI_1114ad$quadrant <- quadrant
+
+#Set the colours--one for each quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c") 
+
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISAmap_1114 <- tm_shape(join_df_wknd11_14_group.localMI_1114ad) + 
+  tm_fill(col = "quadrant",
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1],
+          labels = clusters[c(sort(unique(quadrant)))+1])  + 
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "LISA Cluster Map \n (Weekends/Holidays Morning) ",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
 
 ```
+
+# Weekends/Holidays (1600-1900)
+
+```{r}
+#| code-fold: true
+#weekends/holidays afternoon peak 
+#Step 1
+quadrant <- vector(mode = 'numeric', length = nrow(localMI_1619ad))
+#Step 2
+join_df_wknd16_19_group$lag <- lag.listw(knn1619_lw,join_df_wknd16_19_group$total_trips)
+DV_1619<- join_df_wknd16_19_group$lag - mean(join_df_wknd16_19_group$lag)
+#Step 3
+LM_I_1619 <- localMI_1619ad[,1] 
+#Step 4
+signif <- 0.05
+#Step 5
+quadrant[DV_1619 <0 & LM_I_1619>0] <- 1 #low-low
+quadrant[DV_1619 >0 & LM_I_1619<0] <- 2 #high-low
+quadrant[DV_1619 <0 & LM_I_1619<0] <- 3 #low-high
+quadrant[DV_1619 >0 & LM_I_1619>0] <- 4 #high-high
+#Step 6
+quadrant[localMI_1619ad[,5]>signif] <- 0
+```
+
+```{r}
+#| code-fold: true
+#weekends/holiday morning peak 
+#Assign each region  to its respective quardrant
+join_df_wknd16_19_group.localMI_1619ad$quadrant <- quadrant
+
+#Set the colours--one for each quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c") 
+
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISAmap_1619 <- tm_shape(join_df_wknd16_19_group.localMI_1619ad) + 
+  tm_fill(col = "quadrant",
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1],
+          labels = clusters[c(sort(unique(quadrant)))+1])  + 
+  tm_borders(alpha = 0.3) + 
+  tm_layout(main.title = "LISA Cluster Map \n (Weekends/Holidays Morning) ",
+            main.title.size = 1,
+            main.title.position = "center",
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE)
+```
+
+:::
+
+```{r}
+#| code-fold: true
+tmap_arrange(LISAmap_0609, LISAmap_1720,
+  LISAmap_1114, LISAmap_1619, ncol =2)
+```
+
+
+
+```{r}
+#| code-fold: true
+tmap_arrange(localMI_0609sig_ad.map, LISAmap_0609, 
+             localMI_1720sig_ad.map, LISAmap_1720,
+             ncol =2)
+```
+
+```{r}
+#| code-fold: true
+tmap_arrange(localMI_1114sig_ad.map, LISAmap_1114, 
+             localMI_1619sig_ad.map, LISAmap_1619, 
+             ncol =2)
+
+```
+
+
+
 
 
