@@ -672,15 +672,18 @@ By looking at the **4 quantitle** chloropleth maps *(in blue)*, we could infer t
 
 -   Majority of the bus stops in the Central and Southern region of Singapore have a relatively higher passenger volume compared to other regions.
 
-![](data/images/image01.png)
+    ![](images/image01.png)
 
+```{=html}
+<!-- -->
+```
 -   A quick visualization from the mapview in Section 2.3.2 revealed the location in the red circle as Woodlands - Johor Bahru, Malaysia while the red rectangle is in Tanan Merah. Interestingly, as seen in the red circle, the volume have not declined regardless of time period. People are still travelling to Johor Bahru, Malaysia at any given point.
 
 -   On the contrary, as seen in the red rectangle, the volume changes. It peaks during the Weekend/Holiday period compared to Weekdays. which could be a popular hangout for people over the weekends.
 
 As observed in Section 3, our data are skewed to one end. Thus, it is not as ideal for us to use the quantile data classification method. We will look at the **4 jenks** chloropleth maps *(in red)*.
 
-![](data/images/image02.png)
+![](images/image02.png)
 
 -   As identified earlier in the quantile map about the red rectangle at Tanan Merah, we noted the peak is only on the Weekend/Holiday Afternoon. Based on the natural grouping in the data, we are affirmed that the passenger volume towards Johor Bahru, Malaysia remains at the peak throughout the week, and throughout the day.
 
@@ -1216,7 +1219,7 @@ join_df_wknd16_19_group.localMI_1619ad <- cbind(join_df_wknd16_19_group,localMI_
 
 ```
 
-### 5.2.1 Mapping Local Moran's I values and p-values 
+### 5.2.1 Mapping Local Moran's I values and p-values
 
 Using the choropleth mapping function from the **tmap** package, we will do a visualization for the Local Moran's I values and its corresponding p-values.
 
@@ -1513,17 +1516,17 @@ nci_1619 <- moran.plot(DV1619ad, knn1619_lw,
 
 From the figures above, we note that there are a huge number of grids in the scatterplot for us to draw any statistical conclusion. However, we observe that most of the points are scattered to the left.
 
-![](data/images/image03.png)
+![](images/image03.png)
 
 Notably, there are four quadrants in the Moran Scatterplot:
 
--   \"**High-High**\" - **Top right corner** : Positive Autocorrelation Cluster.
+-   "**High-High**" - **Top right corner** : Positive Autocorrelation Cluster.
 
--   **\"Low-High\"** - **Top left corner**: Negative Autocorrelation Cluster.
+-   **"Low-High"** - **Top left corner**: Negative Autocorrelation Cluster.
 
--   **\"High-Low\" - Bottom right corner**: Negative Autocorrelation Cluster.
+-   **"High-Low" - Bottom right corner**: Negative Autocorrelation Cluster.
 
--   \"**Low-Low**\" - **Bottom left corner** : Positive Autocorrelation Cluster.
+-   "**Low-Low**" - **Bottom left corner** : Positive Autocorrelation Cluster.
 
 Unfortunately, we are not able to determine which points/regions are significant. Therefore, we could look into the LISA Cluster Maps.
 
@@ -1777,7 +1780,7 @@ There are multiple high high cluster areas. This regions in the grid have neighb
 
 In our exercise, we examine the commuting flow of passenger based on the total trips taken in August. We utilized visualiztion tools to generate insights that there are more outliers than clusters. Moreover, the use of LISA would allow us to better understand the geographical relationship and helped improve the decision-making process in terms of adjusting the bus frequency.
 
-# References 
+# References
 
 1.  DiBiase, D., DeMers, M., Johnson, A., Kemp, K., Luck, A. T., Plewe, B., & Wentz, E. (2023, October). Choropleth Maps: Data Classification. GIS Geography. Retrieved from <https://gisgeography.com/choropleth-maps-data-classification/>
 
