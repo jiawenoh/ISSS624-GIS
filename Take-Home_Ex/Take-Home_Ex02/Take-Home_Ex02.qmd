@@ -1,0 +1,1204 @@
+---
+title: "Take Home Exercise 2"
+author: "Oh Jia Wen"
+date: 12/11/2023
+date-modified: "last-modified"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
+
+# 1. Overview
+
+As city-wide urban infrastructures such as public bus, mass rapid transits, public utilities and roads become digital, data sets obtained could be used as a framework for tracking movement patterns through space and time.
+
+## 1.1 The Task
+
+This exercise aims to reveals the urban mobility patterns of public bus transit through geospatial data science and analysis (GDSA), and spatial interaction models.
+
+The original data was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops. For the purpose of this exercise, we will be using the **August** data - origin_destination_bus_202308.csv for **Weekday Morning Peak (6-9am)**.
+
+# 2. Data preparation
+
+## 2.1 Install R packages
+
+The code chunk below uses `pacman:: p_load()` to load and install the following libraries:
+
+-   **\`mlogit\`\`** : \[to add\]
+
+-   **\`reshape2\`\`** : \[to add\]
+
+-   **`sf`** : Used for geospatial data handling
+
+-   `spdep` : Used to create spatial weights matrix objects
+
+-   **`sfdep`** : Used to integrate with `'sf'` objects and the `'tidyverse'`
+
+-   **`tidyverse`**: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis
+
+-   **`tmap`** : Used for thematic mapping
+
+```{r}
+pacman::p_load(pscl, reshape2, sp, sf, spdep, sfdep, stplanr, tidyverse, tmap)
+```
+
+## 2.2 Import and Load Dataset
+
+Three data and a hexagon layer will be used for this study :
+
+-   `origin_destination_bus_202308.csv` : A csv file containing information about all the bus stops currently being serviced by bus, which includes bus stop identifier, and location coordinates.
+
+-   *`Bus Stop Location`* . A geospatial file from LTA DataMall
+
+-   `Master Plan 2019 Subzone Boundary` : A polygon feature layer in ESRI shapefile format.
+
+### 2.2.1 Importing Aspatial data
+
+First, we will import the [Passenger Volume by Origin Destination Bus Stops]{.underline} data set for **August** by using `readr::read_csv()` and store it in variable **odbus**. Also, we will be using `glimpse()` report to reveal the data type of each field.
+
+*Point to note: `ORIGIN_PT_CODE` and `DESTINATION_PT_CODE` are in `<chr>` format.*
+
+```{r}
+#| code-fold: true
+odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
+glimpse(odbus)
+
+```
+
+### 2.2.2 Importing Geospatial data
+
+Thereafter, we will import the [Bus Stops]{.underline} [Location]{.underline} and [Master Plan 2019 Subzone Boundary]{.underline}.
+
+#### 2.2.2.1 Import Bus Stop data
+
+We will be using `sf::st_read()` to import and `sf::st_transform()` to ensure that the projected coordinate system is in the right format before storing in variable **busstop**.
+
+```{r}
+busstop <- st_read(dsn = "data/geospatial",layer = "BusStop") %>%
+    st_transform(crs = 3414)
+```
+
+Also, we will be using `glimpse()` report to reveal the data type of each field.
+
+```{r}
+glimpse(busstop)
+```
+
+#### 2.2.2.2 Import MPSZ data
+
+In addition, we will similar approach - `sf::st_read()` to import and `sf::st_transform()` to ensure that the projected coordinate system is in the right format before storing in variable **mpsz**.
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial",
+                   layer = "MPSZ-2019") %>%
+  st_transform(crs = 3414)
+```
+
+We will be using `glimpse()` report to reveal the data type of each field
+
+```{r}
+glimpse(mpsz)
+```
+
+## 2.3 Data Wrangling
+
+Looking at section 2.2.1, we noticed a few problem:
+
+-   *`ORIGIN_PT_CODE`* : is in `<chr>` format
+
+-   *`DESTINATION_PT_CODE`* : is in `<chr>` format
+
+We will be using `dplyr::mutate()` to convert the `<chr>` data type to `<fct>` and store it in a new variable **odbus_new**.
+
+```{r}
+#| code-fold: true
+odbus_new <- odbus %>%
+ mutate(ORIGIN_PT_CODE = as.factor(ORIGIN_PT_CODE),
+        DESTINATION_PT_CODE = as.factor(DESTINATION_PT_CODE))
+
+glimpse(odbus_new)
+```
+
+Additionally, we confirmed that there are no missing values in the **odbus_new data set.**
+
+```{r}
+any(is.na(odbus_new))
+```
+
+### 2.3.1 Data Extraction
+
+#### 2.3.1.1 Analytical Hexagon
+
+Thereafter, we will create the analytical hexagon grid. With reference from [Urban Data Palette](https://urbandatapalette.com/post/2021-08-tessellation-sf/), we will perform the following steps:
+
+-   `st_make_grid()` : create a regular grid of spatial polygons. To reflect the distance from centre of the hexagon to its edge, we will revise the cell width and height to c(750,750).
+
+-   `st_sf()` : convert the honeycomb grid object to an sf object. We used `[mpsz$geometry]` to identify hexagon grid that intersects.
+
+-   `rowid_to_column()` : add rowid as a column
+
+-   `tmap_options(check.and.fix = TRUE)` : force close polygon
+
+```{r}
+#| code-fold: true
+#create regular grid 
+honeycomb = st_make_grid(mpsz,c(750,750),what = "polygons", square = FALSE)
+
+#convert our honeycomb grid into an sf object and add rowid
+hex_grid <- st_sf(honeycomb[mpsz$geometry]) %>%
+  rowid_to_column('grid_id')
+
+#add no. of bus stops into hex_grid data frame
+hex_grid$bus_stops = lengths(st_intersects(hex_grid, busstop))
+
+#convert grid_id from int to fct 
+hex_grid$grid_id <- as.factor(hex_grid$grid_id)
+
+#plotting of Master Plan 2019 Subzone Boundary in analytical hexagon
+tmap_options(check.and.fix = TRUE) #force close polygon 
+tm_shape(hex_grid) +
+  tm_polygons() +
+ tm_layout(main.title = "Analytical Hexagon Grid",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_borders(alpha = 0.3)
+```
+
+#### 2.3.1.2 Commuting Flow
+
+Through the previous [exercise](https://isss624-ohjiawen.netlify.app/take-home_ex/take-home_ex01/take-home_ex01), where we look into the various commuting flows, we noticed that there are various regions with high volume. As such, we will focus on our flow on **Weekday Morning Peak (6-9am)**.
+
+The code is extracted in the following manner:
+
+-   `filter()` is used to extract subset of data
+
+-   `between()` is used to express a range condition
+
+-   `group_by()` and `summarise()` are used to sum the total trips
+
+-   `arrange(desc())` to sort in descending order
+
+-   `ungroup()` is used to end a definition, often use with `group_by()`
+
+```{r}
+#| code-fold: true
+
+wkd6_9 <- odbus_new %>%
+  filter(DAY_TYPE == "WEEKDAY",
+         between(TIME_PER_HOUR, 6, 9)) %>%
+  group_by(ORIGIN_PT_CODE, DESTINATION_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS)) %>%
+  arrange(desc(TRIPS)) %>%
+  ungroup()
+```
+
+Thereafter, we will save a copy of the output in rds format and reload it into the environment.
+
+```{r}
+write_rds(wkd6_9, "data/rds/wkd6_9.rds")
+wkd6_9 <- read_rds("data/rds/wkd6_9.rds")
+```
+
+#### 2.3.1.3 Visualing bus stops in hexagon grid
+
+```{r}
+#| code-fold: true
+#plot bus stop counts on hexagon layer 
+  tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+  tm_layout(main.title = "Number of Bus Stops in Hexagon Grid",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+  tm_borders(alpha =0.3) 
+```
+
+**Insights:**
+
+-   Majority of the hexagonal grid contains 6 to 10 bus stops.
+
+-   Bus stops that are closely position in the grid, tend to have neighbors with similar patterns.
+
+### 2.3.2 Data Generation
+
+After extracting the commuting flow for Weekday Morning Peak, we will combine it into **busstop** sf data frame. To ensure distinct flows, we will use the `unique()` function into our code.
+
+```{r}
+busstop_mpsz <- st_intersection(busstop, hex_grid) %>%
+    select(BUS_STOP_N, grid_id) %>%
+  st_drop_geometry()
+
+```
+
+Next, we will update the `od_data` data frame with the planning subzone code.
+
+```{r}
+od_data <- left_join(wkd6_9 , busstop_mpsz,
+            by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
+  rename(ORIGIN_BS = ORIGIN_PT_CODE,
+         ORIGIN_ID = grid_id,
+         DESTIN_BS = DESTINATION_PT_CODE) %>%
+  unique() %>%
+  ungroup()
+```
+
+```{r}
+od_data <- left_join(od_data , busstop_mpsz,
+            by = c("DESTIN_BS" = "BUS_STOP_N")) %>%
+  unique() %>%
+  ungroup()
+```
+
+```{r}
+od_data <- od_data %>%
+  rename(DESTIN_ID = grid_id) %>%
+  drop_na() %>%
+  group_by(ORIGIN_ID, DESTIN_ID) %>%
+  summarise(MORNING_PEAK = sum(TRIPS))
+```
+
+We will save a copy of the output in rds file format.
+
+```{r}
+write_rds(od_data, "data/rds/od_data.rds")
+od_data <- read_rds("data/rds/od_data.rds")
+```
+
+#### 2.3.2.3 Compute by Hexagon Grid ID
+
+After creating the joined data frame, we are interested in knowing the number of bus stops in each grid and the total number of trips. As such, we performed the following steps:
+
+-   `mutate()` : Used to replace TRIPS with N/A to 0.
+
+-   `filter()` : Used to remove data with 0 trip
+
+-   `group_by()`: Used to group data based on **grid_id**.
+
+-   `summarize()` :
+
+    -   `n()` : Used to count number of bus stops and save as *bus_stop_count*
+
+    -   `sum()` : Used to sum the TRIPS values and save as *total_trips*
+
+-   `ungroup()` : Used to end a definition, often use with `group_by()`
+
+```{r}
+#| code-fold: true
+```
+
+We used `any(is.na())` to check and confirmed that there is no missing values for our data frame
+
+#### Remove Intra-zonal flows
+
+```{r}
+od_data1 <- od_data[od_data$ORIGIN_ID!=od_data$DESTIN_ID,]
+```
+
+#### Create desire lines
+
+```{r}
+flowLine <- od2line(flow = od_data1, 
+                    zones = hex_grid,
+                    zone_code = "grid_id")
+```
+
+#### Visualizing desire lines
+
+```{r}
+quantile(flowLine$MORNING_PEAK,
+         probs = c(0.8, 0.9, 0.95, 0.99, 1))
+```
+
+```{r}
+tm_shape(hex_grid) +
+  tm_polygons(col = 'grey95') +
+flowLine %>%
+    filter(MORNING_PEAK >= 1479) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of the top 5% ",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE)
+
+```
+
+## 3. Data Integration
+
+### 3.1 Importing Collected Data
+
+We map it by the hexagon grid with bus stop + commuting flow + various collected data.
+
+::: panel-tabset
+# Business
+
+```{r}
+#| code-fold: true
+business_sf <- st_read(dsn = "data/geospatial",
+                      layer = "Business") %>%
+      st_transform(crs = 3414)
+
+#plotting point symbol map with analytical hexagon grid
+tmap_options(check.and.fix = TRUE)
+tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+tm_borders(alpha = 0.3) +
+  flowLine %>%
+    filter(MORNING_PEAK >= 1000) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of \n passengers with >1,000 trips",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_shape(business_sf) +
+  tm_dots(col = "lightblue") +
+  tm_layout(main.title = "Business Spot",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) 
+```
+
+# Entertainment
+
+```{r}
+#| code-fold: true
+entertn_sf <- st_read(dsn = "data/geospatial",
+                      layer = "entertn") %>%
+      st_transform(crs = 3414)
+
+#plotting point symbol map with analytical hexagon grid
+tmap_options(check.and.fix = TRUE)
+tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+tm_borders(alpha = 0.3) +
+    flowLine %>%
+    filter(MORNING_PEAK >= 1000) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of \n passengers with >1,000 trips",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_shape(entertn_sf) +
+  tm_dots(col = "lightblue") +
+  tm_layout(main.title = "Entertainment Spot",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) 
+```
+
+# F&B
+
+```{r}
+#| code-fold: true
+fnb_sf <- st_read(dsn = "data/geospatial",
+                      layer = "F&B") %>%
+      st_transform(crs = 3414)
+
+#plotting point symbol map with analytical hexagon grid
+tmap_options(check.and.fix = TRUE)
+tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+tm_borders(alpha = 0.3) +
+    flowLine %>%
+    filter(MORNING_PEAK >= 1000) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of \n passengers with >1,000 trips",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_shape(fnb_sf) +
+  tm_dots(col = "lightblue") +
+  tm_layout(main.title = "Food and Beverages Spot",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) 
+```
+
+# Financial Service
+
+```{r}
+#| code-fold: true
+finserv_sf <- st_read(dsn = "data/geospatial",
+                      layer = "FinServ") %>%
+      st_transform(crs = 3414)
+
+#plotting point symbol map with analytical hexagon grid
+tmap_options(check.and.fix = TRUE)
+tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+tm_borders(alpha = 0.3) +
+    flowLine %>%
+    filter(MORNING_PEAK >= 1000) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of \n passengers with >1,000 trips",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_shape(finserv_sf) +
+  tm_dots(col = "lightblue") +
+  tm_layout(main.title = "Financial Service Spot",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) 
+```
+
+# HDB
+
+```{r}
+#| code-fold: true
+
+#import hdb.csv and tidy data 
+hdb <- read_csv("data/aspatial/hdb.csv") %>%
+  rename(latitude = "lat",
+         longitude = "lng") %>%
+  select(postal, addr, latitude, longitude)
+
+#converting an aspatial data into sf tibble data.frame
+hdb_sf <- st_as_sf(hdb, 
+                       coords = c("longitude", "latitude"),
+                       crs=4326) %>%
+  st_transform(crs = 3414)
+
+#plotting point symbol map with analytical hexagon grid
+tmap_options(check.and.fix = TRUE)
+tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+tm_borders(alpha = 0.3) +
+    flowLine %>%
+    filter(MORNING_PEAK >= 1000) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of \n passengers with >1,000 trips",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_shape(hdb_sf) +
+  tm_dots(col = "lightblue") +
+  tm_layout(main.title = "HDB Spot",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) 
+```
+
+# Leisure & Recreation
+
+```{r}
+#| code-fold: true
+lnr_sf <- st_read(dsn = "data/geospatial",
+                      layer = "Liesure&Recreation") %>%
+      st_transform(crs = 3414)
+
+#plotting point symbol map with analytical hexagon grid
+tmap_options(check.and.fix = TRUE)
+tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+tm_borders(alpha = 0.3) +
+    flowLine %>%
+    filter(MORNING_PEAK >= 1000) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of \n passengers with >1,000 trips",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_shape(lnr_sf) +
+  tm_dots(col = "lightblue") +
+  tm_layout(main.title = "Leisure and Recreation Spot",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) 
+```
+
+# Retail
+
+```{r}
+#| code-fold: true
+retail_sf <- st_read(dsn = "data/geospatial",
+                      layer = "Retails") %>%
+      st_transform(crs = 3414)
+
+#plotting point symbol map with analytical hexagon grid
+tmap_options(check.and.fix = TRUE)
+tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+tm_borders(alpha = 0.3) +
+    flowLine %>%
+    filter(MORNING_PEAK >= 1000) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of \n passengers with >1,000 trips",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_shape(retail_sf) +
+  tm_dots(col = "lightblue") +
+  tm_layout(main.title = "Retail Spot",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) 
+
+```
+
+# School
+
+```{r}
+#| code-fold: true
+
+#import school.csv into R environment 
+schools <- read_csv("data/aspatial/schools.csv") %>%
+  rename(latitude = 'results.LATITUDE', longitude ='results.LONGITUDE') %>%
+  select(postal_code, school_name, latitude, longitude)
+
+#convert an aspatial data into sf tibble data frame
+schools_sf <- st_as_sf(schools, 
+                       coords = c("longitude", "latitude"),
+                       crs=4326) %>%
+  st_transform(crs = 3414)
+
+#plotting point symbol map with analytical hexagon grid
+tmap_options(check.and.fix = TRUE)
+tm_shape(hex_grid) +
+  tm_fill(col = "bus_stops",palette = "Purples") +
+tm_borders(alpha = 0.3) +
+    flowLine %>%
+    filter(MORNING_PEAK >= 1000) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of \n passengers with >1,000 trips",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) +
+tm_shape(schools_sf) +
+  tm_dots(col = "lightblue") +
+  tm_layout(main.title = "School Spot",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE) 
+
+```
+
+
+:::
+
+### 3.2 Compute point-in-polygon count
+
+::: panel-tabset
+# Business
+
+## Count number of Businesses in Hexagon Grid
+
+```{r}
+hex_grid$`BUSINESS_COUNT`<- lengths(st_intersects(hex_grid, business_sf))
+```
+
+## Summary Statistics
+
+```{r}
+summary(hex_grid$BUSINESS_COUNT)
+```
+
+# Entertainment
+
+## Count number of Entertainment in Hexagon Grid
+
+```{r}
+hex_grid$`ENTERTAINMENT_COUNT`<- lengths(st_intersects(hex_grid, entertn_sf))
+```
+
+## Summary Statistics
+
+```{r}
+summary(hex_grid$ENTERTAINMENT_COUNT)
+```
+
+# F&B
+
+## Count number of Food and Beverages in Hexagon Grid
+
+```{r}
+hex_grid$`fnb_COUNT`<- lengths(st_intersects(hex_grid, fnb_sf))
+```
+
+## Summary Statistics
+
+```{r}
+summary(hex_grid$fnb_COUNT)
+```
+
+# Financial Service
+
+## Count number of Financial Services in Hexagon Grid
+
+```{r}
+hex_grid$`finserv_COUNT`<- lengths(st_intersects(hex_grid, finserv_sf))
+```
+
+## Summary Statistics
+
+```{r}
+summary(hex_grid$finserv_COUNT)
+```
+
+# HDB
+
+## Count number of HDB in Hexagon Grid
+
+```{r}
+hex_grid$`HDB_COUNT`<- lengths(st_intersects(hex_grid, hdb_sf))
+```
+
+## Summary Statistics
+
+```{r}
+summary(hex_grid$HDB_COUNT)
+```
+
+# Leisure & Recreation
+
+## Count number of Leisure & Recreation in Hexagon Grid
+
+```{r}
+hex_grid$`lnr_COUNT`<- lengths(st_intersects(hex_grid, lnr_sf))
+```
+
+## Summary Statistics
+
+```{r}
+summary(hex_grid$lnr_COUNT)
+```
+
+# Retail
+
+## Count number of Retails in Hexagon Grid
+
+```{r}
+hex_grid$`retail_COUNT`<- lengths(st_intersects(hex_grid, retail_sf))
+```
+
+## Summary Statistics
+
+```{r}
+summary(hex_grid$retail_COUNT)
+```
+
+
+# School
+
+## Count number of School in Hexagon Grid
+
+```{r}
+hex_grid$`school_COUNT`<- lengths(st_intersects(hex_grid, schools_sf))
+```
+
+## Summary Statistics
+
+```{r}
+summary(hex_grid$school_COUNT)
+```
+
+:::
+
+We append the point symbol to our existing map. Based on the commuting flow of Weekday Morning (0600-0900), we will drop off: - Entertainment - Food & Beverages - Leisure & Recreation
+
+For future analysis, we will be focusing on Business, Entertainment, F&B, and Financial Service.
+
+## 4. Distance Matrix
+
+```{r}
+hex_grid_sp <- as(hex_grid, "Spatial")
+hex_grid_sp
+```
+
+Next, we compute the Euclidean distance between the centroids of the planning subzones with the use of `spDists()` of **sp** package.
+
+```{r}
+dist <- spDists(hex_grid_sp, 
+                longlat = FALSE)
+head(dist, n=c(10, 10))
+```
+
+To tidy, we will create a list sorted according to the distance matrix by grid_id.
+
+```{r}
+id_names <- hex_grid$grid_id
+```
+
+Next, we will attach `grid_id` to row and column for distance matrix matching.
+
+```{r}
+colnames(dist) <- paste0(id_names)
+rownames(dist) <- paste0(id_names)
+```
+
+In addition, we will pivot the distance matrix into a long table by using the row and column of grid_id.
+
+```{r}
+distPair <- melt(dist) %>%
+  rename(dist = value)
+head(distPair, 10)
+```
+
+From the data frame above, we noticed that the intra-zonal distance within the zone is zero. As such, we will append a constant value to replace the intra-zonal distance of 0 by performing the following:
+
+-   Find out the minimum value of the distance by using `summary()`
+-   Input a constant distance value
+-   Rename original and destination fields
+
+```{r}
+distPair %>%
+  filter(dist > 0) %>%
+  summary()
+```
+
+```{r}
+distPair$dist <- ifelse(distPair$dist == 0,
+                        200, distPair$dist)
+
+# to check the distPair data frame
+distPair %>%
+  summary()
+
+```
+
+```{r}
+#to rename the fields
+distPair <- distPair %>%
+  rename(orig = Var1,
+         dest = Var2)
+
+#to save output to rds 
+write_rds(distPair, "data/rds/distPair.rds") 
+distPair <- read_rds("data/rds/distPair.rds")
+```
+
+### Prepare flow data 
+
+```{r}
+flow_data <- od_data %>%
+  group_by(ORIGIN_ID, DESTIN_ID) %>% 
+  summarize(TRIPS = sum(MORNING_PEAK)) 
+
+head(flow_data, 10)
+```
+
+We will use `ifelse()` function to add three new fields in the dataframe with the condition that if Origin ID match Destination ID , zero will be forced.
+
+```{r}
+flow_data$FlowNoIntra <- ifelse(
+  flow_data$ORIGIN_ID == flow_data$DESTIN_ID, 
+  0, flow_data$TRIPS)
+flow_data$offset <- ifelse(
+  flow_data$ORIGIN_ID == flow_data$DESTIN_ID, 
+  0.000001, 1)
+```
+
+```{r}
+glimpse(flow_data)
+```
+
+```{r}
+#convert flow data from int to fct 
+flow_data$ORIGIN_ID <- as.factor(flow_data$ORIGIN_ID)
+flow_data$DESTIN_ID <- as.factor(flow_data$DESTIN_ID)
+
+#convert distPair from int to fct 
+distPair$orig <- as.factor(distPair$orig)
+distPair$dest <- as.factor(distPair$dest)
+
+glimpse(distPair)
+```
+
+```{r}
+flow_data1 <- flow_data %>%
+  left_join (distPair,
+             by = c("ORIGIN_ID" = "orig",
+                    "DESTIN_ID" = "dest"))
+```
+
+### Preparing Origin Attributes 
+
+```{r}
+
+business_sff <- st_intersection(business_sf, hex_grid)  
+
+business_sff$grid_id = as.factor(business_sff$grid_id) 
+
+business_sff <- business_sff %>%
+      select(POI_NAME, grid_id) %>%
+  st_drop_geometry()
+```
+
+## COUNT 
+
+```{r}
+#| code-fold: true
+flow_data2 <- flow_data1 %>%
+  left_join(hex_grid,
+            by = c(ORIGIN_ID = "grid_id")) %>%
+    rename(ORIGIN_BUSINESS = BUSINESS_COUNT,
+         ORIGIN_ENTERTAINMENT = ENTERTAINMENT_COUNT,
+         ORIGIN_FNB = fnb_COUNT,
+         ORIGIN_FINSER = finserv_COUNT,
+         ORIGIN_HDB = HDB_COUNT,
+         ORIGIN_LEISURE = lnr_COUNT,
+         ORIGIN_RETAIL = retail_COUNT,
+         ORIGIN_SCHOOLS =school_COUNT
+         ) %>%
+  select(-c(bus_stops)) 
+
+flow_data2 <- flow_data2 %>%
+  left_join(hex_grid,
+            by = c(DESTIN_ID = "grid_id")) %>%
+    rename(DESTIN_BUSINESS = BUSINESS_COUNT,
+         DESTIN_ENTERTAINMENT = ENTERTAINMENT_COUNT,
+         DESTIN_FNB = fnb_COUNT,
+         DESTIN_FINSER = finserv_COUNT,
+         DESTIN_HDB = HDB_COUNT,
+         DESTIN_LEISURE = lnr_COUNT,
+         DESTIN_RETAIL = retail_COUNT,
+         DESTIN_SCHOOLS =school_COUNT
+         ) %>%
+  select(-c(bus_stops)) %>%
+  select(1:6,8:15,17:24)
+
+```
+
+
+```{r}
+ggplot(data = flow_data2,
+       aes(x = dist,
+           y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+```{r}
+#| eval: false
+#ggplot(data = flow_data2,
+#       aes(x = log(dist),
+#           y = log(TRIPS))) +
+#  geom_point() +
+#  geom_smooth(method = lm)
+```
+
+```{r}
+#ggplot(data = SIM_data,
+#       aes(x = TRIPS)) +
+#  geom_histogram()
+```
+
+```{r}
+summary(flow_data2)
+```
+The print report above reveals that that there are 17 variables that consist of 0 values, and 1 variable with 0.00001. As such, we will replace it with 0.99. 
+
+```{r}
+#| code-fold: true
+
+#FlowNoIntra
+flow_data2$FlowNoIntra <- ifelse(
+  flow_data2$FlowNoIntra == 0,
+  0.99, flow_data2$FlowNoIntra)
+
+#offset
+flow_data2$offset <- ifelse(
+  flow_data2$offset == 0,
+  0.99, flow_data2$offset)
+
+#ORIGIN_BUSINESS
+flow_data2$ORIGIN_BUSINESS <- ifelse(
+  flow_data2$ORIGIN_BUSINESS == 0,
+  0.99, flow_data2$ORIGIN_BUSINESS)
+
+#ORIGIN_ENTERTAINMENT 
+flow_data2$ORIGIN_ENTERTAINMENT  <- ifelse(
+  flow_data2$ORIGIN_ENTERTAINMENT == 0,
+  0.99, flow_data2$ORIGIN_ENTERTAINMENT)
+
+#ORIGIN_FNB  
+flow_data2$ORIGIN_FNB <- ifelse(
+  flow_data2$ORIGIN_FNB  == 0,
+  0.99, flow_data2$ORIGIN_FNB)
+
+#ORIGIN_FINSER 
+flow_data2$ORIGIN_FINSER  <- ifelse(
+  flow_data2$ORIGIN_FINSER == 0,
+  0.99, flow_data2$ORIGIN_FINSER)
+
+#ORIGIN_HDB
+flow_data2$ORIGIN_HDB  <- ifelse(
+  flow_data2$ORIGIN_HDB == 0,
+  0.99, flow_data2$ORIGIN_HDB)
+
+#ORIGIN_LEISURE
+flow_data2$ORIGIN_LEISURE  <- ifelse(
+  flow_data2$ORIGIN_LEISURE == 0,
+  0.99, flow_data2$ORIGIN_LEISURE)
+
+#ORIGIN_RETAIL
+flow_data2$ORIGIN_RETAIL  <- ifelse(
+  flow_data2$ORIGIN_RETAIL == 0,
+  0.99, flow_data2$ORIGIN_RETAIL)
+
+#ORIGIN_SCHOOLS
+flow_data2$ORIGIN_SCHOOLS  <- ifelse(
+  flow_data2$ORIGIN_SCHOOLS == 0,
+  0.99, flow_data2$ORIGIN_SCHOOLS)
+
+#DESTIN_BUSINESS
+flow_data2$DESTIN_BUSINESS <- ifelse(
+  flow_data2$DESTIN_BUSINESS == 0,
+  0.99, flow_data2$DESTIN_BUSINESS)
+
+#DESTIN_ENTERTAINMENT 
+flow_data2$DESTIN_ENTERTAINMENT  <- ifelse(
+  flow_data2$DESTIN_ENTERTAINMENT == 0,
+  0.99, flow_data2$DESTIN_ENTERTAINMENT)
+
+#DESTIN_FNB  
+flow_data2$DESTIN_FNB <- ifelse(
+  flow_data2$DESTIN_FNB  == 0,
+  0.99, flow_data2$DESTIN_FNB)
+
+#DESTIN_FINSER 
+flow_data2$DESTIN_FINSER  <- ifelse(
+  flow_data2$DESTIN_FINSER == 0,
+  0.99, flow_data2$DESTIN_FINSER)
+
+#DESTIN_HDB
+flow_data2$DESTIN_HDB  <- ifelse(
+  flow_data2$DESTIN_HDB == 0,
+  0.99, flow_data2$DESTIN_HDB)
+
+#DESTIN_LEISURE
+flow_data2$DESTIN_LEISURE  <- ifelse(
+  flow_data2$DESTIN_LEISURE == 0,
+  0.99, flow_data2$DESTIN_LEISURE)
+
+#DESTIN_RETAIL
+flow_data2$DESTIN_RETAIL  <- ifelse(
+  flow_data2$DESTIN_RETAIL == 0,
+  0.99, flow_data2$DESTIN_RETAIL)
+
+#DESTIN_SCHOOLS
+flow_data2$DESTIN_SCHOOLS  <- ifelse(
+  flow_data2$DESTIN_SCHOOLS == 0,
+  0.99, flow_data2$DESTIN_SCHOOLS)
+```
+
+::: {.callout-note title="Summary(flow_data2) " collapse="true"}
+## Summary(flow_data2)
+
+```{r}
+summary(flow_data2)
+```
+:::
+
+::: {.callout-note title="Save and Load RDS " collapse="true"}
+## Save and Load RDS
+
+```{r}
+write_rds(flow_data2, "data/rds/flow_data2.rds")
+flow_data2 <- read_rds("data/rds/flow_data2.rds")
+```
+:::
+
+## Unconstrained Spatial Interaction Model 
+
+```{r}
+#| code-fold: true
+uncSIM_biz <- glm(formula = TRIPS ~ 
+                log(ORIGIN_BUSINESS) + 
+                log(DESTIN_BUSINESS) +
+                log(dist),
+              family = poisson(link = "log"),
+              data = flow_data2,
+              na.action = na.exclude)
+```
+
+```{r}
+write_rds(uncSIM_biz, "data/rds/uncSIM_biz.rds")
+uncSIM_biz <- read_rds("data/rds/uncSIM_biz.rds")
+```
+
+```{r}
+uncSIM_biz
+```
+
+## R-squared function
+
+```{r}
+#create function to calculate r-squared value 
+CalcRSquared <- function(observed,estimated){
+  r <- cor(observed,estimated)
+  R2 <- r^2
+  R2
+}
+```
+
+```{r}
+CalcRSquared(uncSIM_biz$data$TRIPS, uncSIM_biz$fitted.values)
+```
+
+```{r}
+#r2_mcfadden(uncSIM_biz)
+```
+
+```{r}
+pR2(uncSIM_biz)['McFadden']
+```
+
+## Origin (Production) constrained SIM
+
+```{r}
+orcSIM_biz <- glm(formula = TRIPS ~ 
+                 ORIGIN_ID +
+                 log(DESTIN_BUSINESS) +
+                 log(dist),
+              family = poisson(link = "log"),
+              data = flow_data2,
+              na.action = na.exclude)
+```
+
+::: {.callout-note title="Save and Load RDS " collapse="true"}
+## Save and Load RDS
+```{r}
+write_rds(orcSIM_biz, "data/rds/orcSIM_biz.rds")
+orcSIM_biz <- read_rds("data/rds/orcSIM_biz.rds")
+
+```
+:::
+
+::: {.callout-tip title="Summary(orcSIM_biz)" collapse="true"}
+## summary(orcSIM_biz)
+```{r}
+summary(orcSIM_biz)
+```
+:::
