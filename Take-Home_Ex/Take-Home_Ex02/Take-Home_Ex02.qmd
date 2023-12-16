@@ -25,7 +25,7 @@ The original data was downloaded on 18th November 2023 from **LTA DataMall** und
 
 The code chunk below uses `pacman:: p_load()` to load and install the following libraries:
 
--   **\`mlogit\`\`** : \[to add\]
+-   **\`performance\`\`** : \[to add\]
 
 -   **\`reshape2\`\`** : \[to add\]
 
@@ -40,7 +40,7 @@ The code chunk below uses `pacman:: p_load()` to load and install the following 
 -   **`tmap`** : Used for thematic mapping
 
 ```{r}
-pacman::p_load(pscl, reshape2, sp, sf, spdep, sfdep, stplanr, tidyverse, tmap)
+pacman::p_load(ggpubr, performance, reshape2, sp, sf, spdep, sfdep, stplanr, tidyverse, tmap)
 ```
 
 ## 2.2 Import and Load Dataset
@@ -519,6 +519,8 @@ tm_shape(finserv_sf) +
 
 # HDB
 
+note that some residential area have commercial etc, would be a mixed development but we will include it in our analysis. 
+
 ```{r}
 #| code-fold: true
 
@@ -526,13 +528,21 @@ tm_shape(finserv_sf) +
 hdb <- read_csv("data/aspatial/hdb.csv") %>%
   rename(latitude = "lat",
          longitude = "lng") %>%
-  select(postal, addr, latitude, longitude)
+  filter(residential == "Y") 
 
 #converting an aspatial data into sf tibble data.frame
 hdb_sf <- st_as_sf(hdb, 
                        coords = c("longitude", "latitude"),
                        crs=4326) %>%
   st_transform(crs = 3414)
+
+#identify intersection between hdb and hex_grid to compute total_dwelling units 
+hdb_sf_sum <- st_intersection(hdb_sf, hex_grid) %>%
+  group_by(grid_id) %>%
+  summarise(
+    HDB_SUM = sum(total_dwelling_units)
+  ) %>%
+  ungroup() 
 
 #plotting point symbol map with analytical hexagon grid
 tmap_options(check.and.fix = TRUE)
@@ -556,7 +566,7 @@ tm_shape() +
             legend.outside = FALSE,
             legend.position = c("right", "bottom"),
             frame = FALSE) +
-tm_shape(hdb_sf) +
+tm_shape(hdb_sf_sum) +
   tm_dots(col = "lightblue") +
   tm_layout(main.title = "HDB Spot",
             main.title.position = "center",
@@ -703,9 +713,11 @@ tm_shape(schools_sf) +
             frame = FALSE) 
 
 ```
-
-
 :::
+
+We append the point symbol to our existing map. Based on the commuting flow of Weekday Morning (0600-0900), we will drop off: - Entertainment - Food & Beverages - Leisure & Recreation
+
+For future analysis, we will be focusing on Business, Financial Services, HDB, Retail, and School.
 
 ### 3.2 Compute point-in-polygon count
 
@@ -722,34 +734,6 @@ hex_grid$`BUSINESS_COUNT`<- lengths(st_intersects(hex_grid, business_sf))
 
 ```{r}
 summary(hex_grid$BUSINESS_COUNT)
-```
-
-# Entertainment
-
-## Count number of Entertainment in Hexagon Grid
-
-```{r}
-hex_grid$`ENTERTAINMENT_COUNT`<- lengths(st_intersects(hex_grid, entertn_sf))
-```
-
-## Summary Statistics
-
-```{r}
-summary(hex_grid$ENTERTAINMENT_COUNT)
-```
-
-# F&B
-
-## Count number of Food and Beverages in Hexagon Grid
-
-```{r}
-hex_grid$`fnb_COUNT`<- lengths(st_intersects(hex_grid, fnb_sf))
-```
-
-## Summary Statistics
-
-```{r}
-summary(hex_grid$fnb_COUNT)
 ```
 
 # Financial Service
@@ -771,27 +755,24 @@ summary(hex_grid$finserv_COUNT)
 ## Count number of HDB in Hexagon Grid
 
 ```{r}
-hex_grid$`HDB_COUNT`<- lengths(st_intersects(hex_grid, hdb_sf))
+#| code-fold: true
+hdb_sf_units <- st_intersection(hdb_sf, hex_grid) %>%
+  st_drop_geometry() %>%
+  group_by(grid_id) %>%
+  summarise(
+    HDB_SUM = sum(total_dwelling_units)
+  ) %>%
+  ungroup() 
+
+hex_grid <- left_join(hex_grid, hdb_sf_units, by = "grid_id") 
+hex_grid$HDB_SUM <- replace_na(hex_grid$HDB_SUM, 0)
+  
 ```
 
 ## Summary Statistics
 
 ```{r}
-summary(hex_grid$HDB_COUNT)
-```
-
-# Leisure & Recreation
-
-## Count number of Leisure & Recreation in Hexagon Grid
-
-```{r}
-hex_grid$`lnr_COUNT`<- lengths(st_intersects(hex_grid, lnr_sf))
-```
-
-## Summary Statistics
-
-```{r}
-summary(hex_grid$lnr_COUNT)
+summary(hex_grid$HDB_SUM)
 ```
 
 # Retail
@@ -808,7 +789,6 @@ hex_grid$`retail_COUNT`<- lengths(st_intersects(hex_grid, retail_sf))
 summary(hex_grid$retail_COUNT)
 ```
 
-
 # School
 
 ## Count number of School in Hexagon Grid
@@ -822,12 +802,7 @@ hex_grid$`school_COUNT`<- lengths(st_intersects(hex_grid, schools_sf))
 ```{r}
 summary(hex_grid$school_COUNT)
 ```
-
 :::
-
-We append the point symbol to our existing map. Based on the commuting flow of Weekday Morning (0600-0900), we will drop off: - Entertainment - Food & Beverages - Leisure & Recreation
-
-For future analysis, we will be focusing on Business, Entertainment, F&B, and Financial Service.
 
 ## 4. Distance Matrix
 
@@ -898,10 +873,10 @@ write_rds(distPair, "data/rds/distPair.rds")
 distPair <- read_rds("data/rds/distPair.rds")
 ```
 
-### Prepare flow data 
+### Prepare flow data
 
 ```{r}
-flow_data <- od_data %>%
+flow_data <- od_data1 %>%
   group_by(ORIGIN_ID, DESTIN_ID) %>% 
   summarize(TRIPS = sum(MORNING_PEAK)) 
 
@@ -942,20 +917,7 @@ flow_data1 <- flow_data %>%
                     "DESTIN_ID" = "dest"))
 ```
 
-### Preparing Origin Attributes 
-
-```{r}
-
-business_sff <- st_intersection(business_sf, hex_grid)  
-
-business_sff$grid_id = as.factor(business_sff$grid_id) 
-
-business_sff <- business_sff %>%
-      select(POI_NAME, grid_id) %>%
-  st_drop_geometry()
-```
-
-## COUNT 
+### Preparing Origin Attributes
 
 ```{r}
 #| code-fold: true
@@ -963,11 +925,8 @@ flow_data2 <- flow_data1 %>%
   left_join(hex_grid,
             by = c(ORIGIN_ID = "grid_id")) %>%
     rename(ORIGIN_BUSINESS = BUSINESS_COUNT,
-         ORIGIN_ENTERTAINMENT = ENTERTAINMENT_COUNT,
-         ORIGIN_FNB = fnb_COUNT,
          ORIGIN_FINSER = finserv_COUNT,
-         ORIGIN_HDB = HDB_COUNT,
-         ORIGIN_LEISURE = lnr_COUNT,
+         ORIGIN_HDB = HDB_SUM,
          ORIGIN_RETAIL = retail_COUNT,
          ORIGIN_SCHOOLS =school_COUNT
          ) %>%
@@ -977,19 +936,15 @@ flow_data2 <- flow_data2 %>%
   left_join(hex_grid,
             by = c(DESTIN_ID = "grid_id")) %>%
     rename(DESTIN_BUSINESS = BUSINESS_COUNT,
-         DESTIN_ENTERTAINMENT = ENTERTAINMENT_COUNT,
-         DESTIN_FNB = fnb_COUNT,
          DESTIN_FINSER = finserv_COUNT,
-         DESTIN_HDB = HDB_COUNT,
-         DESTIN_LEISURE = lnr_COUNT,
+         DESTIN_HDB = HDB_SUM,
          DESTIN_RETAIL = retail_COUNT,
          DESTIN_SCHOOLS =school_COUNT
          ) %>%
   select(-c(bus_stops)) %>%
-  select(1:6,8:15,17:24)
+  select(-c(10,16))
 
 ```
-
 
 ```{r}
 ggplot(data = flow_data2,
@@ -1017,35 +972,16 @@ ggplot(data = flow_data2,
 ```{r}
 summary(flow_data2)
 ```
-The print report above reveals that that there are 17 variables that consist of 0 values, and 1 variable with 0.00001. As such, we will replace it with 0.99. 
+
+The print report above reveals that that there are 10 variables that consist of 0 values. As such, we will replace it with 0.99.
 
 ```{r}
 #| code-fold: true
-
-#FlowNoIntra
-flow_data2$FlowNoIntra <- ifelse(
-  flow_data2$FlowNoIntra == 0,
-  0.99, flow_data2$FlowNoIntra)
-
-#offset
-flow_data2$offset <- ifelse(
-  flow_data2$offset == 0,
-  0.99, flow_data2$offset)
 
 #ORIGIN_BUSINESS
 flow_data2$ORIGIN_BUSINESS <- ifelse(
   flow_data2$ORIGIN_BUSINESS == 0,
   0.99, flow_data2$ORIGIN_BUSINESS)
-
-#ORIGIN_ENTERTAINMENT 
-flow_data2$ORIGIN_ENTERTAINMENT  <- ifelse(
-  flow_data2$ORIGIN_ENTERTAINMENT == 0,
-  0.99, flow_data2$ORIGIN_ENTERTAINMENT)
-
-#ORIGIN_FNB  
-flow_data2$ORIGIN_FNB <- ifelse(
-  flow_data2$ORIGIN_FNB  == 0,
-  0.99, flow_data2$ORIGIN_FNB)
 
 #ORIGIN_FINSER 
 flow_data2$ORIGIN_FINSER  <- ifelse(
@@ -1056,11 +992,6 @@ flow_data2$ORIGIN_FINSER  <- ifelse(
 flow_data2$ORIGIN_HDB  <- ifelse(
   flow_data2$ORIGIN_HDB == 0,
   0.99, flow_data2$ORIGIN_HDB)
-
-#ORIGIN_LEISURE
-flow_data2$ORIGIN_LEISURE  <- ifelse(
-  flow_data2$ORIGIN_LEISURE == 0,
-  0.99, flow_data2$ORIGIN_LEISURE)
 
 #ORIGIN_RETAIL
 flow_data2$ORIGIN_RETAIL  <- ifelse(
@@ -1077,16 +1008,6 @@ flow_data2$DESTIN_BUSINESS <- ifelse(
   flow_data2$DESTIN_BUSINESS == 0,
   0.99, flow_data2$DESTIN_BUSINESS)
 
-#DESTIN_ENTERTAINMENT 
-flow_data2$DESTIN_ENTERTAINMENT  <- ifelse(
-  flow_data2$DESTIN_ENTERTAINMENT == 0,
-  0.99, flow_data2$DESTIN_ENTERTAINMENT)
-
-#DESTIN_FNB  
-flow_data2$DESTIN_FNB <- ifelse(
-  flow_data2$DESTIN_FNB  == 0,
-  0.99, flow_data2$DESTIN_FNB)
-
 #DESTIN_FINSER 
 flow_data2$DESTIN_FINSER  <- ifelse(
   flow_data2$DESTIN_FINSER == 0,
@@ -1096,11 +1017,6 @@ flow_data2$DESTIN_FINSER  <- ifelse(
 flow_data2$DESTIN_HDB  <- ifelse(
   flow_data2$DESTIN_HDB == 0,
   0.99, flow_data2$DESTIN_HDB)
-
-#DESTIN_LEISURE
-flow_data2$DESTIN_LEISURE  <- ifelse(
-  flow_data2$DESTIN_LEISURE == 0,
-  0.99, flow_data2$DESTIN_LEISURE)
 
 #DESTIN_RETAIL
 flow_data2$DESTIN_RETAIL  <- ifelse(
@@ -1113,14 +1029,6 @@ flow_data2$DESTIN_SCHOOLS  <- ifelse(
   0.99, flow_data2$DESTIN_SCHOOLS)
 ```
 
-::: {.callout-note title="Summary(flow_data2) " collapse="true"}
-## Summary(flow_data2)
-
-```{r}
-summary(flow_data2)
-```
-:::
-
 ::: {.callout-note title="Save and Load RDS " collapse="true"}
 ## Save and Load RDS
 
@@ -1130,26 +1038,50 @@ flow_data2 <- read_rds("data/rds/flow_data2.rds")
 ```
 :::
 
-## Unconstrained Spatial Interaction Model 
+::: {.callout-note tip="Summary(flow_data2) " collapse="true"}
+## Summary(flow_data2)
+
+```{r}
+summary(flow_data2)
+```
+:::
+
+## Unconstrained Spatial Interaction Model
 
 ```{r}
 #| code-fold: true
-uncSIM_biz <- glm(formula = TRIPS ~ 
+#| eval: false
+uncSIM <- glm(formula = TRIPS ~ 
                 log(ORIGIN_BUSINESS) + 
                 log(DESTIN_BUSINESS) +
+                log(ORIGIN_FINSER) + 
+                log(DESTIN_FINSER) +
+                log(ORIGIN_HDB) + 
+                log(DESTIN_HDB) +
+                log(ORIGIN_RETAIL) + 
+                log(DESTIN_RETAIL) +
+                log(ORIGIN_SCHOOLS) + 
+                log(DESTIN_SCHOOLS) +
                 log(dist),
               family = poisson(link = "log"),
               data = flow_data2,
               na.action = na.exclude)
+#save RDS
+write_rds(uncSIM, "data/rds/uncSIM.rds")
 ```
 
-```{r}
-write_rds(uncSIM_biz, "data/rds/uncSIM_biz.rds")
-uncSIM_biz <- read_rds("data/rds/uncSIM_biz.rds")
-```
+::: {.callout-note title="Load RDS " collapse="true"}
+## Load uncSIM RDS
 
 ```{r}
-uncSIM_biz
+uncSIM <- read_rds("data/rds/uncSIM.rds")
+```
+:::
+
+## View uncSIM
+
+```{r}
+uncSIM
 ```
 
 ## R-squared function
@@ -1164,41 +1096,207 @@ CalcRSquared <- function(observed,estimated){
 ```
 
 ```{r}
-CalcRSquared(uncSIM_biz$data$TRIPS, uncSIM_biz$fitted.values)
+CalcRSquared(uncSIM$data$TRIPS, uncSIM$fitted.values)
 ```
 
 ```{r}
-#r2_mcfadden(uncSIM_biz)
-```
-
-```{r}
-pR2(uncSIM_biz)['McFadden']
+r2_mcfadden(uncSIM)
 ```
 
 ## Origin (Production) constrained SIM
 
 ```{r}
-orcSIM_biz <- glm(formula = TRIPS ~ 
+#| code-fold: true
+#| eval: false
+orcSIM <- glm(formula = TRIPS ~ 
                  ORIGIN_ID +
                  log(DESTIN_BUSINESS) +
+                 log(DESTIN_FINSER) +
+                 log(DESTIN_HDB) +
+                 log(DESTIN_RETAIL) +
+                 log(DESTIN_SCHOOLS) +
                  log(dist),
               family = poisson(link = "log"),
               data = flow_data2,
               na.action = na.exclude)
+#save RDS
+write_rds(orcSIM, "data/rds/orcSIM.rds")
+
 ```
 
-::: {.callout-note title="Save and Load RDS " collapse="true"}
-## Save and Load RDS
-```{r}
-write_rds(orcSIM_biz, "data/rds/orcSIM_biz.rds")
-orcSIM_biz <- read_rds("data/rds/orcSIM_biz.rds")
+::: {.callout-note title="Load RDS " collapse="true"}
+## Load orcSIM RDS
 
+```{r}
+orcSIM <- read_rds("data/rds/orcSIM.rds")
 ```
 :::
 
-::: {.callout-tip title="Summary(orcSIM_biz)" collapse="true"}
-## summary(orcSIM_biz)
+::: {.callout-tip title="Summary(orcSIM)" collapse="true"}
+## Summary(orcSIM)
+
 ```{r}
-summary(orcSIM_biz)
+summary(orcSIM)
+options(max.print = 1000000)
 ```
 :::
+
+## Destination constrained SIM
+
+```{r}
+#| code-fold: true
+#| eval: false
+decSIM <- glm(formula = TRIPS ~ 
+                DESTIN_ID + 
+                log(ORIGIN_BUSINESS) + 
+                log(ORIGIN_FINSER) + 
+                log(ORIGIN_HDB) + 
+                log(ORIGIN_RETAIL) + 
+                log(ORIGIN_SCHOOLS) + 
+                log(dist),
+              family = poisson(link = "log"),
+              data = flow_data2,
+              na.action = na.exclude)
+#save RDS
+write_rds(decSIM, "data/rds/decSIM.rds")
+```
+
+::: {.callout-note title="Load RDS " collapse="true"}
+## Load decSIM RDS
+
+```{r}
+decSIM <- read_rds("data/rds/decSIM.rds")
+```
+:::
+
+::: {.callout-tip title="Summary(decSIM)" collapse="true"}
+## Summary(decSIM)
+
+```{r}
+summary(decSIM)
+options(max.print = 1000000)
+```
+:::
+
+## Doubly constrained SIM
+
+```{r}
+#| code-fold: true
+#| eval: false
+dbcSIM <- glm(formula = TRIPS ~ 
+                ORIGIN_ID + 
+                DESTIN_ID + 
+                log(dist),
+              family = poisson(link = "log"),
+              data = flow_data2,
+              na.action = na.exclude)
+#save RDS
+write_rds(dbcSIM, "data/rds/dbcSIM.rds")
+```
+
+::: {.callout-note title="Load RDS " collapse="true"}
+## Load dbcSIM RDS
+
+```{r}
+dbcSIM <- read_rds("data/rds/dbcSIM.rds")
+```
+:::
+
+::: {.callout-tip title="Summary(dbcSIM)" collapse="true"}
+## Summary(dbcSIM)
+
+```{r}
+summary(dbcSIM)
+options(max.print = 1000000)
+```
+:::
+
+## Calculate R-squared
+
+```{r}
+CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
+```
+
+## Model Comparison
+
+```{r}
+model_list <- list(unconstrained=uncSIM,
+                   originConstrained=orcSIM,
+                   destinationConstrained=decSIM,
+                   doublyConstrained=dbcSIM)
+
+```
+
+```{r}
+compare_performance(model_list,
+                    metrics = "RMSE")
+```
+# Visualize Fitting 
+
+```{r}
+df <- as.data.frame(uncSIM$fitted.values) %>%
+  round(digits = 0)
+
+flow_data2 <- flow_data2 %>%
+  cbind(df) %>%
+  rename(uncTRIPS = "uncSIM$fitted.values")
+```
+
+
+```{r}
+df <- as.data.frame(orcSIM$fitted.values) %>%
+  round(digits = 0)
+
+flow_data2 <- flow_data2 %>%
+  cbind(df) %>%
+  rename(orcTRIPS = "orcSIM$fitted.values")
+```
+
+```{r}
+df <- as.data.frame(decSIM$fitted.values) %>%
+  round(digits = 0)
+
+flow_data2 <- flow_data2 %>%
+  cbind(df) %>%
+  rename(decTRIPS = "decSIM$fitted.values")
+```
+
+```{r}
+df <- as.data.frame(dbcSIM$fitted.values) %>%
+  round(digits = 0)
+
+flow_data2 <- flow_data2 %>%
+  cbind(df) %>%
+  rename(dbcTRIPS = "dbcSIM$fitted.values")
+
+```
+
+```{r}
+unc_p <- ggplot(data = flow_data2,
+                aes(x = uncTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+orc_p <- ggplot(data = flow_data2,
+                aes(x = orcTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+dec_p <- ggplot(data = flow_data2,
+                aes(x = decTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+dbc_p <- ggplot(data = flow_data2,
+                aes(x = dbcTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+ggarrange(unc_p, orc_p, dec_p, dbc_p,
+          ncol = 2,
+          nrow = 2)
+```

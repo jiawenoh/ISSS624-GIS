@@ -1,0 +1,281 @@
+---
+title: "In-class Exercise 5"
+author: "Oh Jia Wen"
+date: 12/16/2023
+date-modified: "last-modified"
+execute: 
+  echo: true
+  eval: false
+  warning: false
+---
+
+# 1. Getting Started
+
+## 1.1 Install and launching R packages
+
+The code chunk below uses **p_load()** of pacman package to check if the packages below are installed into the R environment. If they are, then they will be launched into R.
+
+```{r}
+pacman::p_load(tmap,sf,spdep,sp,Matrix,reshape2,knitr,tidyverse)
+```
+
+Noting that spFlow has a updated version from its github, we will load using `devtools()` instead of installing the **spflow** package. 
+
+```{r}
+#|eval: false
+devtools::install_github("LukeCe/spFlow")
+```
+
+# 2. Data Preparaion
+
+Before we can calibrate the Spatial Econometric Interaction Models by using **spflow** package, three data sets are required:
+ 
+ - a spatial weights,
+ - a tibble data.frame consists of the origins, destination, flows, and distances between the origins and destination, and 
+ - a tibble data.frame consists of the explanatory variables. 
+
+## 2.1 Building the greographical area. 
+
+We will be using the URA Master Planning 2019 Subzone GIS data. The code chunk below will impot `MPSZ-2019` shapefile into R environment as a sf tibble data.frame called **mpsz**. 
+
+```{r}
+mpsz <- st_read(dsn = 'data/geospatial', layer = 'MPSZ-2019') %>%
+  st_transform(crs= 3414)
+```
+Secondly, we will import the `bus_stop` shapefile into R environmetn as a sf tibble data.frame called *busstop*.
+
+```{r}
+busstop <- st_read(dsn = 'data/geospatial', layer = 'BusStop') %>%
+  st_transform(crs= 3414)
+```
+
+## 2.2 Preparing the Spatial Weights
+
+In this study, our analysis will focused on planning subzone with bus stops. 
+
+
+```{r}
+mpsz$`BUSSTOP_COUNT` <- lengths(st_intersects(mpsz,busstop))
+```
+
+```{r}
+mpsz_busstop <- mpsz %>%
+  filter(BUSSTOP_COUNT >0) 
+
+mpsz_busstop
+```
+
+```{r}
+centroids <- suppressWarnings(
+  {st_point_on_surface(st_geometry(mpsz_busstop))}
+)
+
+mpsz_nb <- list(
+  "by_contiguity" = poly2nb(mpsz_busstop),
+  "by_distance" = dnearneigh(centroids, d1=0, d2= 5000),
+  "by_knn" = knn2nb(knearneigh(centroids,3))
+)
+```
+
+To view the summary of **mpsz_nb** : 
+
+```{r}
+mpsz_nb
+```
+
+```{r}
+plot(st_geometry(mpsz))
+
+plot(mpsz_nb$by_contiguity,
+     centroids,
+     add = T,
+     col = rgb(0,0,0, alpha =0.5))
+title("Contiguity")
+
+plot(mpsz_nb$by_distance,
+     centroids,
+     add = T,
+     col = rgb(0,0,0, alpha =0.5))
+title("Distance")
+
+plot(mpsz_nb$by_knn,
+     centroids,
+     add = T,
+     col = rgb(0,0,0, alpha =0.5))
+title("KNN")
+
+```
+
+## 2.3 Preparing the Flow data
+
+```{r}
+odbus <- read_rds("data/rds/odbus6_9.rds")
+```
+
+```{r}
+#|eval: false
+busstop_mpsz <- st_intersections(busstop, mpsz) %>%
+  select(BUS_STOP_N, SUBZONE_C) %>%
+  st_drop_geometry()
+```
+
+Next, we will append the planning subzone code from **busstop_mpsz** data.frame onto **odbus6_9** data frame.
+
+```{r}
+#|eval: false
+od_data <- left_join(odbus6_9, busstop_mpsz,
+                     by = c("ORIGIN_PT_CODE", "BUS_STOP_N"))
+
+```
+
+
+# 3. Importing RDS  
+
+```{r}
+#|eval: false
+mpsz_nb <- read_rds("data/rds/mpsz_nb.rds")
+mpsz_flow <- read_rds("data/rds/mpsz_flow.rds")
+mpsz_var <- read_rds("data/rds/mpsz_var.rds")
+```
+
+# 4. Spatial Network 
+
+## 4.1 Using **spflow_network_class** objects
+
+`spflow_network_class()` is an S$ class that contains all information on a spatial network which is composed by a set of nodes that are linked by some neighborhood relation. We will be using the contiguity based neighborhood structure. 
+
+```{r}
+#|eval: false
+mpsz_net <- sp_network_nodes(
+  id_net= "sg",
+  node_neighborhood = nb2mat(mpsz_nb$by_contiguity),
+  node_data = mpsz_var,
+  node_key_column = "SZ_CODE")
+
+mpsz_net
+```
+
+## 4.2 Spatial Network Class
+Each OD pair is composed of two nodes, each belonging to one network. All origin nodes must belong to the same origin network should be contained in one `spflow_network_class` object. This applies to destinations too. 
+
+
+In **spflow** package, 
+
+```{r}
+mpsz_net_pairs <- spflow_network_pair(
+  id_orig_net ="sg",
+  id_dest_net = "sg",
+  pair_data = mpsz_flow,
+  orig_key_column = "ORIGIN_SZ",
+  dest_key_column = "DESTIN_SZ")
+  
+mpsz_net_pairs
+```
+
+## 4.3 Joining Data 
+
+The `sp_multi_network-class` combines information on the nodes and the node-pairs and also ensures that both data sources are consistent. E.g., if some of the origin in the `sp_network_pair-class` are not identified with the nodes in the `sp_network_nodes-class` an error will be raised. 
+
+```{r}
+#|eval: false
+mpsz_multi_net <- spflow_network_multi(mpsz_net, mpsz_net_pairs)
+
+mpsz_multi_net
+```
+
+# col
+
+```{r}
+#|eval: false
+cor_formula <- log(1+TRIPS) ~
+  BUSSTOP_COUNT +
+  AGE7_12 + 
+  AGE13_24 + 
+  AGE25_64 +
+  SCHOOL_COUNT + 
+  BUSINESS_COUNT + 
+  RETAILS_COUNT + 
+  FINSERV_COUNT +
+  P_(log(DISTANCE +1 ))
+```
+
+```{r}
+#|eval: false
+cor_mat <- pair_cor(no
+  mpsz_multi_net,
+  spflow_formula = cor_formula,
+  add_lags_x = FALSE)
+
+colname(cor_mat) <- paste0(
+  substr(
+    colnames(cor_mat),1,3),"...")
+
+cor_image(cor_mat)
+```
+
+
+
+```{r}
+#|eval: false
+base_model <- spflow(
+  spflow_formula = log(1+ TRIPS) ~
+    O_(BUSSTOP_COUNT +
+         AGE25_64) +
+    D_(SCHOOLS_COUNT +
+         BUSINESS_COUNT + 
+         RETAILS_COUNT +
+         FINSERV__COUNT ) +
+    P_(log(DISTANCE +1)),
+spflow_networks = mpsz_multi_net)
+
+base_model
+
+```
+
+# Plot the Moran Scatterplot 
+
+```{r}
+#|eval: false
+old_par <- par(mfrow =c(1,3),
+               mar = c(2,2,2,2))
+
+spflow_moran_plots(base_model)
+```
+
+```{r}
+#|eval: false
+par(old_par)
+```
+
+Next, `pair_cor()` will be used to inspect the relationship of the residual and the explortary variables through the code chunk below: 
+
+```{r}
+#|eval: false
+corr_residual <- pair_cor(base_model)
+colnames(corr_residual) <- substr(colnames(corr_residual),1,3)
+cor_image(corr_residual)
+```
+
+
+```{r}
+#|eval: false
+spflow_formula <- log(1+ TRIPS) ~
+    O_(BUSSTOP_COUNT +
+         AGE25_64) +
+    D_(SCHOOLS_COUNT +
+         BUSINESS_COUNT + 
+         RETAILS_COUNT +
+         FINSERV__COUNT ) +
+    P_(log(DISTANCE +1))
+
+model_control <- spflow_control(
+  estimation_method = "mle",
+  model = "model_8")
+
+mle_model8 <- spflow(
+  spflow_formulae,
+  spflow_networks = mpsz_multi_net,
+  estimation_control = model_control)
+
+mle_model8
+```
