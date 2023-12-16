@@ -15,9 +15,7 @@ As city-wide urban infrastructures such as public bus, mass rapid transits, publ
 
 ## 1.1 The Task
 
-This exercise aims to reveals the urban mobility patterns of public bus transit through geospatial data science and analysis (GDSA), and spatial interaction models.
-ars
-The original data was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops. For the purpose of this exercise, we will be using the **August** data - origin_destination_bus_202308.csv for **Weekday Morning Peak (6-9am)**.
+This exercise aims to reveals the urban mobility patterns of public bus transit through geospatial data science and analysis (GDSA), and spatial interaction models. ars The original data was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops. For the purpose of this exercise, we will be using the **August** data - origin_destination_bus_202308.csv for **Weekday Morning Peak (6-9am)**.
 
 # 2. Data preparation
 
@@ -25,9 +23,9 @@ The original data was downloaded on 18th November 2023 from **LTA DataMall** und
 
 The code chunk below uses `pacman:: p_load()` to load and install the following libraries:
 
--   **\`performance\`\`** : \[to add\]
+-   **`performance`** : Used for computing measures to access model quality that are not directly provided by R's 'base' or 'stats' packages.
 
--   **\`reshape2\`\`** : \[to add\]
+-   **`reshape2`** : Used to restructure and aggregate data
 
 -   **`sf`** : Used for geospatial data handling
 
@@ -37,19 +35,20 @@ The code chunk below uses `pacman:: p_load()` to load and install the following 
 
 -   **`tidyverse`**: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis
 
--   **`tmap`** : Used for thematic mapping
+-   **`tmap`** : Used for thematic mapping where spatial data distributions are visualized.
 
 ```{r}
-pacman::p_load(ggpubr, performance, reshape2, sp, sf, spdep, sfdep, stplanr, tidyverse, tmap)
+pacman::p_load(ggpubr, performance, reshape2, sp, 
+               sf, spdep, sfdep, stplanr, tidyverse, tmap)
 ```
 
 ## 2.2 Import and Load Dataset
 
-Three data and a hexagon layer will be used for this study :
+For the purpose of this exercise, we will be using three data sets.
 
 -   `origin_destination_bus_202308.csv` : A csv file containing information about all the bus stops currently being serviced by bus, which includes bus stop identifier, and location coordinates.
 
--   *`Bus Stop Location`* . A geospatial file from LTA DataMall
+-   *`Bus Stop Location`* . A geospatial file retrieved from LTA DataMall
 
 -   `Master Plan 2019 Subzone Boundary` : A polygon feature layer in ESRI shapefile format.
 
@@ -87,7 +86,7 @@ glimpse(busstop)
 
 #### 2.2.2.2 Import MPSZ data
 
-In addition, we will similar approach - `sf::st_read()` to import and `sf::st_transform()` to ensure that the projected coordinate system is in the right format before storing in variable **mpsz**.
+Similarily, we used `sf::st_read()` to import and `sf::st_transform()` to ensure that the projected coordinate system is in the right format before storing in variable **mpsz**.
 
 ```{r}
 mpsz <- st_read(dsn = "data/geospatial",
@@ -130,15 +129,21 @@ any(is.na(odbus_new))
 
 #### 2.3.1.1 Analytical Hexagon
 
-Thereafter, we will create the analytical hexagon grid. With reference from [Urban Data Palette](https://urbandatapalette.com/post/2021-08-tessellation-sf/), we will perform the following steps:
+To get a better representative of the traffic analysis zone (TAZ), we will create an analytical hexagon grid. With reference from [Urban Data Palette](https://urbandatapalette.com/post/2021-08-tessellation-sf/), we will used the code chunk below and execute in the following sequence:
 
--   `st_make_grid()` : create a regular grid of spatial polygons. To reflect the distance from centre of the hexagon to its edge, we will revise the cell width and height to c(750,750).
+-   `st_make_grid()` : create a regular grid of spatial polygons. To reflect the distance from centre of the hexagon to its edge (375m), we will revise the cell width and height to c(750,750) to reflect the full diameter.
 
 -   `st_sf()` : convert the honeycomb grid object to an sf object. We used `[mpsz$geometry]` to identify hexagon grid that intersects.
 
--   `rowid_to_column()` : add rowid as a column
+-   `rowid_to_column()` : add rowid as a column. Values in this column are the row IDs of each grid cell.
 
--   `tmap_options(check.and.fix = TRUE)` : force close polygon
+-   `lengths(st_intersects())` : assigns the number of bus stops for each cell to a new column named ***'bus_stops'*** in hex_grid. `st_intersects()` checks for intersections between two spatial objects.
+
+-   `as.factor()` : to coverts the ***'grid_id'*** column from`<int>` to `<fct>`
+
+-   `tmap_options(check.and.fix = TRUE)` : forcing the polygons to be closed
+
+-   `tm_shape()` + `tm_polygons()` : plot the honeycomb grid cells as polygons
 
 ```{r}
 #| code-fold: true
@@ -172,23 +177,27 @@ tm_borders(alpha = 0.3)
 
 #### 2.3.1.2 Commuting Flow
 
-Through the previous [exercise](https://isss624-ohjiawen.netlify.app/take-home_ex/take-home_ex01/take-home_ex01), where we look into the various commuting flows, we noticed that there are various regions with high volume. As such, we will focus on our flow on **Weekday Morning Peak (6-9am)**.
+Through the previous [exercise](https://isss624-ohjiawen.netlify.app/take-home_ex/take-home_ex01/take-home_ex01) in Take Home Exercise 1, we were able to have a better understanding of the commuting flows. We noticed that the Peak hour period for Weekdays were generally higher as compared to Weekends, which we believe, could bring us more insights. As such, we will focus on our commuting flow at **Weekday Morning Peak (6-9am)**.
 
-The code is extracted in the following manner:
+The code is extracted in the following sequence:
 
--   `filter()` is used to extract subset of data
+-   `filter()` is used to extract subset of data for the `DAY_TYPE` and `TIME_PER_HOUR`
 
--   `between()` is used to express a range condition
+-   `between()` is used to express a range condition for the `TIME_PER_HOUR`
 
--   `group_by()` and `summarise()` are used to sum the total trips
+-   `group_by()` is used to grouped data. In our code, we will be grouping it based on `ORIGIN_PT_CODE` and `DESTINATION_PT_CODE`
 
--   `arrange(desc())` to sort in descending order
+-   `summarise()` is used to sum the total number of trips
+
+-   `arrange(desc())` is used to sort in descending order
 
 -   `ungroup()` is used to end a definition, often use with `group_by()`
 
+Thereafter, we will save a copy of the output in rds format called **wkd6_9**.
+
 ```{r}
 #| code-fold: true
-
+#| eval: false
 wkd6_9 <- odbus_new %>%
   filter(DAY_TYPE == "WEEKDAY",
          between(TIME_PER_HOUR, 6, 9)) %>%
@@ -196,16 +205,20 @@ wkd6_9 <- odbus_new %>%
   summarise(TRIPS = sum(TOTAL_TRIPS)) %>%
   arrange(desc(TRIPS)) %>%
   ungroup()
+
+#save a copy in RDS format 
+write_rds(wkd6_9, "data/rds/wkd6_9.rds")
 ```
 
-Thereafter, we will save a copy of the output in rds format and reload it into the environment.
+As we are not executing the code chunk above, we will load **wkd6_9** into the R environment.
 
 ```{r}
-write_rds(wkd6_9, "data/rds/wkd6_9.rds")
 wkd6_9 <- read_rds("data/rds/wkd6_9.rds")
 ```
 
 #### 2.3.1.3 Visualing bus stops in hexagon grid
+
+After importing the bus stop location in Section 2.2.2.1, we will create a visualization to observe the number of bus stops in each hexagon grid ***(grid_id)***. To get a better contrast, we incorporated **RcolorBrewer** into our code by adding a purple palette.
 
 ```{r}
 #| code-fold: true
@@ -220,29 +233,86 @@ wkd6_9 <- read_rds("data/rds/wkd6_9.rds")
             legend.outside = FALSE,
             legend.position = c("right", "bottom"),
             frame = FALSE) +
-  tm_borders(alpha =0.3) 
+  tm_borders(alpha =0.3)
+  
 ```
 
-**Insights:**
+On average, we could see that most of the hexagon grids contain 6 to 10 bus stops with lesser dark colors hexagon grid as the data value increases. With the use of hexagon, we are able to identify the nearest neighbor by their common boundaries, infer that there might be some degree of influence as the colors does not differ significantly.
 
--   Majority of the hexagonal grid contains 6 to 10 bus stops.
+::: {.callout-note collapse="true" appearance="simple"}
+## More about Tmap Packages
 
--   Bus stops that are closely position in the grid, tend to have neighbors with similar patterns.
+-   `tm_shape() + Base Layer` : Main plotting method. Used to specify a shape object.
 
-### 2.3.2 Data Generation
+```         
+-   Base Layer includes:
 
-After extracting the commuting flow for Weekday Morning Peak, we will combine it into **busstop** sf data frame. To ensure distinct flows, we will use the `unique()` function into our code.
+    -   `tm_polygons()`  - Create a polygon later (with borders)
+
+    -   `tm_symbols()`  - Create a layer of symbols
+
+    -    `tm_lines()`  - Create a layer of lines
+
+    -    `tm_raster()`  - Create a raster layer
+
+    -    `tm_text()`  - Create a layer of text labels
+
+    -   `tm_basemap()`  - Create a layer of basemap tiles
+
+    -   `tm_tiles()`  - Create a layer of overlay tiles
+```
+
+-   Aesthetics derived layers, which includes:
+
+```         
+-   `tm_fill()` :  - Create a polygon layer (without borders)
+
+-   `tm_borders()` :  - Create a polygon borders
+
+-   `tm_bubbles()` :  - Create a layer of bubbles
+
+-   `tm_squares()` :  - Create a layer of squares
+
+-   `tm_dots()` :  - Create a layer of dots
+
+-   `tm_markers()` :  - Create a layer of markers
+
+-   `tm_iso()` :  - Create a layer of iso/contour lines
+
+-   `tm_rgb()` :  - Create a raster layer of an image
+```
+
+-   Facets
+
+-   Attributes
+
+-   Layout elements
+
+-   Tmap_mode
+
+For more information, click [here](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://cran.r-project.org/web/packages/tmap/tmap.pdf).
+:::
+
+## 2.4 Data Generation
+
+### 2.4.1 Combining Busstop and mpsz
+
+After extracting the commuting flow for **Weekday Morning Peak**, we will combine it into **busstop** sf data frame. To ensure distinct flows, we will use the `unique()` function into our code.
 
 ```{r}
 busstop_mpsz <- st_intersection(busstop, hex_grid) %>%
     select(BUS_STOP_N, grid_id) %>%
   st_drop_geometry()
-
 ```
 
-Next, we will update the `od_data` data frame with the planning subzone code.
+Thereafter, we will perform the `left_join()` function twice. Firstly, we will join it based on `ORIGIN_PT_CODE` , where we will rename some of the columns and retain unique records. Then, we will join it based on `DESTINATION_PT_CODE` which we have renamed it as `DESTIN_BS` earlier.
+
+After joining the data, we used `drop_na()` to removes any rows with missing values, and to group the data by origin and destination ID while computing the sum of trips for each origin-destination pair, saved under **MORNING_PEAK**. Lastly, a copy of the output - **od_data** was saved in RDS format.
 
 ```{r}
+#| code-fold: true
+#| eval: false
+#left_join based on Origin_PT_Code
 od_data <- left_join(wkd6_9 , busstop_mpsz,
             by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
   rename(ORIGIN_BS = ORIGIN_PT_CODE,
@@ -250,61 +320,46 @@ od_data <- left_join(wkd6_9 , busstop_mpsz,
          DESTIN_BS = DESTINATION_PT_CODE) %>%
   unique() %>%
   ungroup()
-```
 
-```{r}
+#left_join based on Destination_PT_code(rename as DESTIN_BS)
 od_data <- left_join(od_data , busstop_mpsz,
             by = c("DESTIN_BS" = "BUS_STOP_N")) %>%
   unique() %>%
   ungroup()
-```
 
-```{r}
+# compute the morning peak trips between origin and destination grid
 od_data <- od_data %>%
   rename(DESTIN_ID = grid_id) %>%
   drop_na() %>%
   group_by(ORIGIN_ID, DESTIN_ID) %>%
-  summarise(MORNING_PEAK = sum(TRIPS))
+  summarise(MORNING_PEAK = sum(TRIPS)) %>%
+  ungroup()
+
+#save a copy in RDS format
+write_rds(od_data, "data/rds/od_data.rds")
 ```
 
-We will save a copy of the output in rds file format.
+We will load **od_data** into the R environment.
 
 ```{r}
-write_rds(od_data, "data/rds/od_data.rds")
 od_data <- read_rds("data/rds/od_data.rds")
 ```
 
-#### 2.3.2.3 Compute by Hexagon Grid ID
+### 2.4.2 Visualizing Spatial Interaction
 
-After creating the joined data frame, we are interested in knowing the number of bus stops in each grid and the total number of trips. As such, we performed the following steps:
+With the joined data - **od_data**, we will prepare a desire line by using the **stplanr** package by removing the intra-zonal flows, creating the desire lines, and to visualize the desire lines.
 
--   `mutate()` : Used to replace TRIPS with N/A to 0.
+#### 2.4.2.1 Remove Intra-zonal flows
 
--   `filter()` : Used to remove data with 0 trip
-
--   `group_by()`: Used to group data based on **grid_id**.
-
--   `summarize()` :
-
-    -   `n()` : Used to count number of bus stops and save as *bus_stop_count*
-
-    -   `sum()` : Used to sum the TRIPS values and save as *total_trips*
-
--   `ungroup()` : Used to end a definition, often use with `group_by()`
-
-```{r}
-#| code-fold: true
-```
-
-We used `any(is.na())` to check and confirmed that there is no missing values for our data frame
-
-#### Remove Intra-zonal flows
+Intra-zonal flows refer to trips that take place within the same zone or area. In our context, it refers to the passenger commuting within the hexagon grid of 750m. As we will not be plotting the intra-zonal flows, the following code chunk below are used to only keep rows where the `Origin_ID` is not equal to the `DESTIN_ID`.
 
 ```{r}
 od_data1 <- od_data[od_data$ORIGIN_ID!=od_data$DESTIN_ID,]
 ```
 
-#### Create desire lines
+#### 2.4.2.2 Create desire lines
+
+Using the `stplanr::od2line()` function, we will create a line object where the ***flow*** refers to the data containing origin and destination information, ***zones*** refers to spatial data presenting the zone geometries, while ***zone_code*** refers to the specific column in our *zones* data that could identify the zone. In our case, it will be the `grid_id`. The output will be saved as **flowLine**.
 
 ```{r}
 flowLine <- od2line(flow = od_data1, 
@@ -312,15 +367,22 @@ flowLine <- od2line(flow = od_data1,
                     zone_code = "grid_id")
 ```
 
-#### Visualizing desire lines
+#### 2.4.2.3 Visualizing desire lines
+
+![](images/image1.png)
+
+After creating the **flowLine** , we will visualize the resulting desire lines. Notably, quantiles provide a detailed picture of the how the `MORNING_PEAK` values are spread across. It allows us to identify if the flow is concentrated or evenly distributed across the network.
 
 ```{r}
 quantile(flowLine$MORNING_PEAK,
          probs = c(0.8, 0.9, 0.95, 0.99, 1))
 ```
 
-::: panel-tabset
+From the results above, we will use **tmap** package to plot our visualization for the 80th percentile, 95% percentile, and 99% percentile. We began by plotting the background map `tm_shape(hex_grid) + tm_polygons()`, and filtering the **flowLine** to include flows based on the quantiles identified earlier. This allows us to focus on the most significant flow movements.
 
+Afterwards, we used `tm_shape() + tm_lines()` to add flow lines into our visualization. In addition, we reduce the transparency of the lines to get a clear view of the flow. Low `alpha` results in transparency.
+
+::: panel-tabset
 # Top 20%
 
 ```{r}
@@ -330,13 +392,13 @@ tm_shape(hex_grid) +
 flowLine %>%
     filter(MORNING_PEAK >= 255) %>%
 tm_shape() +
-  tm_lines(lwd = "MORNING_PEAK",
+  tm_lines(lwd = "MORNING_PEAK",  #set line width 
            col = "purple",
            style = "quantile",
            scale = c(0.1, 1, 3, 5, 7, 10),
            n = 6,
            alpha = 0.8) +
-    tm_layout(main.title = "Commuting flow of the top 5% ",
+    tm_layout(main.title = "Commuting flow of the top 20% ",
             main.title.position = "center",
             main.title.size = 1,
             legend.height = 0.35, 
@@ -346,7 +408,6 @@ tm_shape() +
             frame = FALSE)
 
 ```
-
 
 # Top 5%
 
@@ -399,12 +460,31 @@ tm_shape() +
             frame = FALSE)
 
 ```
-
 :::
 
-## 3. Data Integration
+Based on the commuting flow of the **80th percentile**, we could observe various clusters within the region, and commuters spend more travelling from origin to destination. From the thickness of the line, we could infer that the commuters travels the same route frequently - from the North region to the East region, and from the West region to the Central Region. It is interesting to note that commuters like myself do not travel from the West region to the East region frequently.
 
-### 3.1 Importing Collected Data
+Looking at the **95th percentile** , the flow movement decreased significantly. The commuting flow around the central region has dropped. Moreover, we are able to observe the flow from the North region to the East region, while we noticed that there are significant flow from the North region to the North-East region.
+
+Narrowing it down to the top 1% (**99% percentile**), we are able identify that the longest commuting distance is from the North region to the North-East region. Also, commuters tend to travel within their region, travelling a short distance from origin to destination.
+
+# 3. Data Integration
+
+After looking at the commuting flows, we are interested to know why people traveled for a particular distance. Could it be for work? Could it be for school? As such, we will be importing eight collected data - Business, Entertainment, Food & Beverages, Financial Service, Leisure & Recreation, Retails, HDB and School as part of our mobility study.
+
+## 3.1 Importing Collected Data
+
+Similar to section 2.2, we used `sf::st_read()` to import and `sf::st_transform()` to ensure that the projected coordinate system is in the right format before storing it. With the exception of HDB and School data where we used `readr::read_csv()` to import and `sf::st_as_sf()` to converting an aspatial data into sf tibble data.frame.
+
+Before we determine which exploratory variables are attractive or propulsive to a commuter, we plot a map based on the variables. We created a **3-layers** plot by looking at :
+
+-   **Layer 1**: Our base layer `(hex_grid)` . Hexagon grid with bus_stop density.
+
+-   **Layer 2:** Commuting flow movement. Identified based on [purple lines.]{.underline}
+
+-   **Layer 3:** Variables' location. Identified based on [blue dots.]{.underline}
+
+the hexagon_grid with the bus_stop density as the base layer ,followed by the lines in the commuting flow, before adding the various points of the variable.
 
 We map it by the hexagon grid with bus stop + commuting flow + various collected data.
 
@@ -579,7 +659,7 @@ tm_shape(finserv_sf) +
 
 # HDB
 
-note that some residential area have commercial etc, would be a mixed development but we will include it in our analysis. 
+note that some residential area have commercial etc, would be a mixed development but we will include it in our analysis.
 
 ```{r}
 #| code-fold: true
@@ -1144,9 +1224,11 @@ uncSIM <- read_rds("data/rds/uncSIM.rds")
 uncSIM
 ```
 
-## R-squared function
+## Calculate R-squared
 
 ```{r}
+# R-squared function
+
 #create function to calculate r-squared value 
 CalcRSquared <- function(observed,estimated){
   r <- cor(observed,estimated)
@@ -1291,7 +1373,8 @@ model_list <- list(unconstrained=uncSIM,
 compare_performance(model_list,
                     metrics = "RMSE")
 ```
-# Visualize Fitting 
+
+# Visualize Fitting
 
 ```{r}
 df <- as.data.frame(uncSIM$fitted.values) %>%
@@ -1301,7 +1384,6 @@ flow_data2 <- flow_data2 %>%
   cbind(df) %>%
   rename(uncTRIPS = "uncSIM$fitted.values")
 ```
-
 
 ```{r}
 df <- as.data.frame(orcSIM$fitted.values) %>%

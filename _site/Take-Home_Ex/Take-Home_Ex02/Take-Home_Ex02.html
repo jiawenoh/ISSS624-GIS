@@ -293,11 +293,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">2.3 Data Wrangling</a>
   <ul class="collapse">
   <li><a href="#data-extraction" id="toc-data-extraction" class="nav-link" data-scroll-target="#data-extraction">2.3.1 Data Extraction</a></li>
-  <li><a href="#data-generation" id="toc-data-generation" class="nav-link" data-scroll-target="#data-generation">2.3.2 Data Generation</a></li>
+  </ul></li>
+  <li><a href="#data-generation" id="toc-data-generation" class="nav-link" data-scroll-target="#data-generation">2.4 Data Generation</a>
+  <ul class="collapse">
+  <li><a href="#combining-busstop-and-mpsz" id="toc-combining-busstop-and-mpsz" class="nav-link" data-scroll-target="#combining-busstop-and-mpsz">2.4.1 Combining Busstop and mpsz</a></li>
+  <li><a href="#visualizing-spatial-interaction" id="toc-visualizing-spatial-interaction" class="nav-link" data-scroll-target="#visualizing-spatial-interaction">2.4.2 Visualizing Spatial Interaction</a></li>
+  </ul></li>
   </ul></li>
   <li><a href="#data-integration" id="toc-data-integration" class="nav-link" data-scroll-target="#data-integration">3. Data Integration</a>
   <ul class="collapse">
-  <li><a href="#importing-collected-data" id="toc-importing-collected-data" class="nav-link" data-scroll-target="#importing-collected-data">3.1 Importing Collected Data</a></li>
+  <li><a href="#importing-collected-data" id="toc-importing-collected-data" class="nav-link" data-scroll-target="#importing-collected-data">3.1 Importing Collected Data</a>
+  <ul class="collapse">
   <li><a href="#compute-point-in-polygon-count" id="toc-compute-point-in-polygon-count" class="nav-link" data-scroll-target="#compute-point-in-polygon-count">3.2 Compute point-in-polygon count</a></li>
   </ul></li>
   <li><a href="#distance-matrix" id="toc-distance-matrix" class="nav-link" data-scroll-target="#distance-matrix">4. Distance Matrix</a>
@@ -307,11 +313,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   </ul></li>
   <li><a href="#unconstrained-spatial-interaction-model" id="toc-unconstrained-spatial-interaction-model" class="nav-link" data-scroll-target="#unconstrained-spatial-interaction-model">Unconstrained Spatial Interaction Model</a></li>
   <li><a href="#view-uncsim" id="toc-view-uncsim" class="nav-link" data-scroll-target="#view-uncsim">View uncSIM</a></li>
-  <li><a href="#r-squared-function" id="toc-r-squared-function" class="nav-link" data-scroll-target="#r-squared-function">R-squared function</a></li>
+  <li><a href="#calculate-r-squared" id="toc-calculate-r-squared" class="nav-link" data-scroll-target="#calculate-r-squared">Calculate R-squared</a></li>
   <li><a href="#origin-production-constrained-sim" id="toc-origin-production-constrained-sim" class="nav-link" data-scroll-target="#origin-production-constrained-sim">Origin (Production) constrained SIM</a></li>
   <li><a href="#destination-constrained-sim" id="toc-destination-constrained-sim" class="nav-link" data-scroll-target="#destination-constrained-sim">Destination constrained SIM</a></li>
   <li><a href="#doubly-constrained-sim" id="toc-doubly-constrained-sim" class="nav-link" data-scroll-target="#doubly-constrained-sim">Doubly constrained SIM</a></li>
-  <li><a href="#calculate-r-squared" id="toc-calculate-r-squared" class="nav-link" data-scroll-target="#calculate-r-squared">Calculate R-squared</a></li>
+  <li><a href="#calculate-r-squared-1" id="toc-calculate-r-squared-1" class="nav-link" data-scroll-target="#calculate-r-squared-1">Calculate R-squared</a></li>
   <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison">Model Comparison</a></li>
   </ul></li>
   <li><a href="#visualize-fitting" id="toc-visualize-fitting" class="nav-link" data-scroll-target="#visualize-fitting">Visualize Fitting</a></li>
@@ -347,7 +353,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">December 16, 2023</p>
+      <p class="date-modified">December 17, 2023</p>
     </div>
   </div>
     
@@ -370,24 +376,25 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2 class="anchored" data-anchor-id="install-r-packages">2.1 Install R packages</h2>
 <p>The code chunk below uses <code>pacman:: p_load()</code> to load and install the following libraries:</p>
 <ul>
-<li><p><strong>`performance``</strong> : [to add]</p></li>
-<li><p><strong>`reshape2``</strong> : [to add]</p></li>
+<li><p><strong><code>performance</code></strong> : Used for computing measures to access model quality that are not directly provided by R’s ‘base’ or ‘stats’ packages.</p></li>
+<li><p><strong><code>reshape2</code></strong> : Used to restructure and aggregate data</p></li>
 <li><p><strong><code>sf</code></strong> : Used for geospatial data handling</p></li>
 <li><p><code>spdep</code> : Used to create spatial weights matrix objects</p></li>
 <li><p><strong><code>sfdep</code></strong> : Used to integrate with <code>'sf'</code> objects and the <code>'tidyverse'</code></p></li>
 <li><p><strong><code>tidyverse</code></strong>: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis</p></li>
-<li><p><strong><code>tmap</code></strong> : Used for thematic mapping</p></li>
+<li><p><strong><code>tmap</code></strong> : Used for thematic mapping where spatial data distributions are visualized.</p></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(ggpubr, performance, reshape2, sp, sf, spdep, sfdep, stplanr, tidyverse, tmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(ggpubr, performance, reshape2, sp, </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, spdep, sfdep, stplanr, tidyverse, tmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="import-and-load-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="import-and-load-dataset">2.2 Import and Load Dataset</h2>
-<p>Three data and a hexagon layer will be used for this study :</p>
+<p>For the purpose of this exercise, we will be using three data sets.</p>
 <ul>
 <li><p><code>origin_destination_bus_202308.csv</code> : A csv file containing information about all the bus stops currently being serviced by bus, which includes bus stop identifier, and location coordinates.</p></li>
-<li><p><em><code>Bus Stop Location</code></em> . A geospatial file from LTA DataMall</p></li>
+<li><p><em><code>Bus Stop Location</code></em> . A geospatial file retrieved from LTA DataMall</p></li>
 <li><p><code>Master Plan 2019 Subzone Boundary</code> : A polygon feature layer in ESRI shapefile format.</p></li>
 </ul>
 <section id="importing-aspatial-data" class="level3">
@@ -448,7 +455,7 @@ $ geometry   &lt;POINT [m]&gt; POINT (13576.31 32883.65), POINT (13228.59 44206.
 </section>
 <section id="import-mpsz-data" class="level4">
 <h4 class="anchored" data-anchor-id="import-mpsz-data">2.2.2.2 Import MPSZ data</h4>
-<p>In addition, we will similar approach - <code>sf::st_read()</code> to import and <code>sf::st_transform()</code> to ensure that the projected coordinate system is in the right format before storing in variable <strong>mpsz</strong>.</p>
+<p>Similarily, we used <code>sf::st_read()</code> to import and <code>sf::st_transform()</code> to ensure that the projected coordinate system is in the right format before storing in variable <strong>mpsz</strong>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>,</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">layer =</span> <span class="st">"MPSZ-2019"</span>) <span class="sc">%&gt;%</span></span>
@@ -522,12 +529,15 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 <h3 class="anchored" data-anchor-id="data-extraction">2.3.1 Data Extraction</h3>
 <section id="analytical-hexagon" class="level4">
 <h4 class="anchored" data-anchor-id="analytical-hexagon">2.3.1.1 Analytical Hexagon</h4>
-<p>Thereafter, we will create the analytical hexagon grid. With reference from <a href="https://urbandatapalette.com/post/2021-08-tessellation-sf/">Urban Data Palette</a>, we will perform the following steps:</p>
+<p>To get a better representative of the traffic analysis zone (TAZ), we will create an analytical hexagon grid. With reference from <a href="https://urbandatapalette.com/post/2021-08-tessellation-sf/">Urban Data Palette</a>, we will used the code chunk below and execute in the following sequence:</p>
 <ul>
-<li><p><code>st_make_grid()</code> : create a regular grid of spatial polygons. To reflect the distance from centre of the hexagon to its edge, we will revise the cell width and height to c(750,750).</p></li>
+<li><p><code>st_make_grid()</code> : create a regular grid of spatial polygons. To reflect the distance from centre of the hexagon to its edge (375m), we will revise the cell width and height to c(750,750) to reflect the full diameter.</p></li>
 <li><p><code>st_sf()</code> : convert the honeycomb grid object to an sf object. We used <code>[mpsz$geometry]</code> to identify hexagon grid that intersects.</p></li>
-<li><p><code>rowid_to_column()</code> : add rowid as a column</p></li>
-<li><p><code>tmap_options(check.and.fix = TRUE)</code> : force close polygon</p></li>
+<li><p><code>rowid_to_column()</code> : add rowid as a column. Values in this column are the row IDs of each grid cell.</p></li>
+<li><p><code>lengths(st_intersects())</code> : assigns the number of bus stops for each cell to a new column named <strong><em>‘bus_stops’</em></strong> in hex_grid. <code>st_intersects()</code> checks for intersections between two spatial objects.</p></li>
+<li><p><code>as.factor()</code> : to coverts the <strong><em>‘grid_id’</em></strong> column from<code>&lt;int&gt;</code> to <code>&lt;fct&gt;</code></p></li>
+<li><p><code>tmap_options(check.and.fix = TRUE)</code> : forcing the polygons to be closed</p></li>
+<li><p><code>tm_shape()</code> + <code>tm_polygons()</code> : plot the honeycomb grid cells as polygons</p></li>
 </ul>
 <div class="cell">
 <details>
@@ -566,15 +576,17 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 </section>
 <section id="commuting-flow" class="level4">
 <h4 class="anchored" data-anchor-id="commuting-flow">2.3.1.2 Commuting Flow</h4>
-<p>Through the previous <a href="https://isss624-ohjiawen.netlify.app/take-home_ex/take-home_ex01/take-home_ex01">exercise</a>, where we look into the various commuting flows, we noticed that there are various regions with high volume. As such, we will focus on our flow on <strong>Weekday Morning Peak (6-9am)</strong>.</p>
-<p>The code is extracted in the following manner:</p>
+<p>Through the previous <a href="https://isss624-ohjiawen.netlify.app/take-home_ex/take-home_ex01/take-home_ex01">exercise</a> in Take Home Exercise 1, we were able to have a better understanding of the commuting flows. We noticed that the Peak hour period for Weekdays were generally higher as compared to Weekends, which we believe, could bring us more insights. As such, we will focus on our commuting flow at <strong>Weekday Morning Peak (6-9am)</strong>.</p>
+<p>The code is extracted in the following sequence:</p>
 <ul>
-<li><p><code>filter()</code> is used to extract subset of data</p></li>
-<li><p><code>between()</code> is used to express a range condition</p></li>
-<li><p><code>group_by()</code> and <code>summarise()</code> are used to sum the total trips</p></li>
-<li><p><code>arrange(desc())</code> to sort in descending order</p></li>
+<li><p><code>filter()</code> is used to extract subset of data for the <code>DAY_TYPE</code> and <code>TIME_PER_HOUR</code></p></li>
+<li><p><code>between()</code> is used to express a range condition for the <code>TIME_PER_HOUR</code></p></li>
+<li><p><code>group_by()</code> is used to grouped data. In our code, we will be grouping it based on <code>ORIGIN_PT_CODE</code> and <code>DESTINATION_PT_CODE</code></p></li>
+<li><p><code>summarise()</code> is used to sum the total number of trips</p></li>
+<li><p><code>arrange(desc())</code> is used to sort in descending order</p></li>
 <li><p><code>ungroup()</code> is used to end a definition, often use with <code>group_by()</code></p></li>
 </ul>
+<p>Thereafter, we will save a copy of the output in rds format called <strong>wkd6_9</strong>.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
@@ -584,17 +596,20 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ORIGIN_PT_CODE, DESTINATION_PT_CODE) <span class="sc">%&gt;%</span></span>
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">TRIPS =</span> <span class="fu">sum</span>(TOTAL_TRIPS)) <span class="sc">%&gt;%</span></span>
 <span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(TRIPS)) <span class="sc">%&gt;%</span></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co">#save a copy in RDS format </span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(wkd6_9, <span class="st">"data/rds/wkd6_9.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Thereafter, we will save a copy of the output in rds format and reload it into the environment.</p>
+<p>As we are not executing the code chunk above, we will load <strong>wkd6_9</strong> into the R environment.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(wkd6_9, <span class="st">"data/rds/wkd6_9.rds"</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>wkd6_9 <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/wkd6_9.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>wkd6_9 <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/wkd6_9.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="visualing-bus-stops-in-hexagon-grid" class="level4">
 <h4 class="anchored" data-anchor-id="visualing-bus-stops-in-hexagon-grid">2.3.1.3 Visualing bus stops in hexagon grid</h4>
+<p>After importing the bus stop location in Section 2.2.2.1, we will create a visualization to observe the number of bus stops in each hexagon grid <strong><em>(grid_id)</em></strong>. To get a better contrast, we incorporated <strong>RcolorBrewer</strong> into our code by adding a purple palette.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
@@ -609,82 +624,134 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 <span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.outside =</span> <span class="cn">FALSE</span>,</span>
 <span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.position =</span> <span class="fu">c</span>(<span class="st">"right"</span>, <span class="st">"bottom"</span>),</span>
 <span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span><span class="fl">0.3</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span><span class="fl">0.3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p><strong>Insights:</strong></p>
+<p>On average, we could see that most of the hexagon grids contain 6 to 10 bus stops with lesser dark colors hexagon grid as the data value increases. With the use of hexagon, we are able to identify the nearest neighbor by their common boundaries, infer that there might be some degree of influence as the colors does not differ significantly.</p>
+<div class="callout-note callout callout-style-simple callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+More about Tmap Packages
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <ul>
-<li><p>Majority of the hexagonal grid contains 6 to 10 bus stops.</p></li>
-<li><p>Bus stops that are closely position in the grid, tend to have neighbors with similar patterns.</p></li>
+<li><code>tm_shape() + Base Layer</code> : Main plotting method. Used to specify a shape object.</li>
 </ul>
-</section>
-</section>
-<section id="data-generation" class="level3">
-<h3 class="anchored" data-anchor-id="data-generation">2.3.2 Data Generation</h3>
-<p>After extracting the commuting flow for Weekday Morning Peak, we will combine it into <strong>busstop</strong> sf data frame. To ensure distinct flows, we will use the <code>unique()</code> function into our code.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>busstop_mpsz <span class="ot">&lt;-</span> <span class="fu">st_intersection</span>(busstop, hex_grid) <span class="sc">%&gt;%</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(BUS_STOP_N, grid_id) <span class="sc">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Next, we will update the <code>od_data</code> data frame with the planning subzone code.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>od_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(wkd6_9 , busstop_mpsz,</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"ORIGIN_PT_CODE"</span> <span class="ot">=</span> <span class="st">"BUS_STOP_N"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">ORIGIN_BS =</span> ORIGIN_PT_CODE,</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_ID =</span> grid_id,</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_BS =</span> DESTINATION_PT_CODE) <span class="sc">%&gt;%</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>od_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(od_data , busstop_mpsz,</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"DESTIN_BS"</span> <span class="ot">=</span> <span class="st">"BUS_STOP_N"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>od_data <span class="ot">&lt;-</span> od_data <span class="sc">%&gt;%</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">DESTIN_ID =</span> grid_id) <span class="sc">%&gt;%</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ORIGIN_ID, DESTIN_ID) <span class="sc">%&gt;%</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">MORNING_PEAK =</span> <span class="fu">sum</span>(TRIPS))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>We will save a copy of the output in rds file format.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(od_data, <span class="st">"data/rds/od_data.rds"</span>)</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>od_data <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/od_data.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<section id="compute-by-hexagon-grid-id" class="level4">
-<h4 class="anchored" data-anchor-id="compute-by-hexagon-grid-id">2.3.2.3 Compute by Hexagon Grid ID</h4>
-<p>After creating the joined data frame, we are interested in knowing the number of bus stops in each grid and the total number of trips. As such, we performed the following steps:</p>
-<ul>
-<li><p><code>mutate()</code> : Used to replace TRIPS with N/A to 0.</p></li>
-<li><p><code>filter()</code> : Used to remove data with 0 trip</p></li>
-<li><p><code>group_by()</code>: Used to group data based on <strong>grid_id</strong>.</p></li>
-<li><p><code>summarize()</code> :</p>
-<ul>
-<li><p><code>n()</code> : Used to count number of bus stops and save as <em>bus_stop_count</em></p></li>
-<li><p><code>sum()</code> : Used to sum the TRIPS values and save as <em>total_trips</em></p></li>
-</ul></li>
-<li><p><code>ungroup()</code> : Used to end a definition, often use with <code>group_by()</code></p></li>
-</ul>
-<div class="cell">
+<pre><code>-   Base Layer includes:
 
+    -   `tm_polygons()`  - Create a polygon later (with borders)
+
+    -   `tm_symbols()`  - Create a layer of symbols
+
+    -    `tm_lines()`  - Create a layer of lines
+
+    -    `tm_raster()`  - Create a raster layer
+
+    -    `tm_text()`  - Create a layer of text labels
+
+    -   `tm_basemap()`  - Create a layer of basemap tiles
+
+    -   `tm_tiles()`  - Create a layer of overlay tiles</code></pre>
+<ul>
+<li>Aesthetics derived layers, which includes:</li>
+</ul>
+<pre><code>-   `tm_fill()` :  - Create a polygon layer (without borders)
+
+-   `tm_borders()` :  - Create a polygon borders
+
+-   `tm_bubbles()` :  - Create a layer of bubbles
+
+-   `tm_squares()` :  - Create a layer of squares
+
+-   `tm_dots()` :  - Create a layer of dots
+
+-   `tm_markers()` :  - Create a layer of markers
+
+-   `tm_iso()` :  - Create a layer of iso/contour lines
+
+-   `tm_rgb()` :  - Create a raster layer of an image</code></pre>
+<ul>
+<li><p>Facets</p></li>
+<li><p>Attributes</p></li>
+<li><p>Layout elements</p></li>
+<li><p>Tmap_mode</p></li>
+</ul>
+<p>For more information, click <a href="chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://cran.r-project.org/web/packages/tmap/tmap.pdf">here</a>.</p>
 </div>
-<p>We used <code>any(is.na())</code> to check and confirmed that there is no missing values for our data frame</p>
+</div>
+</div>
 </section>
+</section>
+</section>
+<section id="data-generation" class="level2">
+<h2 class="anchored" data-anchor-id="data-generation">2.4 Data Generation</h2>
+<section id="combining-busstop-and-mpsz" class="level3">
+<h3 class="anchored" data-anchor-id="combining-busstop-and-mpsz">2.4.1 Combining Busstop and mpsz</h3>
+<p>After extracting the commuting flow for <strong>Weekday Morning Peak</strong>, we will combine it into <strong>busstop</strong> sf data frame. To ensure distinct flows, we will use the <code>unique()</code> function into our code.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>busstop_mpsz <span class="ot">&lt;-</span> <span class="fu">st_intersection</span>(busstop, hex_grid) <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(BUS_STOP_N, grid_id) <span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Thereafter, we will perform the <code>left_join()</code> function twice. Firstly, we will join it based on <code>ORIGIN_PT_CODE</code> , where we will rename some of the columns and retain unique records. Then, we will join it based on <code>DESTINATION_PT_CODE</code> which we have renamed it as <code>DESTIN_BS</code> earlier.</p>
+<p>After joining the data, we used <code>drop_na()</code> to removes any rows with missing values, and to group the data by origin and destination ID while computing the sum of trips for each origin-destination pair, saved under <strong>MORNING_PEAK</strong>. Lastly, a copy of the output - <strong>od_data</strong> was saved in RDS format.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#left_join based on Origin_PT_Code</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>od_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(wkd6_9 , busstop_mpsz,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"ORIGIN_PT_CODE"</span> <span class="ot">=</span> <span class="st">"BUS_STOP_N"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">ORIGIN_BS =</span> ORIGIN_PT_CODE,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_ID =</span> grid_id,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_BS =</span> DESTINATION_PT_CODE) <span class="sc">%&gt;%</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co">#left_join based on Destination_PT_code(rename as DESTIN_BS)</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>od_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(od_data , busstop_mpsz,</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"DESTIN_BS"</span> <span class="ot">=</span> <span class="st">"BUS_STOP_N"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co"># compute the morning peak trips between origin and destination grid</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>od_data <span class="ot">&lt;-</span> od_data <span class="sc">%&gt;%</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">DESTIN_ID =</span> grid_id) <span class="sc">%&gt;%</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ORIGIN_ID, DESTIN_ID) <span class="sc">%&gt;%</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">MORNING_PEAK =</span> <span class="fu">sum</span>(TRIPS)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a><span class="co">#save a copy in RDS format</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(od_data, <span class="st">"data/rds/od_data.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>We will load <strong>od_data</strong> into the R environment.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>od_data <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/od_data.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="visualizing-spatial-interaction" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-spatial-interaction">2.4.2 Visualizing Spatial Interaction</h3>
+<p>With the joined data - <strong>od_data</strong>, we will prepare a desire line by using the <strong>stplanr</strong> package by removing the intra-zonal flows, creating the desire lines, and to visualize the desire lines.</p>
 <section id="remove-intra-zonal-flows" class="level4">
-<h4 class="anchored" data-anchor-id="remove-intra-zonal-flows">Remove Intra-zonal flows</h4>
+<h4 class="anchored" data-anchor-id="remove-intra-zonal-flows">2.4.2.1 Remove Intra-zonal flows</h4>
+<p>Intra-zonal flows refer to trips that take place within the same zone or area. In our context, it refers to the passenger commuting within the hexagon grid of 750m. As we will not be plotting the intra-zonal flows, the following code chunk below are used to only keep rows where the <code>Origin_ID</code> is not equal to the <code>DESTIN_ID</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>od_data1 <span class="ot">&lt;-</span> od_data[od_data<span class="sc">$</span>ORIGIN_ID<span class="sc">!=</span>od_data<span class="sc">$</span>DESTIN_ID,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-desire-lines" class="level4">
-<h4 class="anchored" data-anchor-id="create-desire-lines">Create desire lines</h4>
+<h4 class="anchored" data-anchor-id="create-desire-lines">2.4.2.2 Create desire lines</h4>
+<p>Using the <code>stplanr::od2line()</code> function, we will create a line object where the <strong><em>flow</em></strong> refers to the data containing origin and destination information, <strong><em>zones</em></strong> refers to spatial data presenting the zone geometries, while <strong><em>zone_code</em></strong> refers to the specific column in our <em>zones</em> data that could identify the zone. In our case, it will be the <code>grid_id</code>. The output will be saved as <strong>flowLine</strong>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>flowLine <span class="ot">&lt;-</span> <span class="fu">od2line</span>(<span class="at">flow =</span> od_data1, </span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">zones =</span> hex_grid,</span>
@@ -692,7 +759,9 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 </div>
 </section>
 <section id="visualizing-desire-lines" class="level4">
-<h4 class="anchored" data-anchor-id="visualizing-desire-lines">Visualizing desire lines</h4>
+<h4 class="anchored" data-anchor-id="visualizing-desire-lines">2.4.2.3 Visualizing desire lines</h4>
+<p><img src="images/image1.png" class="img-fluid"></p>
+<p>After creating the <strong>flowLine</strong> , we will visualize the resulting desire lines. Notably, quantiles provide a detailed picture of the how the <code>MORNING_PEAK</code> values are spread across. It allows us to identify if the flow is concentrated or evenly distributed across the network.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(flowLine<span class="sc">$</span>MORNING_PEAK,</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>         <span class="at">probs =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="fl">0.95</span>, <span class="fl">0.99</span>, <span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -701,6 +770,8 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
   255.0   677.0  1479.0  6219.5 89347.0 </code></pre>
 </div>
 </div>
+<p>From the results above, we will use <strong>tmap</strong> package to plot our visualization for the 80th percentile, 95% percentile, and 99% percentile. We began by plotting the background map <code>tm_shape(hex_grid) + tm_polygons()</code>, and filtering the <strong>flowLine</strong> to include flows based on the quantiles identified earlier. This allows us to focus on the most significant flow movements.</p>
+<p>Afterwards, we used <code>tm_shape() + tm_lines()</code> to add flow lines into our visualization. In addition, we reduce the transparency of the lines to get a clear view of the flow. Low <code>alpha</code> results in transparency.</p>
 <div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" aria-current="page">Top 20%</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Top 5%</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">Top 1%</a></li></ul>
 <div class="tab-content">
@@ -713,13 +784,13 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>flowLine <span class="sc">%&gt;%</span></span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(MORNING_PEAK <span class="sc">&gt;=</span> <span class="dv">255</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>() <span class="sc">+</span></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_lines</span>(<span class="at">lwd =</span> <span class="st">"MORNING_PEAK"</span>,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_lines</span>(<span class="at">lwd =</span> <span class="st">"MORNING_PEAK"</span>,  <span class="co">#set line width </span></span>
 <span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">col =</span> <span class="st">"purple"</span>,</span>
 <span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">style =</span> <span class="st">"quantile"</span>,</span>
 <span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>           <span class="at">scale =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">10</span>),</span>
 <span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>           <span class="at">n =</span> <span class="dv">6</span>,</span>
 <span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>           <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"Commuting flow of the top 5% "</span>,</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"Commuting flow of the top 20% "</span>,</span>
 <span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.position =</span> <span class="st">"center"</span>,</span>
 <span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.size =</span> <span class="dv">1</span>,</span>
 <span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.height =</span> <span class="fl">0.35</span>, </span>
@@ -729,7 +800,7 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 <span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -758,7 +829,7 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 <span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -787,19 +858,32 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 7, 2, 3, 10, 5, 4, 3, 22, 3, 3, 7, 1, 3, 1, 3,
 <span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
 </div>
 </div>
+<p>Based on the commuting flow of the <strong>80th percentile</strong>, we could observe various clusters within the region, and commuters spend more travelling from origin to destination. From the thickness of the line, we could infer that the commuters travels the same route frequently - from the North region to the East region, and from the West region to the Central Region. It is interesting to note that commuters like myself do not travel from the West region to the East region frequently.</p>
+<p>Looking at the <strong>95th percentile</strong> , the flow movement decreased significantly. The commuting flow around the central region has dropped. Moreover, we are able to observe the flow from the North region to the East region, while we noticed that there are significant flow from the North region to the North-East region.</p>
+<p>Narrowing it down to the top 1% (<strong>99% percentile</strong>), we are able identify that the longest commuting distance is from the North region to the North-East region. Also, commuters tend to travel within their region, travelling a short distance from origin to destination.</p>
 </section>
 </section>
 </section>
-<section id="data-integration" class="level2">
-<h2 class="anchored" data-anchor-id="data-integration">3. Data Integration</h2>
-<section id="importing-collected-data" class="level3">
-<h3 class="anchored" data-anchor-id="importing-collected-data">3.1 Importing Collected Data</h3>
+</section>
+<section id="data-integration" class="level1">
+<h1>3. Data Integration</h1>
+<p>After looking at the commuting flows, we are interested to know why people traveled for a particular distance. Could it be for work? Could it be for school? As such, we will be importing eight collected data - Business, Entertainment, Food &amp; Beverages, Financial Service, Leisure &amp; Recreation, Retails, HDB and School as part of our mobility study.</p>
+<section id="importing-collected-data" class="level2">
+<h2 class="anchored" data-anchor-id="importing-collected-data">3.1 Importing Collected Data</h2>
+<p>Similar to section 2.2, we used <code>sf::st_read()</code> to import and <code>sf::st_transform()</code> to ensure that the projected coordinate system is in the right format before storing it. With the exception of HDB and School data where we used <code>readr::read_csv()</code> to import and <code>sf::st_as_sf()</code> to converting an aspatial data into sf tibble data.frame.</p>
+<p>Before we determine which exploratory variables are attractive or propulsive to a commuter, we plot a map based on the variables. We created a <strong>3-layers</strong> plot by looking at :</p>
+<ul>
+<li><p><strong>Layer 1</strong>: Our base layer <code>(hex_grid)</code> . Hexagon grid with bus_stop density.</p></li>
+<li><p><strong>Layer 2:</strong> Commuting flow movement. Identified based on <u>purple lines.</u></p></li>
+<li><p><strong>Layer 3:</strong> Variables’ location. Identified based on <u>blue dots.</u></p></li>
+</ul>
+<p>the hexagon_grid with the bus_stop density as the base layer ,followed by the lines in the commuting flow, before adding the various points of the variable.</p>
 <p>We map it by the hexagon grid with bus stop + commuting flow + various collected data.</p>
 <div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Business</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Entertainment</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false">F&amp;B</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-4" role="tab" aria-controls="tabset-2-4" aria-selected="false">Financial Service</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-5" role="tab" aria-controls="tabset-2-5" aria-selected="false">HDB</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-6-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-6" role="tab" aria-controls="tabset-2-6" aria-selected="false">Leisure &amp; Recreation</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-7-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-7" role="tab" aria-controls="tabset-2-7" aria-selected="false">Retail</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-8-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-8" role="tab" aria-controls="tabset-2-8" aria-selected="false">School</a></li></ul>
@@ -858,7 +942,7 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 <span id="cb34-32"><a href="#cb34-32" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -916,7 +1000,7 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 <span id="cb37-32"><a href="#cb37-32" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -974,7 +1058,7 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 <span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -1032,7 +1116,7 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 <span id="cb43-32"><a href="#cb43-32" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -1095,7 +1179,7 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 <span id="cb44-52"><a href="#cb44-52" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -1153,7 +1237,7 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 <span id="cb47-32"><a href="#cb47-32" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -1211,7 +1295,7 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 <span id="cb50-32"><a href="#cb50-32" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -1264,7 +1348,7 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 <span id="cb51-43"><a href="#cb51-43" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame =</span> <span class="cn">FALSE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </div>
@@ -1272,7 +1356,6 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 </div>
 <p>We append the point symbol to our existing map. Based on the commuting flow of Weekday Morning (0600-0900), we will drop off: - Entertainment - Food &amp; Beverages - Leisure &amp; Recreation</p>
 <p>For future analysis, we will be focusing on Business, Financial Services, HDB, Retail, and School.</p>
-</section>
 <section id="compute-point-in-polygon-count" class="level3">
 <h3 class="anchored">3.2 Compute point-in-polygon count</h3>
 <div class="panel-tabset">
@@ -1613,7 +1696,7 @@ $ dist &lt;dbl&gt; 200.000, 1299.038, 2598.076, 3897.114, 5196.152, 750.000, 198
 <span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-57-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-54-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <div class="cell">
@@ -1721,7 +1804,7 @@ $ dist &lt;dbl&gt; 200.000, 1299.038, 2598.076, 3897.114, 5196.152, 750.000, 198
 </details>
 </div>
 <div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1730,7 +1813,7 @@ Save and Load RDS
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Save and Load RDS ">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(flow_data2, <span class="st">"data/rds/flow_data2.rds"</span>)</span>
@@ -1740,7 +1823,7 @@ Save and Load RDS
 </div>
 </div>
 <div class="callout-title callout callout-style-default no-icon callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1749,7 +1832,7 @@ Summary(flow_data2)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" data-tip="Summary(flow_data2) ">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(flow_data2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1818,7 +1901,7 @@ Summary(flow_data2)
 </details>
 </div>
 <div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1827,7 +1910,7 @@ Load uncSIM RDS
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Load RDS ">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>uncSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/uncSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1864,15 +1947,17 @@ Residual Deviance: 50260000     AIC: 50610000</code></pre>
 </div>
 </div>
 </section>
-<section id="r-squared-function" class="level2">
-<h2 class="anchored" data-anchor-id="r-squared-function">R-squared function</h2>
+<section id="calculate-r-squared" class="level2">
+<h2 class="anchored" data-anchor-id="calculate-r-squared">Calculate R-squared</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co">#create function to calculate r-squared value </span></span>
-<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>CalcRSquared <span class="ot">&lt;-</span> <span class="cf">function</span>(observed,estimated){</span>
-<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">cor</span>(observed,estimated)</span>
-<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> r<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a>  R2</span>
-<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co"># R-squared function</span></span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a><span class="co">#create function to calculate r-squared value </span></span>
+<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a>CalcRSquared <span class="ot">&lt;-</span> <span class="cf">function</span>(observed,estimated){</span>
+<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">cor</span>(observed,estimated)</span>
+<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> r<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb102-7"><a href="#cb102-7" aria-hidden="true" tabindex="-1"></a>  R2</span>
+<span id="cb102-8"><a href="#cb102-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(uncSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, uncSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1910,7 +1995,7 @@ Residual Deviance: 50260000     AIC: 50610000</code></pre>
 </details>
 </div>
 <div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1919,7 +2004,7 @@ Load orcSIM RDS
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Load RDS ">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1928,7 +2013,7 @@ Load orcSIM RDS
 </div>
 </div>
 <div class="callout-tip callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1937,7 +2022,7 @@ Summary(orcSIM)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(orcSIM)">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(orcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -2819,7 +2904,7 @@ Number of Fisher Scoring iterations: 7</code></pre>
 </details>
 </div>
 <div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2828,7 +2913,7 @@ Load decSIM RDS
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Load RDS ">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -2837,7 +2922,7 @@ Load decSIM RDS
 </div>
 </div>
 <div class="callout-tip callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2846,7 +2931,7 @@ Summary(decSIM)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(decSIM)">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(decSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -3725,7 +3810,7 @@ Number of Fisher Scoring iterations: 8</code></pre>
 </details>
 </div>
 <div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3734,7 +3819,7 @@ Load dbcSIM RDS
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Load RDS ">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -3743,7 +3828,7 @@ Load dbcSIM RDS
 </div>
 </div>
 <div class="callout-tip callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3752,7 +3837,7 @@ Summary(dbcSIM)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(dbcSIM)">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -5425,8 +5510,8 @@ Number of Fisher Scoring iterations: 7</code></pre>
 </div>
 </div>
 </section>
-<section id="calculate-r-squared" class="level2">
-<h2 class="anchored" data-anchor-id="calculate-r-squared">Calculate R-squared</h2>
+<section id="calculate-r-squared-1" class="level2">
+<h2 class="anchored" data-anchor-id="calculate-r-squared-1">Calculate R-squared</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(dbcSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, dbcSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -5521,7 +5606,7 @@ doublyConstrained      |   glm | 1175.151</code></pre>
 <span id="cb130-26"><a href="#cb130-26" aria-hidden="true" tabindex="-1"></a>          <span class="at">ncol =</span> <span class="dv">2</span>,</span>
 <span id="cb130-27"><a href="#cb130-27" aria-hidden="true" tabindex="-1"></a>          <span class="at">nrow =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-86-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-83-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 
