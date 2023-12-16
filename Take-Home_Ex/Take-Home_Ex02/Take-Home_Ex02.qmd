@@ -322,7 +322,9 @@ quantile(flowLine$MORNING_PEAK,
 ::: panel-tabset
 
 # Top 20%
+
 ```{r}
+#| code-fold: true
 tm_shape(hex_grid) +
   tm_polygons(col = 'grey95') +
 flowLine %>%
@@ -347,7 +349,9 @@ tm_shape() +
 
 
 # Top 5%
+
 ```{r}
+#| code-fold: true
 tm_shape(hex_grid) +
   tm_polygons(col = 'grey95') +
 flowLine %>%
@@ -370,8 +374,10 @@ tm_shape() +
 
 ```
 
-# Top 5%
+# Top 1%
+
 ```{r}
+#| code-fold: true
 tm_shape(hex_grid) +
   tm_polygons(col = 'grey95') +
 flowLine %>%
