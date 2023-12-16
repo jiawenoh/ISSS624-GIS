@@ -16,7 +16,7 @@ As city-wide urban infrastructures such as public bus, mass rapid transits, publ
 ## 1.1 The Task
 
 This exercise aims to reveals the urban mobility patterns of public bus transit through geospatial data science and analysis (GDSA), and spatial interaction models.
-
+ars
 The original data was downloaded on 18th November 2023 from **LTA DataMall** under Section 2.6 - *Passenger Volume by Origin Destination Bus Stops*. It records the number of trips by weekdays and weekends from origin to destination bus stops. For the purpose of this exercise, we will be using the **August** data - origin_destination_bus_202308.csv for **Weekday Morning Peak (6-9am)**.
 
 # 2. Data preparation
@@ -319,6 +319,34 @@ quantile(flowLine$MORNING_PEAK,
          probs = c(0.8, 0.9, 0.95, 0.99, 1))
 ```
 
+::: panel-tabset
+
+# Top 20%
+```{r}
+tm_shape(hex_grid) +
+  tm_polygons(col = 'grey95') +
+flowLine %>%
+    filter(MORNING_PEAK >= 255) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of the top 5% ",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE)
+
+```
+
+
+# Top 5%
 ```{r}
 tm_shape(hex_grid) +
   tm_polygons(col = 'grey95') +
@@ -341,6 +369,32 @@ tm_shape() +
             frame = FALSE)
 
 ```
+
+# Top 5%
+```{r}
+tm_shape(hex_grid) +
+  tm_polygons(col = 'grey95') +
+flowLine %>%
+    filter(MORNING_PEAK >= 6220) %>%
+tm_shape() +
+  tm_lines(lwd = "MORNING_PEAK",
+           col = "purple",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.8) +
+    tm_layout(main.title = "Commuting flow of the top 1% ",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.35, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE)
+
+```
+
+:::
 
 ## 3. Data Integration
 
@@ -1038,7 +1092,7 @@ flow_data2 <- read_rds("data/rds/flow_data2.rds")
 ```
 :::
 
-::: {.callout-note tip="Summary(flow_data2) " collapse="true"}
+::: {.callout-title tip="Summary(flow_data2) " collapse="true"}
 ## Summary(flow_data2)
 
 ```{r}
@@ -1207,7 +1261,7 @@ dbcSIM <- read_rds("data/rds/dbcSIM.rds")
 
 ```{r}
 summary(dbcSIM)
-options(max.print = 1000000)
+
 ```
 :::
 
