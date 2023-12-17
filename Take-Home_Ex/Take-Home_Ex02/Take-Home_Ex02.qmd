@@ -23,9 +23,7 @@ This exercise aims to reveals the urban mobility patterns of public bus transit 
 
 The code chunk below uses `pacman:: p_load()` to load and install the following libraries:
 
--   **`DT`**
-
--   **`ggpubr`**
+-   **`ggpubr`** : Used to create and customize `ggplot2`-based publication ready plots
 
 -   **`performance`** : Used for computing measures to access model quality that are not directly provided by R's 'base' or 'stats' packages.
 
@@ -33,16 +31,20 @@ The code chunk below uses `pacman:: p_load()` to load and install the following 
 
 -   **`sf`** : Used for geospatial data handling
 
+-   **`sp`** : Used for spatial data
+
 -   **`spdep`** : Used to create spatial weights matrix objects
 
 -   **`sfdep`** : Used to integrate with `'sf'` objects and the `'tidyverse'`
+
+-   **`stplanr`** : Used to create geographic 'desire lines' from origin-destination (OD) data
 
 -   **`tidyverse`**: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis
 
 -   **`tmap`** : Used for thematic mapping where spatial data distributions are visualized.
 
 ```{r}
-pacman::p_load(DT, ggpubr, performance, reshape2, sp, 
+pacman::p_load(ggpubr, performance, reshape2, sp, 
                sf, spdep, sfdep, stplanr, tidyverse, tmap)
 ```
 
@@ -1154,7 +1156,7 @@ flow_data2 <- flow_data2 %>%
 
 # 5. Calibrating Spatial Interaction Models
 
-Spatial interaction describe quatitatively the flow of people, material, or information between locations in geographical space.In this section, we will be looking at gravity models using the `glm()` function in R, namely:
+Spatial interaction describe quantitatively the flow of people, material, or information between locations in geographical space.In this section, we will be looking at gravity models using the `glm()` function in R, namely:
 
 -   Unconstrained Spatial Interaction Model
 
@@ -1203,7 +1205,7 @@ ggplot(data = flow_data2,
   theme_minimal()
 ```
 
-From the graph above, we are to visualize a better linear relationship in comparison to the previous scatterplot.
+From the graph above, we are to visualize a better linear relationship in comparison to the previous scatterplot. Also ,as observe earlier , we can confirmed that the number of trips decreases, as the distance increases.
 
 ## 5.2 Checking for variables with zero values
 
@@ -1288,7 +1290,7 @@ flow_data2 <- read_rds("data/rds/flow_data2.rds")
 
 ## 5.3 Unconstrained Spatial Interaction Model
 
-The first model that we will looking at will be the Unconstrained model. There are no external restrictions on the flow value. Thus, any origin can send flows to any destination based solely on the attraction potential of the destination and the distance. We will save the output - **uncSIM** into a RDS format and re-load into the R environment.
+The first model that we will looking at will be the Unconstrained model. There are no external restrictions on the flow value. Thus, any origin can send flows to any destination based solely on the attraction potential of the destination and the distance. We will save the output - **uncSIM** into a RDS format.
 
 ```{r}
 #| code-fold: true
@@ -1312,6 +1314,8 @@ uncSIM <- glm(formula = TRIPS ~
 write_rds(uncSIM, "data/rds/uncSIM.rds")
 ```
 
+As we are not executing the code chunk above, we will load **uncSIM** into the R environment.
+
 ::: {.callout-note title="Load RDS" collapse="true" appearance="simple" icon="false"}
 ## Load uncSIM RDS
 
@@ -1320,16 +1324,17 @@ uncSIM <- read_rds("data/rds/uncSIM.rds")
 ```
 :::
 
-## View uncSIM
+Also, we will run **uncSIM** to view the result.
 
 ```{r}
 uncSIM
 ```
 
-## Calculate R-squared
+### Goodness of fit
+
+With the aid of R-squared statistics , we will write a function called `CalcRSquared` to compute the proportion of variance in the dependent variables. The R2 indicates the degree to which the model explains the observed variation in the dependent variable, relative to the mean. The R2 always lies between 0 and 1, where a higher R2 indicates a better model fit.
 
 ```{r}
-# R-squared function
 
 #create function to calculate r-squared value 
 CalcRSquared <- function(observed,estimated){
@@ -1339,6 +1344,8 @@ CalcRSquared <- function(observed,estimated){
 }
 ```
 
+After we create the function, we can examine how the constraints hold.
+
 ```{r}
 CalcRSquared(uncSIM$data$TRIPS, uncSIM$fitted.values)
 ```
@@ -1346,6 +1353,8 @@ CalcRSquared(uncSIM$data$TRIPS, uncSIM$fitted.values)
 ```{r}
 r2_mcfadden(uncSIM)
 ```
+
+With reference to the R-squared above, we can conclude that the model accounts for about 22% of the variation of flows in the system. The value of R2 tells that the ten explanatory variables can account for 22% of the variation. However, it does not bring in more insights on which variables to look at.
 
 ## 5.4 Origin (Production) constrained SIM
 
@@ -1370,9 +1379,9 @@ write_rds(orcSIM, "data/rds/orcSIM.rds")
 
 ```
 
-::: {.callout-note title="Load RDS" collapse="true" appearance="simple"}
-5.5
+As we are not executing the code chunk above, we will load **orcSIM** into the R environment.
 
+::: {.callout-note title="Load RDS" collapse="true" appearance="simple"}
 ## Load orcSIM RDS
 
 ```{r}
@@ -1380,14 +1389,31 @@ orcSIM <- read_rds("data/rds/orcSIM.rds")
 ```
 :::
 
+Click on to view the summary statistics of **orcSIM.**
+
 ::: {.callout-tip title="Summary(orcSIM)" collapse="true" appearance="simple" icon="false"}
 ## Summary(orcSIM)
 
 ```{r}
 summary(orcSIM)
-options(max.print = 1000000)
 ```
 :::
+
+### Goodness of fit
+
+With the aid of R-squared statistics , we will compute the proportion of variance in the dependent variables.
+
+```{r}
+CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
+```
+
+```{r}
+r2_mcfadden(orcSIM)
+```
+
+With reference to the R-squared above, we can conclude that the model accounts for about 33% of the variation of flows in the system. The value of R2 tells that the five DESTIN explanatory variables can account for 33% of the variation. In addition, the p-value is \<0.05, we can reject the null hypothesis.
+
+Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Business, Schools, and Financial Service. We also note that their relationship are not the same as HDB results in negative value.
 
 ## 5.5 Destination constrained SIM
 
@@ -1411,6 +1437,8 @@ decSIM <- glm(formula = TRIPS ~
 write_rds(decSIM, "data/rds/decSIM.rds")
 ```
 
+As we are not executing the code chunk above, we will load **decSIM** into the R environment.
+
 ::: {.callout-note title="Load RDS" collapse="true" appearance="simple"}
 ## Load decSIM RDS
 
@@ -1419,6 +1447,8 @@ decSIM <- read_rds("data/rds/decSIM.rds")
 ```
 :::
 
+Click on to view the summary statistics of **decSIM.**
+
 ::: {.callout-tip title="Summary(decSIM)" collapse="true" appearance="simple" icon="false"}
 ## Summary(decSIM)
 
@@ -1426,6 +1456,22 @@ decSIM <- read_rds("data/rds/decSIM.rds")
 summary(decSIM)
 ```
 :::
+
+### Goodness of fit
+
+With the aid of R-squared statistics , we will compute the proportion of variance in the dependent variables.
+
+```{r}
+CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
+```
+
+```{r}
+r2_mcfadden(decSIM)
+```
+
+With reference to the R-squared above, we can conclude that the model accounts for about 40% of the variation of flows in the system. In addition, the p-value is \<0.05, we can reject the null hypothesis.
+
+Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Schools, Financial Service, and HDB. We also note that their relationship are not the same as HDB results in negative value.
 
 ## 5.6 Doubly constrained SIM
 
@@ -1445,6 +1491,8 @@ dbcSIM <- glm(formula = TRIPS ~
 write_rds(dbcSIM, "data/rds/dbcSIM.rds")
 ```
 
+As we are not executing the code chunk above, we will load **orcSIM** into the R environment.
+
 ::: {.callout-note title="Load RDS" collapse="true" appearance="simple"}
 ## Load dbcSIM RDS
 
@@ -1452,6 +1500,8 @@ write_rds(dbcSIM, "data/rds/dbcSIM.rds")
 dbcSIM <- read_rds("data/rds/dbcSIM.rds")
 ```
 :::
+
+Click on to view the summary statistics of **dbcSIM.**
 
 ::: {.callout-tip title="Summary(dbcSIM)" collapse="true" appearance="simple" icon="false"}
 ## Summary(dbcSIM)
@@ -1462,13 +1512,23 @@ summary(dbcSIM)
 ```
 :::
 
-## Calculate R-squared
+### Goodness of fit
+
+With the aid of R-squared statistics , we will compute the proportion of variance in the dependent variables.
 
 ```{r}
 CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
 ```
 
+```{r}
+r2_mcfadden(dbcSIM)
+```
+
+With reference to the R-squared (R2) above, we can conclude that the model accounts for about 40% of the variation of flows in the system. In addition, the p-value is \<0.05, we can reject the null hypothesis. We also note that there is a relatively improvmenet in the R2 value.
+
 ## 5.7 Model Comparison
+
+After running all models, we will use another statistical measures to compare the performance. We will be using `performance:compare_performance()` to measure the Root Mean Squared Error (RMSE). Generally, when we look at RMSE, the performance is better when the number is smaller.
 
 ```{r}
 model_list <- list(unconstrained=uncSIM,
@@ -1478,51 +1538,82 @@ model_list <- list(unconstrained=uncSIM,
 
 ```
 
+Next, we will compute the **RMSE** of all the models in `model_list` file by using the code chunk below.
+
 ```{r}
 compare_performance(model_list,
                     metrics = "RMSE")
 ```
 
-# Visualize Fitting
+By looking at the results, we note that the R2 and RMSE are consistent as both shows **doubly constrained SIM** as the preferred model. It has the highest R2 results, and the lowest RMSE value of 1,175.151.
+
+## 5.8 Visualize Fitting
+
+After running the models and comparing the result, we will visualize the observed values and the fitted values.
+
+First, we will extract the fitted values from each model.
+
+::: panel-tabset
+# UncSIM
 
 ```{r}
+#extract fitted values
 df <- as.data.frame(uncSIM$fitted.values) %>%
   round(digits = 0)
 
+#append fitted values
 flow_data2 <- flow_data2 %>%
   cbind(df) %>%
   rename(uncTRIPS = "uncSIM$fitted.values")
 ```
 
+# orcSIM
+
 ```{r}
+#extract fitted values
 df <- as.data.frame(orcSIM$fitted.values) %>%
   round(digits = 0)
 
+#append fitted values
 flow_data2 <- flow_data2 %>%
   cbind(df) %>%
   rename(orcTRIPS = "orcSIM$fitted.values")
 ```
 
+# decSIM
+
 ```{r}
+#extract fitted values
 df <- as.data.frame(decSIM$fitted.values) %>%
   round(digits = 0)
 
+#append fitted values
 flow_data2 <- flow_data2 %>%
   cbind(df) %>%
   rename(decTRIPS = "decSIM$fitted.values")
 ```
 
+# dbcSIM
+
 ```{r}
+#extract fitted values
 df <- as.data.frame(dbcSIM$fitted.values) %>%
   round(digits = 0)
 
+#append fitted values
 flow_data2 <- flow_data2 %>%
   cbind(df) %>%
   rename(dbcTRIPS = "dbcSIM$fitted.values")
 
 ```
+:::
+
+## 5.8.1 Scatterplot
+
+Then, we will use `geom_point()` of **ggplot2** package to create our scatterplots.
 
 ```{r}
+#| code-fold: true
 unc_p <- ggplot(data = flow_data2,
                 aes(x = uncTRIPS,
                     y = TRIPS)) +
@@ -1551,3 +1642,15 @@ ggarrange(unc_p, orc_p, dec_p, dbc_p,
           ncol = 2,
           nrow = 2)
 ```
+
+# 6. Conclusion and Future Work
+
+In our exercise, we examine the urban mobility patterns of commuters on the time period of Weekday Morning 0600 -0900 by looking at the explanatory variables - `Business`, `Financial` `Service`, `HDB`, `Retail`, and `School` based on hexagonal grid. We used Spatial Interaction Models and found out that the Doubly Constrained SIM yields better results in R2 and RMSE.
+
+To improve our study, after the initial stage of exploring the model, we could perform stepwise regression by adding and removing independent variables, in the predictive model, in order to find the subset of variables in the data set which results in the best performing model.
+
+# References:
+
+1.  Land Transport Authority. (2023). DataMall. Retrieved from <https://datamall.lta.gov.sg/content/datamall/en.html>
+
+2.  Wong, K. (2021, August). Tessellation SF: A Map Design Pattern. Retrieved from [https://urbandatapalette.com/post/2021-08-tessellation-sf](https://urbandatapalette.com/post/2021-08-tessellation-sf/)
