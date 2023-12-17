@@ -23,13 +23,17 @@ This exercise aims to reveals the urban mobility patterns of public bus transit 
 
 The code chunk below uses `pacman:: p_load()` to load and install the following libraries:
 
+-   **`DT`**
+
+-   **`ggpubr`**
+
 -   **`performance`** : Used for computing measures to access model quality that are not directly provided by R's 'base' or 'stats' packages.
 
 -   **`reshape2`** : Used to restructure and aggregate data
 
 -   **`sf`** : Used for geospatial data handling
 
--   `spdep` : Used to create spatial weights matrix objects
+-   **`spdep`** : Used to create spatial weights matrix objects
 
 -   **`sfdep`** : Used to integrate with `'sf'` objects and the `'tidyverse'`
 
@@ -38,7 +42,7 @@ The code chunk below uses `pacman:: p_load()` to load and install the following 
 -   **`tmap`** : Used for thematic mapping where spatial data distributions are visualized.
 
 ```{r}
-pacman::p_load(ggpubr, performance, reshape2, sp, 
+pacman::p_load(DT, ggpubr, performance, reshape2, sp, 
                sf, spdep, sfdep, stplanr, tidyverse, tmap)
 ```
 
@@ -470,7 +474,7 @@ Narrowing it down to the top 1% (**99% percentile**), we are able identify that 
 
 # 3. Data Integration
 
-After looking at the commuting flows, we are interested to know why people traveled for a particular distance. Could it be for work? Could it be for school? As such, we will be importing eight collected data - Business, Entertainment, Food & Beverages, Financial Service, Leisure & Recreation, Retails, HDB and School as part of our mobility study.
+After looking at the commuting flows, we are interested to know why people traveled for a particular distance, and the purpose of their trip. Could it be for work? Could it be for school? As such, we will be importing eight collected data - Business, Entertainment, Food & Beverages, Financial Service, Leisure & Recreation, Retails, HDB and School as part of our mobility study.
 
 ## 3.1 Importing Collected Data
 
@@ -484,9 +488,7 @@ Before we determine which exploratory variables are attractive or propulsive to 
 
 -   **Layer 3:** Variables' location. Identified based on [blue dots.]{.underline}
 
-the hexagon_grid with the bus_stop density as the base layer ,followed by the lines in the commuting flow, before adding the various points of the variable.
-
-We map it by the hexagon grid with bus stop + commuting flow + various collected data.
+By looking at the intersections between these layers, and our prior knowledge, we could better assemble the variables.
 
 ::: panel-tabset
 # Business
@@ -855,11 +857,17 @@ tm_shape(schools_sf) +
 ```
 :::
 
-We append the point symbol to our existing map. Based on the commuting flow of Weekday Morning (0600-0900), we will drop off: - Entertainment - Food & Beverages - Leisure & Recreation
+As we are focusing on the Weekday Morning Peak Period from 0600 to 0900, based on my own understanding, I would personally eliminate the Entertainment variables, and Leisure & Recreation as I believe that the operating hours then to begin near noon. However, if we look at the maps above, we could see that the Entertainment spot is clustered around the central region with a handful around Singapore. Thus, we will exclude **Entertainment** for further analysis.
 
-For future analysis, we will be focusing on Business, Financial Services, HDB, Retail, and School.
+Looking into the Leisure & Recreation tab, we noticed that there are more spots in this field than Entertainment. By looking at the data set we noticed that there are multiple gyms and recreation centres. However, both companies does not operate around the same time, which would affect the accuracy of the data. Upon a closer look on the data, we observed that there are handful of spot that falls besides the grid that contains a bus stop, making it seems inaccessible to commuters. Therefore, we will exclude **Leisure and Recreation** for further analysis.
+
+While looking at the other variables, the Food & Beverage (F&B) spot and School spot caught my eyes. At first glance, I assumed the F&B includes stalls in Hawker Centres, or Coffee Shop as I was expecting a wide amount of network, knowing how Singaporean loves food and would queue for food. Afer a close examination at the data, it is based on fine dining, bar , and pub. Thus, we could safely assume that the operating hours begins from 11.00am. As such, we will exclude **Food & Beverage** from further analysis.
+
+Moreover, it is interesting to note that the School spot intersects with multiple commuting flows with darker bus stop density and thick line width. Moving forward, we will focus on Business, Financial Services, HDB, Retail, and school as our propulsive and attractiveness variables.
 
 ### 3.2 Compute point-in-polygon count
+
+After confirming the five variables, we will count the number of spot located inside the grid_id by performing a point-in-polygon count. We will used the `length()` of **Base** package and `st_intersects()` of **sf** package. Thereafter, we will compute and display the summary statistics of computed variables using `summary()`.
 
 ::: panel-tabset
 # Business
@@ -944,22 +952,37 @@ summary(hex_grid$school_COUNT)
 ```
 :::
 
-## 4. Distance Matrix
+From the above, we noticed that there are excessive 0 values in the field of each variables. Notably, we would still transform this field with `log()`. Thus, additional step is required to ensure that the 0 will be replaced with a value that is between 0 and 1.
+
+# 4. Distance Matrix
+
+Before we continue with the previous section, we will compute a distance matrix. It is a table that shows the distance between pairs of locations. In our context, we want to see the distance between one hexagonal grid to another.
+
+## 4.1 Converting from sf data.table to SpatialPolygons Data Frame
+
+To begin, we will use `sp::as.Spatial()` to convert **hex_grid** from sf tabble data frame to SpatialPolygonsDataFrame of sp object.
 
 ```{r}
 hex_grid_sp <- as(hex_grid, "Spatial")
 hex_grid_sp
 ```
 
-Next, we compute the Euclidean distance between the centroids of the planning subzones with the use of `spDists()` of **sp** package.
+## 4.2 Computing the distance matrix
+
+Next, we compute the Euclidean distance between the centroids of the hexagonal grid with the use of `spDists()` of **sp** package. `head()` is also used to examine a 10x10 matrix.
 
 ```{r}
+#| code-fold: true
 dist <- spDists(hex_grid_sp, 
                 longlat = FALSE)
 head(dist, n=c(10, 10))
 ```
 
-To tidy, we will create a list sorted according to the distance matrix by grid_id.
+From the matrix, we noted that the headers for the columns and row are not labelled . Therefore, we will add a label into the distance matrix.
+
+### 4.2.1 Label of Column and Row headers
+
+To tidy, we will create a list sorted according to the distance matrix by `grid_id`.
 
 ```{r}
 id_names <- hex_grid$grid_id
@@ -972,7 +995,9 @@ colnames(dist) <- paste0(id_names)
 rownames(dist) <- paste0(id_names)
 ```
 
-In addition, we will pivot the distance matrix into a long table by using the row and column of grid_id.
+### 4.2.2 Pivoting distance value by Grid_ID
+
+Then, we will pivot the distance matrix into a long table by using the row and column of grid_id.
 
 ```{r}
 distPair <- melt(dist) %>%
@@ -986,13 +1011,21 @@ From the data frame above, we noticed that the intra-zonal distance within the z
 -   Input a constant distance value
 -   Rename original and destination fields
 
+::: panel-tabset
+# Minimum Value
+
 ```{r}
+#| code-fold: true
+# find minimum distance value
 distPair %>%
   filter(dist > 0) %>%
   summary()
 ```
 
+# Derive Constant Distance Value
+
 ```{r}
+#| code-fold: true
 distPair$dist <- ifelse(distPair$dist == 0,
                         200, distPair$dist)
 
@@ -1002,53 +1035,76 @@ distPair %>%
 
 ```
 
+# Rename and Save RDS
+
 ```{r}
 #to rename the fields
 distPair <- distPair %>%
   rename(orig = Var1,
          dest = Var2)
 
-#to save output to rds 
+#save output to rds format. 
 write_rds(distPair, "data/rds/distPair.rds") 
+
+```
+:::
+
+We determined that the the minimum distance is 750m. Although we could put any values that are smaller than **750m** to represent the intra-zonal distance, we input an arbitrary value of **200m** that is smaller than the radius of the hexagon. We will save a copy of **distPair** output to RDS and re-load it into the R environment.
+
+```{r}
 distPair <- read_rds("data/rds/distPair.rds")
 ```
 
-### Prepare flow data
+## 4.3 Prepare flow data
+
+To get the flow data, we will compute the flow movement between and within the hexagonal grid by using the code chunk below. Output will be saved as **flow_data**. In addition, we will use `head()` to display the top 10 data frame.
 
 ```{r}
+#| code-fold: true
 flow_data <- od_data1 %>%
   group_by(ORIGIN_ID, DESTIN_ID) %>% 
   summarize(TRIPS = sum(MORNING_PEAK)) 
 
-head(flow_data, 10)
+
+head(flow_data,10)
 ```
+
+### 4.3.1 Separate Intra-flow
 
 We will use `ifelse()` function to add three new fields in the dataframe with the condition that if Origin ID match Destination ID , zero will be forced.
 
 ```{r}
+#| code-fold: true
 flow_data$FlowNoIntra <- ifelse(
   flow_data$ORIGIN_ID == flow_data$DESTIN_ID, 
   0, flow_data$TRIPS)
 flow_data$offset <- ifelse(
   flow_data$ORIGIN_ID == flow_data$DESTIN_ID, 
   0.000001, 1)
-```
 
-```{r}
 glimpse(flow_data)
 ```
 
-```{r}
-#convert flow data from int to fct 
-flow_data$ORIGIN_ID <- as.factor(flow_data$ORIGIN_ID)
-flow_data$DESTIN_ID <- as.factor(flow_data$DESTIN_ID)
+### 4.3.2 Combine flow_data and distPair
 
+Before we join the data, we have to ensure that the data type is identical. As seen above, the flow_data for the grids are in `<fct>` format. Therefore, we will look at **distPai**r.
+
+```{r}
+glimpse(distPair)
+```
+
+From the results above, we note that the `orig` and `dest` are in `<int>` format. Similar, to section 2.3, we need to convert the data type from `<int>` to `<fct>`. After converting, we will run `glimpse()` again to check .
+
+```{r}
+#| code-fold: true
 #convert distPair from int to fct 
 distPair$orig <- as.factor(distPair$orig)
 distPair$dest <- as.factor(distPair$dest)
 
 glimpse(distPair)
 ```
+
+Now, we are ready to perform a `dplyr::left_join()` to *flow_data* dataframe and *distPair* dataframe. The output will be saved as **flow_data1**.
 
 ```{r}
 flow_data1 <- flow_data %>%
@@ -1057,10 +1113,19 @@ flow_data1 <- flow_data %>%
                     "DESTIN_ID" = "dest"))
 ```
 
-### Preparing Origin Attributes
+## 4.4 Preparing Origin and Destination Attributes
+
+Next, we will add the origin and destination attributes by joinining it to the **hex_grid** data. We will process in two steps:
+
+-   Add Origin attrbitues through flow_data using hex_grid by performing `left_join()`
+
+-   Using the previous result, perform another `left_join()` to add destination attributes.
+
+In addition, we tidy the data by renaming columns to include a prefix. Origin attributes will be re-labeled as **ORIGIN_XX,** while destination attributes will be re-labeled as **DESTIN_XX**. As we do not need the bus_stop count and geometry, we will drop the columns.
 
 ```{r}
 #| code-fold: true
+#left join based on origin attributes 
 flow_data2 <- flow_data1 %>%
   left_join(hex_grid,
             by = c(ORIGIN_ID = "grid_id")) %>%
@@ -1072,6 +1137,7 @@ flow_data2 <- flow_data1 %>%
          ) %>%
   select(-c(bus_stops)) 
 
+#left join based on destination attributes
 flow_data2 <- flow_data2 %>%
   left_join(hex_grid,
             by = c(DESTIN_ID = "grid_id")) %>%
@@ -1086,34 +1152,70 @@ flow_data2 <- flow_data2 %>%
 
 ```
 
+# 5. Calibrating Spatial Interaction Models
+
+Spatial interaction describe quatitatively the flow of people, material, or information between locations in geographical space.In this section, we will be looking at gravity models using the `glm()` function in R, namely:
+
+-   Unconstrained Spatial Interaction Model
+
+-   Origin Constrained Spatial Interaction Model
+
+-   Destination Constrained Spatial Interaction Model
+
+-   Doubly Constrained Spatial Interaction Model
+
+## 5.1 Visualizing dependent variable
+
+Before we run our models, we will do a quick visualization to visualize the distribution, and the relation between the dependent variable and one of the key independent variable in Spatial Interaction Model, namely *distance*.
+
 ```{r}
+#| code-fold: true
+ggplot(data = flow_data2,
+       aes(x = TRIPS)) +
+  geom_histogram() +
+  labs(title ="Distribution of Dependent Variable") +
+  theme_minimal()
+```
+
+From the graph above, we noticed that the distribution is highly skewed and does not resembled a normal distribution. We will move on to visualize the relation.
+
+```{r}
+#| code-fold: true
 ggplot(data = flow_data2,
        aes(x = dist,
            y = TRIPS)) +
   geom_point() +
-  geom_smooth(method = lm)
+  geom_smooth(method = lm) +
+  labs(title ="Relation between Dependent and Independent Variable") +
+  theme_minimal()
 ```
 
-```{r}
-#| eval: false
-#ggplot(data = flow_data2,
-#       aes(x = log(dist),
-#           y = log(TRIPS))) +
-#  geom_point() +
-#  geom_smooth(method = lm)
-```
+Based on the visualization above, it is difficult to determine if it resemble linear relationship. Therefore, we will use the log transformed version of both the dependent and independent variables, to see if they have a linear relationship.
 
 ```{r}
-#ggplot(data = SIM_data,
-#       aes(x = TRIPS)) +
-#  geom_histogram()
+#| code-fold: true
+ggplot(data = flow_data2,
+       aes(x = log(dist),
+           y = log(TRIPS))) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(title ="Relation between Dependent and Independent Variable (log)") +
+  theme_minimal()
 ```
+
+From the graph above, we are to visualize a better linear relationship in comparison to the previous scatterplot.
+
+## 5.2 Checking for variables with zero values
+
+Since Poisson Regression is based of log and log 0 is undefined, it is important for us to ensure to ensure that our exploratory variables does not contain any 0 values We will used the `summary()` of Base R to compute the summary statistics of all variables in the **flow_data2** data frame.
 
 ```{r}
 summary(flow_data2)
 ```
 
-The print report above reveals that that there are 10 variables that consist of 0 values. As such, we will replace it with 0.99.
+From the summary statistics, we confirmed that we have removed intra-flow as the min of **FlowNoIntra** is 1. However, all our variables - `ORIGIN_BUSINESS`, `ORIGIN_FINSER`, **`ORIGIN_HDB`**, `ORIGIN_RETAIL`, `ORIGIN_SCHOOLS`, `DESTIN_BUSINESS`, `DESTIN_FINSER`, `DESTIN_HDB`, `DESTIN_RETAIL`, `DESTIN_SCHOOLS` consinst of 0 values.
+
+As such, we will use the code chunk below to replace it with 0.99.
 
 ```{r}
 #| code-fold: true
@@ -1169,7 +1271,13 @@ flow_data2$DESTIN_SCHOOLS  <- ifelse(
   0.99, flow_data2$DESTIN_SCHOOLS)
 ```
 
-::: {.callout-note title="Save and Load RDS " collapse="true"}
+To confirm , we re-run the `summary()` before saving the output in RDS format and re-load it into R.
+
+```{r}
+summary(flow_data2)
+```
+
+::: {.callout-note title="Save and Load RDS" collapse="true" appearance="simple" icon="false"}
 ## Save and Load RDS
 
 ```{r}
@@ -1178,15 +1286,9 @@ flow_data2 <- read_rds("data/rds/flow_data2.rds")
 ```
 :::
 
-::: {.callout-title tip="Summary(flow_data2) " collapse="true"}
-## Summary(flow_data2)
+## 5.3 Unconstrained Spatial Interaction Model
 
-```{r}
-summary(flow_data2)
-```
-:::
-
-## Unconstrained Spatial Interaction Model
+The first model that we will looking at will be the Unconstrained model. There are no external restrictions on the flow value. Thus, any origin can send flows to any destination based solely on the attraction potential of the destination and the distance. We will save the output - **uncSIM** into a RDS format and re-load into the R environment.
 
 ```{r}
 #| code-fold: true
@@ -1210,7 +1312,7 @@ uncSIM <- glm(formula = TRIPS ~
 write_rds(uncSIM, "data/rds/uncSIM.rds")
 ```
 
-::: {.callout-note title="Load RDS " collapse="true"}
+::: {.callout-note title="Load RDS" collapse="true" appearance="simple" icon="false"}
 ## Load uncSIM RDS
 
 ```{r}
@@ -1245,7 +1347,9 @@ CalcRSquared(uncSIM$data$TRIPS, uncSIM$fitted.values)
 r2_mcfadden(uncSIM)
 ```
 
-## Origin (Production) constrained SIM
+## 5.4 Origin (Production) constrained SIM
+
+The second model that we are looking at will be the Origin Constrained model. The flow value are based on the destination attributes. We will save the output - **orcSIM** into a RDS format and re-load into the R environment.
 
 ```{r}
 #| code-fold: true
@@ -1266,7 +1370,9 @@ write_rds(orcSIM, "data/rds/orcSIM.rds")
 
 ```
 
-::: {.callout-note title="Load RDS " collapse="true"}
+::: {.callout-note title="Load RDS" collapse="true" appearance="simple"}
+5.5
+
 ## Load orcSIM RDS
 
 ```{r}
@@ -1274,7 +1380,7 @@ orcSIM <- read_rds("data/rds/orcSIM.rds")
 ```
 :::
 
-::: {.callout-tip title="Summary(orcSIM)" collapse="true"}
+::: {.callout-tip title="Summary(orcSIM)" collapse="true" appearance="simple" icon="false"}
 ## Summary(orcSIM)
 
 ```{r}
@@ -1283,7 +1389,9 @@ options(max.print = 1000000)
 ```
 :::
 
-## Destination constrained SIM
+## 5.5 Destination constrained SIM
+
+The third model that we are looking at will be the Destination Constrained model. The flow value are based on the origin attributes. We will save the output - **decSIM** into a RDS format and re-load into the R environment.
 
 ```{r}
 #| code-fold: true
@@ -1303,7 +1411,7 @@ decSIM <- glm(formula = TRIPS ~
 write_rds(decSIM, "data/rds/decSIM.rds")
 ```
 
-::: {.callout-note title="Load RDS " collapse="true"}
+::: {.callout-note title="Load RDS" collapse="true" appearance="simple"}
 ## Load decSIM RDS
 
 ```{r}
@@ -1311,16 +1419,17 @@ decSIM <- read_rds("data/rds/decSIM.rds")
 ```
 :::
 
-::: {.callout-tip title="Summary(decSIM)" collapse="true"}
+::: {.callout-tip title="Summary(decSIM)" collapse="true" appearance="simple" icon="false"}
 ## Summary(decSIM)
 
 ```{r}
 summary(decSIM)
-options(max.print = 1000000)
 ```
 :::
 
-## Doubly constrained SIM
+## 5.6 Doubly constrained SIM
+
+The last model that we are looking at will be the Doubly Constrained model. The flow value are not pre-determined. We will save the output - **dbcSIM** into a RDS format and re-load into the R environment.
 
 ```{r}
 #| code-fold: true
@@ -1336,7 +1445,7 @@ dbcSIM <- glm(formula = TRIPS ~
 write_rds(dbcSIM, "data/rds/dbcSIM.rds")
 ```
 
-::: {.callout-note title="Load RDS " collapse="true"}
+::: {.callout-note title="Load RDS" collapse="true" appearance="simple"}
 ## Load dbcSIM RDS
 
 ```{r}
@@ -1344,7 +1453,7 @@ dbcSIM <- read_rds("data/rds/dbcSIM.rds")
 ```
 :::
 
-::: {.callout-tip title="Summary(dbcSIM)" collapse="true"}
+::: {.callout-tip title="Summary(dbcSIM)" collapse="true" appearance="simple" icon="false"}
 ## Summary(dbcSIM)
 
 ```{r}
@@ -1359,7 +1468,7 @@ summary(dbcSIM)
 CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
 ```
 
-## Model Comparison
+## 5.7 Model Comparison
 
 ```{r}
 model_list <- list(unconstrained=uncSIM,

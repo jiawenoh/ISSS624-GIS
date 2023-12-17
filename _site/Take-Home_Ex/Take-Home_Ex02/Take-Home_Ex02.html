@@ -306,19 +306,34 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <ul class="collapse">
   <li><a href="#compute-point-in-polygon-count" id="toc-compute-point-in-polygon-count" class="nav-link" data-scroll-target="#compute-point-in-polygon-count">3.2 Compute point-in-polygon count</a></li>
   </ul></li>
+  </ul></li>
   <li><a href="#distance-matrix" id="toc-distance-matrix" class="nav-link" data-scroll-target="#distance-matrix">4. Distance Matrix</a>
   <ul class="collapse">
-  <li><a href="#prepare-flow-data" id="toc-prepare-flow-data" class="nav-link" data-scroll-target="#prepare-flow-data">Prepare flow data</a></li>
-  <li><a href="#preparing-origin-attributes" id="toc-preparing-origin-attributes" class="nav-link" data-scroll-target="#preparing-origin-attributes">Preparing Origin Attributes</a></li>
+  <li><a href="#converting-from-sf-data.table-to-spatialpolygons-data-frame" id="toc-converting-from-sf-data.table-to-spatialpolygons-data-frame" class="nav-link" data-scroll-target="#converting-from-sf-data.table-to-spatialpolygons-data-frame">4.1 Converting from sf data.table to SpatialPolygons Data Frame</a></li>
+  <li><a href="#computing-the-distance-matrix" id="toc-computing-the-distance-matrix" class="nav-link" data-scroll-target="#computing-the-distance-matrix">4.2 Computing the distance matrix</a>
+  <ul class="collapse">
+  <li><a href="#label-of-column-and-row-headers" id="toc-label-of-column-and-row-headers" class="nav-link" data-scroll-target="#label-of-column-and-row-headers">4.2.1 Label of Column and Row headers</a></li>
+  <li><a href="#pivoting-distance-value-by-grid_id" id="toc-pivoting-distance-value-by-grid_id" class="nav-link" data-scroll-target="#pivoting-distance-value-by-grid_id">4.2.2 Pivoting distance value by Grid_ID</a></li>
   </ul></li>
-  <li><a href="#unconstrained-spatial-interaction-model" id="toc-unconstrained-spatial-interaction-model" class="nav-link" data-scroll-target="#unconstrained-spatial-interaction-model">Unconstrained Spatial Interaction Model</a></li>
+  <li><a href="#prepare-flow-data" id="toc-prepare-flow-data" class="nav-link" data-scroll-target="#prepare-flow-data">4.3 Prepare flow data</a>
+  <ul class="collapse">
+  <li><a href="#separate-intra-flow" id="toc-separate-intra-flow" class="nav-link" data-scroll-target="#separate-intra-flow">4.3.1 Separate Intra-flow</a></li>
+  <li><a href="#combine-flow_data-and-distpair" id="toc-combine-flow_data-and-distpair" class="nav-link" data-scroll-target="#combine-flow_data-and-distpair">4.3.2 Combine flow_data and distPair</a></li>
+  </ul></li>
+  <li><a href="#preparing-origin-and-destination-attributes" id="toc-preparing-origin-and-destination-attributes" class="nav-link" data-scroll-target="#preparing-origin-and-destination-attributes">4.4 Preparing Origin and Destination Attributes</a></li>
+  </ul></li>
+  <li><a href="#calibrating-spatial-interaction-models" id="toc-calibrating-spatial-interaction-models" class="nav-link" data-scroll-target="#calibrating-spatial-interaction-models">5. Calibrating Spatial Interaction Models</a>
+  <ul class="collapse">
+  <li><a href="#visualizing-dependent-variable" id="toc-visualizing-dependent-variable" class="nav-link" data-scroll-target="#visualizing-dependent-variable">5.1 Visualizing dependent variable</a></li>
+  <li><a href="#checking-for-variables-with-zero-values" id="toc-checking-for-variables-with-zero-values" class="nav-link" data-scroll-target="#checking-for-variables-with-zero-values">5.2 Checking for variables with zero values</a></li>
+  <li><a href="#unconstrained-spatial-interaction-model" id="toc-unconstrained-spatial-interaction-model" class="nav-link" data-scroll-target="#unconstrained-spatial-interaction-model">5.3 Unconstrained Spatial Interaction Model</a></li>
   <li><a href="#view-uncsim" id="toc-view-uncsim" class="nav-link" data-scroll-target="#view-uncsim">View uncSIM</a></li>
   <li><a href="#calculate-r-squared" id="toc-calculate-r-squared" class="nav-link" data-scroll-target="#calculate-r-squared">Calculate R-squared</a></li>
-  <li><a href="#origin-production-constrained-sim" id="toc-origin-production-constrained-sim" class="nav-link" data-scroll-target="#origin-production-constrained-sim">Origin (Production) constrained SIM</a></li>
-  <li><a href="#destination-constrained-sim" id="toc-destination-constrained-sim" class="nav-link" data-scroll-target="#destination-constrained-sim">Destination constrained SIM</a></li>
-  <li><a href="#doubly-constrained-sim" id="toc-doubly-constrained-sim" class="nav-link" data-scroll-target="#doubly-constrained-sim">Doubly constrained SIM</a></li>
+  <li><a href="#origin-production-constrained-sim" id="toc-origin-production-constrained-sim" class="nav-link" data-scroll-target="#origin-production-constrained-sim">5.4 Origin (Production) constrained SIM</a></li>
+  <li><a href="#destination-constrained-sim" id="toc-destination-constrained-sim" class="nav-link" data-scroll-target="#destination-constrained-sim">5.5 Destination constrained SIM</a></li>
+  <li><a href="#doubly-constrained-sim" id="toc-doubly-constrained-sim" class="nav-link" data-scroll-target="#doubly-constrained-sim">5.6 Doubly constrained SIM</a></li>
   <li><a href="#calculate-r-squared-1" id="toc-calculate-r-squared-1" class="nav-link" data-scroll-target="#calculate-r-squared-1">Calculate R-squared</a></li>
-  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison">Model Comparison</a></li>
+  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison">5.7 Model Comparison</a></li>
   </ul></li>
   <li><a href="#visualize-fitting" id="toc-visualize-fitting" class="nav-link" data-scroll-target="#visualize-fitting">Visualize Fitting</a></li>
   </ul>
@@ -376,16 +391,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2 class="anchored" data-anchor-id="install-r-packages">2.1 Install R packages</h2>
 <p>The code chunk below uses <code>pacman:: p_load()</code> to load and install the following libraries:</p>
 <ul>
+<li><p><strong><code>DT</code></strong></p></li>
+<li><p><strong><code>ggpubr</code></strong></p></li>
 <li><p><strong><code>performance</code></strong> : Used for computing measures to access model quality that are not directly provided by R’s ‘base’ or ‘stats’ packages.</p></li>
 <li><p><strong><code>reshape2</code></strong> : Used to restructure and aggregate data</p></li>
 <li><p><strong><code>sf</code></strong> : Used for geospatial data handling</p></li>
-<li><p><code>spdep</code> : Used to create spatial weights matrix objects</p></li>
+<li><p><strong><code>spdep</code></strong> : Used to create spatial weights matrix objects</p></li>
 <li><p><strong><code>sfdep</code></strong> : Used to integrate with <code>'sf'</code> objects and the <code>'tidyverse'</code></p></li>
 <li><p><strong><code>tidyverse</code></strong>: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis</p></li>
 <li><p><strong><code>tmap</code></strong> : Used for thematic mapping where spatial data distributions are visualized.</p></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(ggpubr, performance, reshape2, sp, </span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(DT, ggpubr, performance, reshape2, sp, </span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               sf, spdep, sfdep, stplanr, tidyverse, tmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -873,7 +890,7 @@ More about Tmap Packages
 </section>
 <section id="data-integration" class="level1">
 <h1>3. Data Integration</h1>
-<p>After looking at the commuting flows, we are interested to know why people traveled for a particular distance. Could it be for work? Could it be for school? As such, we will be importing eight collected data - Business, Entertainment, Food &amp; Beverages, Financial Service, Leisure &amp; Recreation, Retails, HDB and School as part of our mobility study.</p>
+<p>After looking at the commuting flows, we are interested to know why people traveled for a particular distance, and the purpose of their trip. Could it be for work? Could it be for school? As such, we will be importing eight collected data - Business, Entertainment, Food &amp; Beverages, Financial Service, Leisure &amp; Recreation, Retails, HDB and School as part of our mobility study.</p>
 <section id="importing-collected-data" class="level2">
 <h2 class="anchored" data-anchor-id="importing-collected-data">3.1 Importing Collected Data</h2>
 <p>Similar to section 2.2, we used <code>sf::st_read()</code> to import and <code>sf::st_transform()</code> to ensure that the projected coordinate system is in the right format before storing it. With the exception of HDB and School data where we used <code>readr::read_csv()</code> to import and <code>sf::st_as_sf()</code> to converting an aspatial data into sf tibble data.frame.</p>
@@ -883,8 +900,7 @@ More about Tmap Packages
 <li><p><strong>Layer 2:</strong> Commuting flow movement. Identified based on <u>purple lines.</u></p></li>
 <li><p><strong>Layer 3:</strong> Variables’ location. Identified based on <u>blue dots.</u></p></li>
 </ul>
-<p>the hexagon_grid with the bus_stop density as the base layer ,followed by the lines in the commuting flow, before adding the various points of the variable.</p>
-<p>We map it by the hexagon grid with bus stop + commuting flow + various collected data.</p>
+<p>By looking at the intersections between these layers, and our prior knowledge, we could better assemble the variables.</p>
 <div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">Business</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Entertainment</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-3" role="tab" aria-controls="tabset-2-3" aria-selected="false">F&amp;B</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-4" role="tab" aria-controls="tabset-2-4" aria-selected="false">Financial Service</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-5" role="tab" aria-controls="tabset-2-5" aria-selected="false">HDB</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-6-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-6" role="tab" aria-controls="tabset-2-6" aria-selected="false">Leisure &amp; Recreation</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-7-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-7" role="tab" aria-controls="tabset-2-7" aria-selected="false">Retail</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-8-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-8" role="tab" aria-controls="tabset-2-8" aria-selected="false">School</a></li></ul>
 <div class="tab-content">
@@ -1354,10 +1370,13 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 </div>
 </div>
 </div>
-<p>We append the point symbol to our existing map. Based on the commuting flow of Weekday Morning (0600-0900), we will drop off: - Entertainment - Food &amp; Beverages - Leisure &amp; Recreation</p>
-<p>For future analysis, we will be focusing on Business, Financial Services, HDB, Retail, and School.</p>
+<p>As we are focusing on the Weekday Morning Peak Period from 0600 to 0900, based on my own understanding, I would personally eliminate the Entertainment variables, and Leisure &amp; Recreation as I believe that the operating hours then to begin near noon. However, if we look at the maps above, we could see that the Entertainment spot is clustered around the central region with a handful around Singapore. Thus, we will exclude <strong>Entertainment</strong> for further analysis.</p>
+<p>Looking into the Leisure &amp; Recreation tab, we noticed that there are more spots in this field than Entertainment. By looking at the data set we noticed that there are multiple gyms and recreation centres. However, both companies does not operate around the same time, which would affect the accuracy of the data. Upon a closer look on the data, we observed that there are handful of spot that falls besides the grid that contains a bus stop, making it seems inaccessible to commuters. Therefore, we will exclude <strong>Leisure and Recreation</strong> for further analysis.</p>
+<p>While looking at the other variables, the Food &amp; Beverage (F&amp;B) spot and School spot caught my eyes. At first glance, I assumed the F&amp;B includes stalls in Hawker Centres, or Coffee Shop as I was expecting a wide amount of network, knowing how Singaporean loves food and would queue for food. Afer a close examination at the data, it is based on fine dining, bar , and pub. Thus, we could safely assume that the operating hours begins from 11.00am. As such, we will exclude <strong>Food &amp; Beverage</strong> from further analysis.</p>
+<p>Moreover, it is interesting to note that the School spot intersects with multiple commuting flows with darker bus stop density and thick line width. Moving forward, we will focus on Business, Financial Services, HDB, Retail, and school as our propulsive and attractiveness variables.</p>
 <section id="compute-point-in-polygon-count" class="level3">
 <h3 class="anchored">3.2 Compute point-in-polygon count</h3>
+<p>After confirming the five variables, we will count the number of spot located inside the grid_id by performing a point-in-polygon count. We will used the <code>length()</code> of <strong>Base</strong> package and <code>st_intersects()</code> of <strong>sf</strong> package. Thereafter, we will compute and display the summary statistics of computed variables using <code>summary()</code>.</p>
 <div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">Business</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Financial Service</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-3" role="tab" aria-controls="tabset-3-3" aria-selected="false">HDB</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-4-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-4" role="tab" aria-controls="tabset-3-4" aria-selected="false">Retail</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-5-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-5" role="tab" aria-controls="tabset-3-5" aria-selected="false">School</a></li></ul>
 <div class="tab-content">
@@ -1465,10 +1484,16 @@ Projected CRS: SVY21 / Singapore TM</code></pre>
 </div>
 </div>
 </div>
+<p>From the above, we noticed that there are excessive 0 values in the field of each variables. Notably, we would still transform this field with <code>log()</code>. Thus, additional step is required to ensure that the 0 will be replaced with a value that is between 0 and 1.</p>
 </section>
 </section>
-<section id="distance-matrix" class="level2">
-<h2 class="anchored" data-anchor-id="distance-matrix">4. Distance Matrix</h2>
+</section>
+<section id="distance-matrix" class="level1">
+<h1>4. Distance Matrix</h1>
+<p>Before we continue with the previous section, we will compute a distance matrix. It is a table that shows the distance between pairs of locations. In our context, we want to see the distance between one hexagonal grid to another.</p>
+<section id="converting-from-sf-data.table-to-spatialpolygons-data-frame" class="level2">
+<h2 class="anchored" data-anchor-id="converting-from-sf-data.table-to-spatialpolygons-data-frame">4.1 Converting from sf data.table to SpatialPolygons Data Frame</h2>
+<p>To begin, we will use <code>sp::as.Spatial()</code> to convert <strong>hex_grid</strong> from sf tabble data frame to SpatialPolygonsDataFrame of sp object.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>hex_grid_sp <span class="ot">&lt;-</span> <span class="fu">as</span>(hex_grid, <span class="st">"Spatial"</span>)</span>
 <span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>hex_grid_sp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1483,11 +1508,17 @@ min values  :       1,         0,              0,             0,       0,       
 max values  :     999,        20,            126,           176,    8324,         1427,            5 </code></pre>
 </div>
 </div>
-<p>Next, we compute the Euclidean distance between the centroids of the planning subzones with the use of <code>spDists()</code> of <strong>sp</strong> package.</p>
+</section>
+<section id="computing-the-distance-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="computing-the-distance-matrix">4.2 Computing the distance matrix</h2>
+<p>Next, we compute the Euclidean distance between the centroids of the hexagonal grid with the use of <code>spDists()</code> of <strong>sp</strong> package. <code>head()</code> is also used to examine a 10x10 matrix.</p>
 <div class="cell">
+<details>
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>dist <span class="ot">&lt;-</span> <span class="fu">spDists</span>(hex_grid_sp, </span>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">longlat =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dist, <span class="at">n=</span><span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>          [,1]     [,2]     [,3]     [,4]     [,5]     [,6]     [,7]     [,8]
  [1,]    0.000 1299.038 2598.076 3897.114 5196.152  750.000 1984.313 3269.174
@@ -1513,7 +1544,10 @@ max values  :     999,        20,            126,           176,    8324,       
 [10,] 1299.038    0.000</code></pre>
 </div>
 </div>
-<p>To tidy, we will create a list sorted according to the distance matrix by grid_id.</p>
+<p>From the matrix, we noted that the headers for the columns and row are not labelled . Therefore, we will add a label into the distance matrix.</p>
+<section id="label-of-column-and-row-headers" class="level3">
+<h3 class="anchored" data-anchor-id="label-of-column-and-row-headers">4.2.1 Label of Column and Row headers</h3>
+<p>To tidy, we will create a list sorted according to the distance matrix by <code>grid_id</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>id_names <span class="ot">&lt;-</span> hex_grid<span class="sc">$</span>grid_id</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -1522,7 +1556,10 @@ max values  :     999,        20,            126,           176,    8324,       
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(dist) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(id_names)</span>
 <span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(dist) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(id_names)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>In addition, we will pivot the distance matrix into a long table by using the row and column of grid_id.</p>
+</section>
+<section id="pivoting-distance-value-by-grid_id" class="level3">
+<h3 class="anchored" data-anchor-id="pivoting-distance-value-by-grid_id">4.2.2 Pivoting distance value by Grid_ID</h3>
+<p>Then, we will pivot the distance matrix into a long table by using the row and column of grid_id.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>distPair <span class="ot">&lt;-</span> <span class="fu">melt</span>(dist) <span class="sc">%&gt;%</span></span>
 <span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">dist =</span> value)</span>
@@ -1547,10 +1584,18 @@ max values  :     999,        20,            126,           176,    8324,       
 <li>Input a constant distance value</li>
 <li>Rename original and destination fields</li>
 </ul>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Minimum Value</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Derive Constant Distance Value</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-3" role="tab" aria-controls="tabset-4-3" aria-selected="false">Rename and Save RDS</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>distPair <span class="sc">%&gt;%</span></span>
-<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(dist <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="co"># find minimum distance value</span></span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>distPair <span class="sc">%&gt;%</span></span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(dist <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      Var1           Var2           dist      
  Min.   :   1   Min.   :   1   Min.   :  750  
@@ -1561,13 +1606,18 @@ max values  :     999,        20,            126,           176,    8324,       
  Max.   :1945   Max.   :1945   Max.   :57862  </code></pre>
 </div>
 </div>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
 <div class="cell">
+<details>
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>distPair<span class="sc">$</span>dist <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(distPair<span class="sc">$</span>dist <span class="sc">==</span> <span class="dv">0</span>,</span>
 <span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>                        <span class="dv">200</span>, distPair<span class="sc">$</span>dist)</span>
 <span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="co"># to check the distPair data frame</span></span>
 <span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>distPair <span class="sc">%&gt;%</span></span>
 <span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      Var1           Var2           dist      
  Min.   :   1   Min.   :   1   Min.   :  200  
@@ -1578,24 +1628,39 @@ max values  :     999,        20,            126,           176,    8324,       
  Max.   :1945   Max.   :1945   Max.   :57862  </code></pre>
 </div>
 </div>
+</div>
+<div id="tabset-4-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-3-tab">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="co">#to rename the fields</span></span>
 <span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>distPair <span class="ot">&lt;-</span> distPair <span class="sc">%&gt;%</span></span>
 <span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">orig =</span> Var1,</span>
 <span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">dest =</span> Var2)</span>
 <span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a><span class="co">#to save output to rds </span></span>
-<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(distPair, <span class="st">"data/rds/distPair.rds"</span>) </span>
-<span id="cb79-8"><a href="#cb79-8" aria-hidden="true" tabindex="-1"></a>distPair <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/distPair.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a><span class="co">#save output to rds format. </span></span>
+<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(distPair, <span class="st">"data/rds/distPair.rds"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="prepare-flow-data" class="level3">
-<h3 class="anchored" data-anchor-id="prepare-flow-data">Prepare flow data</h3>
+</div>
+</div>
+</div>
+<p>We determined that the the minimum distance is 750m. Although we could put any values that are smaller than <strong>750m</strong> to represent the intra-zonal distance, we input an arbitrary value of <strong>200m</strong> that is smaller than the radius of the hexagon. We will save a copy of <strong>distPair</strong> output to RDS and re-load it into the R environment.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>flow_data <span class="ot">&lt;-</span> od_data1 <span class="sc">%&gt;%</span></span>
-<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ORIGIN_ID, DESTIN_ID) <span class="sc">%&gt;%</span> </span>
-<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">TRIPS =</span> <span class="fu">sum</span>(MORNING_PEAK)) </span>
-<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(flow_data, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>distPair <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/distPair.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="prepare-flow-data" class="level2">
+<h2 class="anchored" data-anchor-id="prepare-flow-data">4.3 Prepare flow data</h2>
+<p>To get the flow data, we will compute the flow movement between and within the hexagonal grid by using the code chunk below. Output will be saved as <strong>flow_data</strong>. In addition, we will use <code>head()</code> to display the top 10 data frame.</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>flow_data <span class="ot">&lt;-</span> od_data1 <span class="sc">%&gt;%</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ORIGIN_ID, DESTIN_ID) <span class="sc">%&gt;%</span> </span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">TRIPS =</span> <span class="fu">sum</span>(MORNING_PEAK)) </span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(flow_data,<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 3
 # Groups:   ORIGIN_ID [3]
@@ -1613,17 +1678,21 @@ max values  :     999,        20,            126,           176,    8324,       
 10 40        100           9</code></pre>
 </div>
 </div>
+<section id="separate-intra-flow" class="level3">
+<h3 class="anchored" data-anchor-id="separate-intra-flow">4.3.1 Separate Intra-flow</h3>
 <p>We will use <code>ifelse()</code> function to add three new fields in the dataframe with the condition that if Origin ID match Destination ID , zero will be forced.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>flow_data<span class="sc">$</span>FlowNoIntra <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>  flow_data<span class="sc">$</span>ORIGIN_ID <span class="sc">==</span> flow_data<span class="sc">$</span>DESTIN_ID, </span>
-<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, flow_data<span class="sc">$</span>TRIPS)</span>
-<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>flow_data<span class="sc">$</span>offset <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a>  flow_data<span class="sc">$</span>ORIGIN_ID <span class="sc">==</span> flow_data<span class="sc">$</span>DESTIN_ID, </span>
-<span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.000001</span>, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(flow_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>flow_data<span class="sc">$</span>FlowNoIntra <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  flow_data<span class="sc">$</span>ORIGIN_ID <span class="sc">==</span> flow_data<span class="sc">$</span>DESTIN_ID, </span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a>  <span class="dv">0</span>, flow_data<span class="sc">$</span>TRIPS)</span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a>flow_data<span class="sc">$</span>offset <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a>  flow_data<span class="sc">$</span>ORIGIN_ID <span class="sc">==</span> flow_data<span class="sc">$</span>DESTIN_ID, </span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.000001</span>, <span class="dv">1</span>)</span>
+<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-8"><a href="#cb83-8" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(flow_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 65,076
 Columns: 5
@@ -1635,16 +1704,30 @@ $ FlowNoIntra &lt;dbl&gt; 1, 2, 2, 1, 56, 13, 37, 1, 32, 9, 2, 21, 3, 5, 4, 1, 7
 $ offset      &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…</code></pre>
 </div>
 </div>
+</section>
+<section id="combine-flow_data-and-distpair" class="level3">
+<h3 class="anchored" data-anchor-id="combine-flow_data-and-distpair">4.3.2 Combine flow_data and distPair</h3>
+<p>Before we join the data, we have to ensure that the data type is identical. As seen above, the flow_data for the grids are in <code>&lt;fct&gt;</code> format. Therefore, we will look at <strong>distPai</strong>r.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co">#convert flow data from int to fct </span></span>
-<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>flow_data<span class="sc">$</span>ORIGIN_ID <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(flow_data<span class="sc">$</span>ORIGIN_ID)</span>
-<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>flow_data<span class="sc">$</span>DESTIN_ID <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(flow_data<span class="sc">$</span>DESTIN_ID)</span>
-<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb85-5"><a href="#cb85-5" aria-hidden="true" tabindex="-1"></a><span class="co">#convert distPair from int to fct </span></span>
-<span id="cb85-6"><a href="#cb85-6" aria-hidden="true" tabindex="-1"></a>distPair<span class="sc">$</span>orig <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(distPair<span class="sc">$</span>orig)</span>
-<span id="cb85-7"><a href="#cb85-7" aria-hidden="true" tabindex="-1"></a>distPair<span class="sc">$</span>dest <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(distPair<span class="sc">$</span>dest)</span>
-<span id="cb85-8"><a href="#cb85-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb85-9"><a href="#cb85-9" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(distPair)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(distPair)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 3,783,025
+Columns: 3
+$ orig &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19…
+$ dest &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…
+$ dist &lt;dbl&gt; 200.000, 1299.038, 2598.076, 3897.114, 5196.152, 750.000, 1984.31…</code></pre>
+</div>
+</div>
+<p>From the results above, we note that the <code>orig</code> and <code>dest</code> are in <code>&lt;int&gt;</code> format. Similar, to section 2.3, we need to convert the data type from <code>&lt;int&gt;</code> to <code>&lt;fct&gt;</code>. After converting, we will run <code>glimpse()</code> again to check .</p>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="co">#convert distPair from int to fct </span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>distPair<span class="sc">$</span>orig <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(distPair<span class="sc">$</span>orig)</span>
+<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>distPair<span class="sc">$</span>dest <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(distPair<span class="sc">$</span>dest)</span>
+<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb87-5"><a href="#cb87-5" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(distPair)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 3,783,025
 Columns: 3
@@ -1653,66 +1736,118 @@ $ dest &lt;fct&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 $ dist &lt;dbl&gt; 200.000, 1299.038, 2598.076, 3897.114, 5196.152, 750.000, 1984.31…</code></pre>
 </div>
 </div>
+<p>Now, we are ready to perform a <code>dplyr::left_join()</code> to <em>flow_data</em> dataframe and <em>distPair</em> dataframe. The output will be saved as <strong>flow_data1</strong>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>flow_data1 <span class="ot">&lt;-</span> flow_data <span class="sc">%&gt;%</span></span>
-<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span> (distPair,</span>
-<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"ORIGIN_ID"</span> <span class="ot">=</span> <span class="st">"orig"</span>,</span>
-<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"DESTIN_ID"</span> <span class="ot">=</span> <span class="st">"dest"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>flow_data1 <span class="ot">&lt;-</span> flow_data <span class="sc">%&gt;%</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span> (distPair,</span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"ORIGIN_ID"</span> <span class="ot">=</span> <span class="st">"orig"</span>,</span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"DESTIN_ID"</span> <span class="ot">=</span> <span class="st">"dest"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="preparing-origin-attributes" class="level3">
-<h3 class="anchored" data-anchor-id="preparing-origin-attributes">Preparing Origin Attributes</h3>
+</section>
+<section id="preparing-origin-and-destination-attributes" class="level2">
+<h2 class="anchored" data-anchor-id="preparing-origin-and-destination-attributes">4.4 Preparing Origin and Destination Attributes</h2>
+<p>Next, we will add the origin and destination attributes by joinining it to the <strong>hex_grid</strong> data. We will process in two steps:</p>
+<ul>
+<li><p>Add Origin attrbitues through flow_data using hex_grid by performing <code>left_join()</code></p></li>
+<li><p>Using the previous result, perform another <code>left_join()</code> to add destination attributes.</p></li>
+</ul>
+<p>In addition, we tidy the data by renaming columns to include a prefix. Origin attributes will be re-labeled as <strong>ORIGIN_XX,</strong> while destination attributes will be re-labeled as <strong>DESTIN_XX</strong>. As we do not need the bus_stop count and geometry, we will drop the columns.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data1 <span class="sc">%&gt;%</span></span>
-<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(hex_grid,</span>
-<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="at">ORIGIN_ID =</span> <span class="st">"grid_id"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">ORIGIN_BUSINESS =</span> BUSINESS_COUNT,</span>
-<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_FINSER =</span> finserv_COUNT,</span>
-<span id="cb88-6"><a href="#cb88-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_HDB =</span> HDB_SUM,</span>
-<span id="cb88-7"><a href="#cb88-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_RETAIL =</span> retail_COUNT,</span>
-<span id="cb88-8"><a href="#cb88-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_SCHOOLS =</span>school_COUNT</span>
-<span id="cb88-9"><a href="#cb88-9" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
-<span id="cb88-10"><a href="#cb88-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(bus_stops)) </span>
-<span id="cb88-11"><a href="#cb88-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb88-12"><a href="#cb88-12" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
-<span id="cb88-13"><a href="#cb88-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(hex_grid,</span>
-<span id="cb88-14"><a href="#cb88-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="at">DESTIN_ID =</span> <span class="st">"grid_id"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb88-15"><a href="#cb88-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">DESTIN_BUSINESS =</span> BUSINESS_COUNT,</span>
-<span id="cb88-16"><a href="#cb88-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_FINSER =</span> finserv_COUNT,</span>
-<span id="cb88-17"><a href="#cb88-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_HDB =</span> HDB_SUM,</span>
-<span id="cb88-18"><a href="#cb88-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_RETAIL =</span> retail_COUNT,</span>
-<span id="cb88-19"><a href="#cb88-19" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_SCHOOLS =</span>school_COUNT</span>
-<span id="cb88-20"><a href="#cb88-20" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
-<span id="cb88-21"><a href="#cb88-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(bus_stops)) <span class="sc">%&gt;%</span></span>
-<span id="cb88-22"><a href="#cb88-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">16</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co">#left join based on origin attributes </span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data1 <span class="sc">%&gt;%</span></span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(hex_grid,</span>
+<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="at">ORIGIN_ID =</span> <span class="st">"grid_id"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb90-5"><a href="#cb90-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">ORIGIN_BUSINESS =</span> BUSINESS_COUNT,</span>
+<span id="cb90-6"><a href="#cb90-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_FINSER =</span> finserv_COUNT,</span>
+<span id="cb90-7"><a href="#cb90-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_HDB =</span> HDB_SUM,</span>
+<span id="cb90-8"><a href="#cb90-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_RETAIL =</span> retail_COUNT,</span>
+<span id="cb90-9"><a href="#cb90-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">ORIGIN_SCHOOLS =</span>school_COUNT</span>
+<span id="cb90-10"><a href="#cb90-10" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
+<span id="cb90-11"><a href="#cb90-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(bus_stops)) </span>
+<span id="cb90-12"><a href="#cb90-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb90-13"><a href="#cb90-13" aria-hidden="true" tabindex="-1"></a><span class="co">#left join based on destination attributes</span></span>
+<span id="cb90-14"><a href="#cb90-14" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
+<span id="cb90-15"><a href="#cb90-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(hex_grid,</span>
+<span id="cb90-16"><a href="#cb90-16" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="at">DESTIN_ID =</span> <span class="st">"grid_id"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb90-17"><a href="#cb90-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">DESTIN_BUSINESS =</span> BUSINESS_COUNT,</span>
+<span id="cb90-18"><a href="#cb90-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_FINSER =</span> finserv_COUNT,</span>
+<span id="cb90-19"><a href="#cb90-19" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_HDB =</span> HDB_SUM,</span>
+<span id="cb90-20"><a href="#cb90-20" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_RETAIL =</span> retail_COUNT,</span>
+<span id="cb90-21"><a href="#cb90-21" aria-hidden="true" tabindex="-1"></a>         <span class="at">DESTIN_SCHOOLS =</span>school_COUNT</span>
+<span id="cb90-22"><a href="#cb90-22" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
+<span id="cb90-23"><a href="#cb90-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(bus_stops)) <span class="sc">%&gt;%</span></span>
+<span id="cb90-24"><a href="#cb90-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">16</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+</section>
+</section>
+<section id="calibrating-spatial-interaction-models" class="level1">
+<h1>5. Calibrating Spatial Interaction Models</h1>
+<p>Spatial interaction describe quatitatively the flow of people, material, or information between locations in geographical space.In this section, we will be looking at gravity models using the <code>glm()</code> function in R, namely:</p>
+<ul>
+<li><p>Unconstrained Spatial Interaction Model</p></li>
+<li><p>Origin Constrained Spatial Interaction Model</p></li>
+<li><p>Destination Constrained Spatial Interaction Model</p></li>
+<li><p>Doubly Constrained Spatial Interaction Model</p></li>
+</ul>
+<section id="visualizing-dependent-variable" class="level2">
+<h2 class="anchored" data-anchor-id="visualizing-dependent-variable">5.1 Visualizing dependent variable</h2>
+<p>Before we run our models, we will do a quick visualization to visualize the distribution, and the relation between the dependent variable and one of the key independent variable in Spatial Interaction Model, namely <em>distance</em>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> dist,</span>
-<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() <span class="sc">+</span></span>
+<span id="cb91-4"><a href="#cb91-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span><span class="st">"Distribution of Dependent Variable"</span>) <span class="sc">+</span></span>
+<span id="cb91-5"><a href="#cb91-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-54-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-55-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>From the graph above, we noticed that the distribution is highly skewed and does not resembled a normal distribution. We will move on to visualize the relation.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ggplot(data = flow_data2,</span></span>
-<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a><span class="co">#       aes(x = log(dist),</span></span>
-<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a><span class="co">#           y = log(TRIPS))) +</span></span>
-<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  geom_point() +</span></span>
-<span id="cb90-5"><a href="#cb90-5" aria-hidden="true" tabindex="-1"></a><span class="co">#  geom_smooth(method = lm)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> dist,</span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm) <span class="sc">+</span></span>
+<span id="cb92-6"><a href="#cb92-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span><span class="st">"Relation between Dependent and Independent Variable"</span>) <span class="sc">+</span></span>
+<span id="cb92-7"><a href="#cb92-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-56-1.png" class="img-fluid" width="672"></p>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ggplot(data = SIM_data,</span></span>
-<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a><span class="co">#       aes(x = TRIPS)) +</span></span>
-<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  geom_histogram()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Based on the visualization above, it is difficult to determine if it resemble linear relationship. Therefore, we will use the log transformed version of both the dependent and independent variables, to see if they have a linear relationship.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(flow_data2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">log</span>(dist),</span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> <span class="fu">log</span>(TRIPS))) <span class="sc">+</span></span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm) <span class="sc">+</span></span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span><span class="st">"Relation between Dependent and Independent Variable (log)"</span>) <span class="sc">+</span></span>
+<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-57-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>From the graph above, we are to visualize a better linear relationship in comparison to the previous scatterplot.</p>
+</section>
+<section id="checking-for-variables-with-zero-values" class="level2">
+<h2 class="anchored" data-anchor-id="checking-for-variables-with-zero-values">5.2 Checking for variables with zero values</h2>
+<p>Since Poisson Regression is based of log and log 0 is undefined, it is important for us to ensure to ensure that our exploratory variables does not contain any 0 values We will used the <code>summary()</code> of Base R to compute the summary statistics of all variables in the <strong>flow_data2</strong> data frame.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(flow_data2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   ORIGIN_ID       DESTIN_ID         TRIPS          FlowNoIntra     
  1542   :  285   1234   :  364   Min.   :    1.0   Min.   :    1.0  
@@ -1748,94 +1883,65 @@ $ dist &lt;dbl&gt; 200.000, 1299.038, 2598.076, 3897.114, 5196.152, 750.000, 198
                                                   </code></pre>
 </div>
 </div>
-<p>The print report above reveals that that there are 10 variables that consist of 0 values. As such, we will replace it with 0.99.</p>
+<p>From the summary statistics, we confirmed that we have removed intra-flow as the min of <strong>FlowNoIntra</strong> is 1. However, all our variables - <code>ORIGIN_BUSINESS</code>, <code>ORIGIN_FINSER</code>, <strong><code>ORIGIN_HDB</code></strong>, <code>ORIGIN_RETAIL</code>, <code>ORIGIN_SCHOOLS</code>, <code>DESTIN_BUSINESS</code>, <code>DESTIN_FINSER</code>, <code>DESTIN_HDB</code>, <code>DESTIN_RETAIL</code>, <code>DESTIN_SCHOOLS</code> consinst of 0 values.</p>
+<p>As such, we will use the code chunk below to replace it with 0.99.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_BUSINESS</span></span>
-<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_BUSINESS <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_BUSINESS <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-4"><a href="#cb94-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_BUSINESS)</span>
-<span id="cb94-5"><a href="#cb94-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-6"><a href="#cb94-6" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_FINSER </span></span>
-<span id="cb94-7"><a href="#cb94-7" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_FINSER  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-8"><a href="#cb94-8" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_FINSER <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-9"><a href="#cb94-9" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_FINSER)</span>
-<span id="cb94-10"><a href="#cb94-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-11"><a href="#cb94-11" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_HDB</span></span>
-<span id="cb94-12"><a href="#cb94-12" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_HDB  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-13"><a href="#cb94-13" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_HDB <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-14"><a href="#cb94-14" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_HDB)</span>
-<span id="cb94-15"><a href="#cb94-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-16"><a href="#cb94-16" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_RETAIL</span></span>
-<span id="cb94-17"><a href="#cb94-17" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_RETAIL  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-18"><a href="#cb94-18" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_RETAIL <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-19"><a href="#cb94-19" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_RETAIL)</span>
-<span id="cb94-20"><a href="#cb94-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-21"><a href="#cb94-21" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_SCHOOLS</span></span>
-<span id="cb94-22"><a href="#cb94-22" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_SCHOOLS  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-23"><a href="#cb94-23" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_SCHOOLS <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-24"><a href="#cb94-24" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_SCHOOLS)</span>
-<span id="cb94-25"><a href="#cb94-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-26"><a href="#cb94-26" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_BUSINESS</span></span>
-<span id="cb94-27"><a href="#cb94-27" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_BUSINESS <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-28"><a href="#cb94-28" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_BUSINESS <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-29"><a href="#cb94-29" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_BUSINESS)</span>
-<span id="cb94-30"><a href="#cb94-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-31"><a href="#cb94-31" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_FINSER </span></span>
-<span id="cb94-32"><a href="#cb94-32" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_FINSER  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-33"><a href="#cb94-33" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_FINSER <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-34"><a href="#cb94-34" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_FINSER)</span>
-<span id="cb94-35"><a href="#cb94-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-36"><a href="#cb94-36" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_HDB</span></span>
-<span id="cb94-37"><a href="#cb94-37" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_HDB  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-38"><a href="#cb94-38" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_HDB <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-39"><a href="#cb94-39" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_HDB)</span>
-<span id="cb94-40"><a href="#cb94-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-41"><a href="#cb94-41" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_RETAIL</span></span>
-<span id="cb94-42"><a href="#cb94-42" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_RETAIL  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-43"><a href="#cb94-43" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_RETAIL <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-44"><a href="#cb94-44" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_RETAIL)</span>
-<span id="cb94-45"><a href="#cb94-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-46"><a href="#cb94-46" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_SCHOOLS</span></span>
-<span id="cb94-47"><a href="#cb94-47" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_SCHOOLS  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
-<span id="cb94-48"><a href="#cb94-48" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_SCHOOLS <span class="sc">==</span> <span class="dv">0</span>,</span>
-<span id="cb94-49"><a href="#cb94-49" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_SCHOOLS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_BUSINESS</span></span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_BUSINESS <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_BUSINESS <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_BUSINESS)</span>
+<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_FINSER </span></span>
+<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_FINSER  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-8"><a href="#cb96-8" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_FINSER <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-9"><a href="#cb96-9" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_FINSER)</span>
+<span id="cb96-10"><a href="#cb96-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-11"><a href="#cb96-11" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_HDB</span></span>
+<span id="cb96-12"><a href="#cb96-12" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_HDB  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-13"><a href="#cb96-13" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_HDB <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-14"><a href="#cb96-14" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_HDB)</span>
+<span id="cb96-15"><a href="#cb96-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-16"><a href="#cb96-16" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_RETAIL</span></span>
+<span id="cb96-17"><a href="#cb96-17" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_RETAIL  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-18"><a href="#cb96-18" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_RETAIL <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-19"><a href="#cb96-19" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_RETAIL)</span>
+<span id="cb96-20"><a href="#cb96-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-21"><a href="#cb96-21" aria-hidden="true" tabindex="-1"></a><span class="co">#ORIGIN_SCHOOLS</span></span>
+<span id="cb96-22"><a href="#cb96-22" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>ORIGIN_SCHOOLS  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-23"><a href="#cb96-23" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>ORIGIN_SCHOOLS <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-24"><a href="#cb96-24" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>ORIGIN_SCHOOLS)</span>
+<span id="cb96-25"><a href="#cb96-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-26"><a href="#cb96-26" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_BUSINESS</span></span>
+<span id="cb96-27"><a href="#cb96-27" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_BUSINESS <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-28"><a href="#cb96-28" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_BUSINESS <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-29"><a href="#cb96-29" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_BUSINESS)</span>
+<span id="cb96-30"><a href="#cb96-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-31"><a href="#cb96-31" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_FINSER </span></span>
+<span id="cb96-32"><a href="#cb96-32" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_FINSER  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-33"><a href="#cb96-33" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_FINSER <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-34"><a href="#cb96-34" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_FINSER)</span>
+<span id="cb96-35"><a href="#cb96-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-36"><a href="#cb96-36" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_HDB</span></span>
+<span id="cb96-37"><a href="#cb96-37" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_HDB  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-38"><a href="#cb96-38" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_HDB <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-39"><a href="#cb96-39" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_HDB)</span>
+<span id="cb96-40"><a href="#cb96-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-41"><a href="#cb96-41" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_RETAIL</span></span>
+<span id="cb96-42"><a href="#cb96-42" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_RETAIL  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-43"><a href="#cb96-43" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_RETAIL <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-44"><a href="#cb96-44" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_RETAIL)</span>
+<span id="cb96-45"><a href="#cb96-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-46"><a href="#cb96-46" aria-hidden="true" tabindex="-1"></a><span class="co">#DESTIN_SCHOOLS</span></span>
+<span id="cb96-47"><a href="#cb96-47" aria-hidden="true" tabindex="-1"></a>flow_data2<span class="sc">$</span>DESTIN_SCHOOLS  <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(</span>
+<span id="cb96-48"><a href="#cb96-48" aria-hidden="true" tabindex="-1"></a>  flow_data2<span class="sc">$</span>DESTIN_SCHOOLS <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb96-49"><a href="#cb96-49" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.99</span>, flow_data2<span class="sc">$</span>DESTIN_SCHOOLS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-caption-container flex-fill">
-Save and Load RDS
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
-<div class="callout-body-container callout-body" title="Save and Load RDS ">
+<p>To confirm , we re-run the <code>summary()</code> before saving the output in RDS format and re-load it into R.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(flow_data2, <span class="st">"data/rds/flow_data2.rds"</span>)</span>
-<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/flow_data2.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="callout-title callout callout-style-default no-icon callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-caption-container flex-fill">
-Summary(flow_data2)
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
-<div class="callout-body-container callout-body" data-tip="Summary(flow_data2) ">
-<div class="cell">
-<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(flow_data2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(flow_data2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   ORIGIN_ID       DESTIN_ID         TRIPS          FlowNoIntra     
  1542   :  285   1234   :  364   Min.   :    1.0   Min.   :    1.0  
@@ -1871,49 +1977,65 @@ Summary(flow_data2)
                                                                       </code></pre>
 </div>
 </div>
+<div class="callout-note callout callout-style-simple no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Save and Load RDS
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body" title="Save and Load RDS">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(flow_data2, <span class="st">"data/rds/flow_data2.rds"</span>)</span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/flow_data2.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
-</section>
+</div>
 </section>
 <section id="unconstrained-spatial-interaction-model" class="level2">
-<h2 class="anchored" data-anchor-id="unconstrained-spatial-interaction-model">Unconstrained Spatial Interaction Model</h2>
+<h2 class="anchored" data-anchor-id="unconstrained-spatial-interaction-model">5.3 Unconstrained Spatial Interaction Model</h2>
+<p>The first model that we will looking at will be the Unconstrained model. There are no external restrictions on the flow value. Thus, any origin can send flows to any destination based solely on the attraction potential of the destination and the distance. We will save the output - <strong>uncSIM</strong> into a RDS format and re-load into the R environment.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a>uncSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
-<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_BUSINESS) <span class="sc">+</span> </span>
-<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_BUSINESS) <span class="sc">+</span></span>
-<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_FINSER) <span class="sc">+</span> </span>
-<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_FINSER) <span class="sc">+</span></span>
-<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_HDB) <span class="sc">+</span> </span>
-<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_HDB) <span class="sc">+</span></span>
-<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_RETAIL) <span class="sc">+</span> </span>
-<span id="cb98-9"><a href="#cb98-9" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_RETAIL) <span class="sc">+</span></span>
-<span id="cb98-10"><a href="#cb98-10" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_SCHOOLS) <span class="sc">+</span> </span>
-<span id="cb98-11"><a href="#cb98-11" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_SCHOOLS) <span class="sc">+</span></span>
-<span id="cb98-12"><a href="#cb98-12" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
-<span id="cb98-13"><a href="#cb98-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
-<span id="cb98-14"><a href="#cb98-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
-<span id="cb98-15"><a href="#cb98-15" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
-<span id="cb98-16"><a href="#cb98-16" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
-<span id="cb98-17"><a href="#cb98-17" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(uncSIM, <span class="st">"data/rds/uncSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>uncSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_BUSINESS) <span class="sc">+</span> </span>
+<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_BUSINESS) <span class="sc">+</span></span>
+<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_FINSER) <span class="sc">+</span> </span>
+<span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_FINSER) <span class="sc">+</span></span>
+<span id="cb100-6"><a href="#cb100-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_HDB) <span class="sc">+</span> </span>
+<span id="cb100-7"><a href="#cb100-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_HDB) <span class="sc">+</span></span>
+<span id="cb100-8"><a href="#cb100-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_RETAIL) <span class="sc">+</span> </span>
+<span id="cb100-9"><a href="#cb100-9" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_RETAIL) <span class="sc">+</span></span>
+<span id="cb100-10"><a href="#cb100-10" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_SCHOOLS) <span class="sc">+</span> </span>
+<span id="cb100-11"><a href="#cb100-11" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(DESTIN_SCHOOLS) <span class="sc">+</span></span>
+<span id="cb100-12"><a href="#cb100-12" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
+<span id="cb100-13"><a href="#cb100-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
+<span id="cb100-14"><a href="#cb100-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
+<span id="cb100-15"><a href="#cb100-15" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
+<span id="cb100-16"><a href="#cb100-16" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
+<span id="cb100-17"><a href="#cb100-17" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(uncSIM, <span class="st">"data/rds/uncSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-note callout callout-style-simple no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
-<i class="callout-icon"></i>
+<i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-caption-container flex-fill">
 Load uncSIM RDS
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
-<div class="callout-body-container callout-body" title="Load RDS ">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body" title="Load RDS">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>uncSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/uncSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>uncSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/uncSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -1922,7 +2044,7 @@ Load uncSIM RDS
 <section id="view-uncsim" class="level2">
 <h2 class="anchored" data-anchor-id="view-uncsim">View uncSIM</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>uncSIM</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a>uncSIM</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:  glm(formula = TRIPS ~ log(ORIGIN_BUSINESS) + log(DESTIN_BUSINESS) + 
@@ -1950,23 +2072,23 @@ Residual Deviance: 50260000     AIC: 50610000</code></pre>
 <section id="calculate-r-squared" class="level2">
 <h2 class="anchored" data-anchor-id="calculate-r-squared">Calculate R-squared</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co"># R-squared function</span></span>
-<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a><span class="co">#create function to calculate r-squared value </span></span>
-<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a>CalcRSquared <span class="ot">&lt;-</span> <span class="cf">function</span>(observed,estimated){</span>
-<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">cor</span>(observed,estimated)</span>
-<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> r<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb102-7"><a href="#cb102-7" aria-hidden="true" tabindex="-1"></a>  R2</span>
-<span id="cb102-8"><a href="#cb102-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="co"># R-squared function</span></span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a><span class="co">#create function to calculate r-squared value </span></span>
+<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a>CalcRSquared <span class="ot">&lt;-</span> <span class="cf">function</span>(observed,estimated){</span>
+<span id="cb104-5"><a href="#cb104-5" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> <span class="fu">cor</span>(observed,estimated)</span>
+<span id="cb104-6"><a href="#cb104-6" aria-hidden="true" tabindex="-1"></a>  R2 <span class="ot">&lt;-</span> r<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb104-7"><a href="#cb104-7" aria-hidden="true" tabindex="-1"></a>  R2</span>
+<span id="cb104-8"><a href="#cb104-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(uncSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, uncSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(uncSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, uncSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.2214091</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">r2_mcfadden</span>(uncSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="fu">r2_mcfadden</span>(uncSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># R2 for Generalized Linear Regression
        R2: 0.487
@@ -1975,57 +2097,56 @@ Residual Deviance: 50260000     AIC: 50610000</code></pre>
 </div>
 </section>
 <section id="origin-production-constrained-sim" class="level2">
-<h2 class="anchored" data-anchor-id="origin-production-constrained-sim">Origin (Production) constrained SIM</h2>
+<h2 class="anchored" data-anchor-id="origin-production-constrained-sim">5.4 Origin (Production) constrained SIM</h2>
+<p>The second model that we are looking at will be the Origin Constrained model. The flow value are based on the destination attributes. We will save the output - <strong>orcSIM</strong> into a RDS format and re-load into the R environment.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
-<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>                 ORIGIN_ID <span class="sc">+</span></span>
-<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_BUSINESS) <span class="sc">+</span></span>
-<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_FINSER) <span class="sc">+</span></span>
-<span id="cb107-5"><a href="#cb107-5" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_HDB) <span class="sc">+</span></span>
-<span id="cb107-6"><a href="#cb107-6" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_RETAIL) <span class="sc">+</span></span>
-<span id="cb107-7"><a href="#cb107-7" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_SCHOOLS) <span class="sc">+</span></span>
-<span id="cb107-8"><a href="#cb107-8" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(dist),</span>
-<span id="cb107-9"><a href="#cb107-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
-<span id="cb107-10"><a href="#cb107-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
-<span id="cb107-11"><a href="#cb107-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
-<span id="cb107-12"><a href="#cb107-12" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
-<span id="cb107-13"><a href="#cb107-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(orcSIM, <span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
+<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a>                 ORIGIN_ID <span class="sc">+</span></span>
+<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_BUSINESS) <span class="sc">+</span></span>
+<span id="cb109-4"><a href="#cb109-4" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_FINSER) <span class="sc">+</span></span>
+<span id="cb109-5"><a href="#cb109-5" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_HDB) <span class="sc">+</span></span>
+<span id="cb109-6"><a href="#cb109-6" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_RETAIL) <span class="sc">+</span></span>
+<span id="cb109-7"><a href="#cb109-7" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_SCHOOLS) <span class="sc">+</span></span>
+<span id="cb109-8"><a href="#cb109-8" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(dist),</span>
+<span id="cb109-9"><a href="#cb109-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
+<span id="cb109-10"><a href="#cb109-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
+<span id="cb109-11"><a href="#cb109-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
+<span id="cb109-12"><a href="#cb109-12" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
+<span id="cb109-13"><a href="#cb109-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(orcSIM, <span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-note callout callout-style-simple">
+<div class="callout-body d-flex">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<div class="callout-caption-container flex-fill">
-Load orcSIM RDS
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-5" class="callout-5-contents callout-collapse collapse">
-<div class="callout-body-container callout-body" title="Load RDS ">
+<div class="callout-body-container" title="Load RDS">
+<p>5.5</p>
+<section id="load-orcsim-rds" class="level2">
+<h2 class="anchored" data-anchor-id="load-orcsim-rds">Load orcSIM RDS</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
 </div>
 </div>
 </div>
-</div>
-<div class="callout-tip callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-tip callout callout-style-simple no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
-<i class="callout-icon"></i>
+<i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-caption-container flex-fill">
 Summary(orcSIM)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(orcSIM)">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(orcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(orcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -2877,34 +2998,35 @@ AIC: 37987035
 
 Number of Fisher Scoring iterations: 7</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">max.print =</span> <span class="dv">1000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">max.print =</span> <span class="dv">1000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </div>
 </section>
 <section id="destination-constrained-sim" class="level2">
-<h2 class="anchored" data-anchor-id="destination-constrained-sim">Destination constrained SIM</h2>
+<h2 class="anchored" data-anchor-id="destination-constrained-sim">5.5 Destination constrained SIM</h2>
+<p>The third model that we are looking at will be the Destination Constrained model. The flow value are based on the origin attributes. We will save the output - <strong>decSIM</strong> into a RDS format and re-load into the R environment.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
-<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a>                DESTIN_ID <span class="sc">+</span> </span>
-<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_BUSINESS) <span class="sc">+</span> </span>
-<span id="cb112-4"><a href="#cb112-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_FINSER) <span class="sc">+</span> </span>
-<span id="cb112-5"><a href="#cb112-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_HDB) <span class="sc">+</span> </span>
-<span id="cb112-6"><a href="#cb112-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_RETAIL) <span class="sc">+</span> </span>
-<span id="cb112-7"><a href="#cb112-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_SCHOOLS) <span class="sc">+</span> </span>
-<span id="cb112-8"><a href="#cb112-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
-<span id="cb112-9"><a href="#cb112-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
-<span id="cb112-10"><a href="#cb112-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
-<span id="cb112-11"><a href="#cb112-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
-<span id="cb112-12"><a href="#cb112-12" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
-<span id="cb112-13"><a href="#cb112-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(decSIM, <span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
+<span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a>                DESTIN_ID <span class="sc">+</span> </span>
+<span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_BUSINESS) <span class="sc">+</span> </span>
+<span id="cb114-4"><a href="#cb114-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_FINSER) <span class="sc">+</span> </span>
+<span id="cb114-5"><a href="#cb114-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_HDB) <span class="sc">+</span> </span>
+<span id="cb114-6"><a href="#cb114-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_RETAIL) <span class="sc">+</span> </span>
+<span id="cb114-7"><a href="#cb114-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_SCHOOLS) <span class="sc">+</span> </span>
+<span id="cb114-8"><a href="#cb114-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
+<span id="cb114-9"><a href="#cb114-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
+<span id="cb114-10"><a href="#cb114-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
+<span id="cb114-11"><a href="#cb114-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
+<span id="cb114-12"><a href="#cb114-12" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
+<span id="cb114-13"><a href="#cb114-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(decSIM, <span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-note callout callout-style-simple callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2913,28 +3035,28 @@ Load decSIM RDS
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-7" class="callout-7-contents callout-collapse collapse">
-<div class="callout-body-container callout-body" title="Load RDS ">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body" title="Load RDS">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </div>
-<div class="callout-tip callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-tip callout callout-style-simple no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
-<i class="callout-icon"></i>
+<i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-caption-container flex-fill">
 Summary(decSIM)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(decSIM)">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(decSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(decSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -3787,30 +3909,30 @@ AIC: 36887407
 
 Number of Fisher Scoring iterations: 8</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">max.print =</span> <span class="dv">1000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </div>
 </section>
 <section id="doubly-constrained-sim" class="level2">
-<h2 class="anchored" data-anchor-id="doubly-constrained-sim">Doubly constrained SIM</h2>
+<h2 class="anchored" data-anchor-id="doubly-constrained-sim">5.6 Doubly constrained SIM</h2>
+<p>The last model that we are looking at will be the Doubly Constrained model. The flow value are not pre-determined. We will save the output - <strong>dbcSIM</strong> into a RDS format and re-load into the R environment.</p>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
-<span id="cb117-2"><a href="#cb117-2" aria-hidden="true" tabindex="-1"></a>                ORIGIN_ID <span class="sc">+</span> </span>
-<span id="cb117-3"><a href="#cb117-3" aria-hidden="true" tabindex="-1"></a>                DESTIN_ID <span class="sc">+</span> </span>
-<span id="cb117-4"><a href="#cb117-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
-<span id="cb117-5"><a href="#cb117-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
-<span id="cb117-6"><a href="#cb117-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
-<span id="cb117-7"><a href="#cb117-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
-<span id="cb117-8"><a href="#cb117-8" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
-<span id="cb117-9"><a href="#cb117-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(dbcSIM, <span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
+<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a>                ORIGIN_ID <span class="sc">+</span> </span>
+<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a>                DESTIN_ID <span class="sc">+</span> </span>
+<span id="cb118-4"><a href="#cb118-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
+<span id="cb118-5"><a href="#cb118-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
+<span id="cb118-6"><a href="#cb118-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
+<span id="cb118-7"><a href="#cb118-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
+<span id="cb118-8"><a href="#cb118-8" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
+<span id="cb118-9"><a href="#cb118-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(dbcSIM, <span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-note callout callout-style-simple callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3819,28 +3941,28 @@ Load dbcSIM RDS
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-9" class="callout-9-contents callout-collapse collapse">
-<div class="callout-body-container callout-body" title="Load RDS ">
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body" title="Load RDS">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </div>
-<div class="callout-tip callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-tip callout callout-style-simple no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
-<i class="callout-icon"></i>
+<i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-caption-container flex-fill">
 Summary(dbcSIM)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(dbcSIM)">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -5513,23 +5635,23 @@ Number of Fisher Scoring iterations: 7</code></pre>
 <section id="calculate-r-squared-1" class="level2">
 <h2 class="anchored" data-anchor-id="calculate-r-squared-1">Calculate R-squared</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(dbcSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, dbcSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb122"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(dbcSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, dbcSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.5737163</code></pre>
 </div>
 </div>
 </section>
 <section id="model-comparison" class="level2">
-<h2 class="anchored" data-anchor-id="model-comparison">Model Comparison</h2>
+<h2 class="anchored" data-anchor-id="model-comparison">5.7 Model Comparison</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a>model_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">unconstrained=</span>uncSIM,</span>
-<span id="cb123-2"><a href="#cb123-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">originConstrained=</span>orcSIM,</span>
-<span id="cb123-3"><a href="#cb123-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">destinationConstrained=</span>decSIM,</span>
-<span id="cb123-4"><a href="#cb123-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">doublyConstrained=</span>dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>model_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">unconstrained=</span>uncSIM,</span>
+<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">originConstrained=</span>orcSIM,</span>
+<span id="cb124-3"><a href="#cb124-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">destinationConstrained=</span>decSIM,</span>
+<span id="cb124-4"><a href="#cb124-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">doublyConstrained=</span>dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a><span class="fu">compare_performance</span>(model_list,</span>
-<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="st">"RMSE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a><span class="fu">compare_performance</span>(model_list,</span>
+<span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="st">"RMSE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># Comparison of Model Performance Indices
 
@@ -5546,67 +5668,67 @@ doublyConstrained      |   glm | 1175.151</code></pre>
 <section id="visualize-fitting" class="level1">
 <h1>Visualize Fitting</h1>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb126"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(uncSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
-<span id="cb126-2"><a href="#cb126-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
-<span id="cb126-3"><a href="#cb126-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb126-4"><a href="#cb126-4" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
-<span id="cb126-5"><a href="#cb126-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
-<span id="cb126-6"><a href="#cb126-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">uncTRIPS =</span> <span class="st">"uncSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(orcSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(uncSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
 <span id="cb127-2"><a href="#cb127-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
 <span id="cb127-3"><a href="#cb127-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb127-4"><a href="#cb127-4" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
 <span id="cb127-5"><a href="#cb127-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
-<span id="cb127-6"><a href="#cb127-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">orcTRIPS =</span> <span class="st">"orcSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb127-6"><a href="#cb127-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">uncTRIPS =</span> <span class="st">"uncSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(decSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(orcSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
 <span id="cb128-2"><a href="#cb128-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
 <span id="cb128-3"><a href="#cb128-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb128-4"><a href="#cb128-4" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
 <span id="cb128-5"><a href="#cb128-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
-<span id="cb128-6"><a href="#cb128-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">decTRIPS =</span> <span class="st">"decSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb128-6"><a href="#cb128-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">orcTRIPS =</span> <span class="st">"orcSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dbcSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(decSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
 <span id="cb129-2"><a href="#cb129-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
 <span id="cb129-3"><a href="#cb129-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb129-4"><a href="#cb129-4" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
 <span id="cb129-5"><a href="#cb129-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
-<span id="cb129-6"><a href="#cb129-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">dbcTRIPS =</span> <span class="st">"dbcSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb129-6"><a href="#cb129-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">decTRIPS =</span> <span class="st">"decSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb130"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a>unc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb130-2"><a href="#cb130-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> uncTRIPS,</span>
-<span id="cb130-3"><a href="#cb130-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb130-4"><a href="#cb130-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb130-5"><a href="#cb130-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
-<span id="cb130-6"><a href="#cb130-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-7"><a href="#cb130-7" aria-hidden="true" tabindex="-1"></a>orc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb130-8"><a href="#cb130-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> orcTRIPS,</span>
-<span id="cb130-9"><a href="#cb130-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb130-10"><a href="#cb130-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb130-11"><a href="#cb130-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
-<span id="cb130-12"><a href="#cb130-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-13"><a href="#cb130-13" aria-hidden="true" tabindex="-1"></a>dec_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb130-14"><a href="#cb130-14" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> decTRIPS,</span>
-<span id="cb130-15"><a href="#cb130-15" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb130-16"><a href="#cb130-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb130-17"><a href="#cb130-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
-<span id="cb130-18"><a href="#cb130-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-19"><a href="#cb130-19" aria-hidden="true" tabindex="-1"></a>dbc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb130-20"><a href="#cb130-20" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> dbcTRIPS,</span>
-<span id="cb130-21"><a href="#cb130-21" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb130-22"><a href="#cb130-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb130-23"><a href="#cb130-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
-<span id="cb130-24"><a href="#cb130-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb130-25"><a href="#cb130-25" aria-hidden="true" tabindex="-1"></a><span class="fu">ggarrange</span>(unc_p, orc_p, dec_p, dbc_p,</span>
-<span id="cb130-26"><a href="#cb130-26" aria-hidden="true" tabindex="-1"></a>          <span class="at">ncol =</span> <span class="dv">2</span>,</span>
-<span id="cb130-27"><a href="#cb130-27" aria-hidden="true" tabindex="-1"></a>          <span class="at">nrow =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb130"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dbcSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
+<span id="cb130-2"><a href="#cb130-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
+<span id="cb130-3"><a href="#cb130-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb130-4"><a href="#cb130-4" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
+<span id="cb130-5"><a href="#cb130-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
+<span id="cb130-6"><a href="#cb130-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">dbcTRIPS =</span> <span class="st">"dbcSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a>unc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb131-2"><a href="#cb131-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> uncTRIPS,</span>
+<span id="cb131-3"><a href="#cb131-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb131-4"><a href="#cb131-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb131-5"><a href="#cb131-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
+<span id="cb131-6"><a href="#cb131-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb131-7"><a href="#cb131-7" aria-hidden="true" tabindex="-1"></a>orc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb131-8"><a href="#cb131-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> orcTRIPS,</span>
+<span id="cb131-9"><a href="#cb131-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb131-10"><a href="#cb131-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb131-11"><a href="#cb131-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
+<span id="cb131-12"><a href="#cb131-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb131-13"><a href="#cb131-13" aria-hidden="true" tabindex="-1"></a>dec_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb131-14"><a href="#cb131-14" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> decTRIPS,</span>
+<span id="cb131-15"><a href="#cb131-15" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb131-16"><a href="#cb131-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb131-17"><a href="#cb131-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
+<span id="cb131-18"><a href="#cb131-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb131-19"><a href="#cb131-19" aria-hidden="true" tabindex="-1"></a>dbc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb131-20"><a href="#cb131-20" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> dbcTRIPS,</span>
+<span id="cb131-21"><a href="#cb131-21" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb131-22"><a href="#cb131-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb131-23"><a href="#cb131-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
+<span id="cb131-24"><a href="#cb131-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb131-25"><a href="#cb131-25" aria-hidden="true" tabindex="-1"></a><span class="fu">ggarrange</span>(unc_p, orc_p, dec_p, dbc_p,</span>
+<span id="cb131-26"><a href="#cb131-26" aria-hidden="true" tabindex="-1"></a>          <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb131-27"><a href="#cb131-27" aria-hidden="true" tabindex="-1"></a>          <span class="at">nrow =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-83-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-84-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 
