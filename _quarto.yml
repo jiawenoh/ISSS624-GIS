@@ -11,6 +11,8 @@ website:
     tools:
       - icon: house-fill
         href: https://isss624-ohjiawen.netlify.app/
+      - icon: github
+        href: https://github.com/jiawenoh/ISSS624-GIS
       - icon: linkedin
         href: https://www.linkedin.com/in/jia-wen-oh/
         
@@ -54,7 +56,7 @@ website:
           - text: "Take Home Exercise 1"
             href: "Take-Home_Ex/Take-Home_Ex01/Take-Home_Ex01.html"
           - text: "Take Home Exercise 2"
-            href: "Take-Home_Ex/Take-Home_Ex02/Take-Home_Ex03.html"
+            href: "Take-Home_Ex/Take-Home_Ex02/Take-Home_Ex02.html"
 
 
 format:
