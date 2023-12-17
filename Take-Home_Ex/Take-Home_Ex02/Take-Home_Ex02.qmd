@@ -1205,7 +1205,7 @@ ggplot(data = flow_data2,
   theme_minimal()
 ```
 
-From the graph above, we are to visualize a better linear relationship in comparison to the previous scatterplot. Also ,as observe earlier , we can confirmed that the number of trips decreases, as the distance increases.
+From the graph above, we are able to visualize a better linear relationship in comparison to the previous scatterplot. Also ,as observe earlier , we can confirmed that as the number of trips decreases, as the distance increases.
 
 ## 5.2 Checking for variables with zero values
 
@@ -1215,7 +1215,7 @@ Since Poisson Regression is based of log and log 0 is undefined, it is important
 summary(flow_data2)
 ```
 
-From the summary statistics, we confirmed that we have removed intra-flow as the min of **FlowNoIntra** is 1. However, all our variables - `ORIGIN_BUSINESS`, `ORIGIN_FINSER`, **`ORIGIN_HDB`**, `ORIGIN_RETAIL`, `ORIGIN_SCHOOLS`, `DESTIN_BUSINESS`, `DESTIN_FINSER`, `DESTIN_HDB`, `DESTIN_RETAIL`, `DESTIN_SCHOOLS` consinst of 0 values.
+From the summary statistics, we confirmed that we have removed intra-flow as the min of **FlowNoIntra** is 1. However, all our variables - `ORIGIN_BUSINESS`, `ORIGIN_FINSER`, **`ORIGIN_HDB`**, `ORIGIN_RETAIL`, `ORIGIN_SCHOOLS`, `DESTIN_BUSINESS`, `DESTIN_FINSER`, `DESTIN_HDB`, `DESTIN_RETAIL`, `DESTIN_SCHOOLS` contains 0 values.
 
 As such, we will use the code chunk below to replace it with 0.99.
 
@@ -1350,11 +1350,7 @@ After we create the function, we can examine how the constraints hold.
 CalcRSquared(uncSIM$data$TRIPS, uncSIM$fitted.values)
 ```
 
-```{r}
-r2_mcfadden(uncSIM)
-```
-
-With reference to the R-squared above, we can conclude that the model accounts for about 22% of the variation of flows in the system. The value of R2 tells that the ten explanatory variables can account for 22% of the variation. However, it does not bring in more insights on which variables to look at.
+With reference to the R-squared above, we can conclude that the model accounts for about 22% of the variation of flows in the system. Since the p-value is less than the alpha of 0.05, we will reject the null hypothesis that the mean is a good estimator for the explanatory variables. However, it does not bring in more insights on which variables to look at since the value of R2 tells that the ten explanatory variables can account for 22% of the variation.
 
 ## 5.4 Origin (Production) constrained SIM
 
@@ -1407,13 +1403,9 @@ With the aid of R-squared statistics , we will compute the proportion of varianc
 CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
 ```
 
-```{r}
-r2_mcfadden(orcSIM)
-```
+With reference to the R-squared above, we can conclude that the model accounts for about 33% of the variation of flows in the system. The value of R2 tells that the five DESTIN explanatory variables can account for 33% of the variation. In addition, the p-value is less than the alpha of 0.05, we will reject the null hypothesis that the mean is a good estimator for the five DESTIN variables.
 
-With reference to the R-squared above, we can conclude that the model accounts for about 33% of the variation of flows in the system. The value of R2 tells that the five DESTIN explanatory variables can account for 33% of the variation. In addition, the p-value is \<0.05, we can reject the null hypothesis.
-
-Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Business, Schools, and Financial Service. We also note that their relationship are not the same as HDB results in negative value.
+Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Business, Schools, and Financial Service. We also note that their relationship are not the same as HDB results in negative value.As such, we are to infer that housing location (HDB) is a propulsive factor.
 
 ## 5.5 Destination constrained SIM
 
@@ -1465,13 +1457,9 @@ With the aid of R-squared statistics , we will compute the proportion of varianc
 CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
 ```
 
-```{r}
-r2_mcfadden(decSIM)
-```
+With reference to the R-squared above, we can conclude that the model accounts for about 40% of the variation of flows in the system. In addition, the p-value is less than the alpha of 0.05, we will reject the null hypothesis that the mean is a good estimator for the five ORIGIN variables.
 
-With reference to the R-squared above, we can conclude that the model accounts for about 40% of the variation of flows in the system. In addition, the p-value is \<0.05, we can reject the null hypothesis.
-
-Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Schools, Financial Service, and HDB. We also note that their relationship are not the same as HDB results in negative value.
+Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Schools, Financial Service, and HDB. We also note that their relationship are not the same as Business results in negative value. We could infer that most people commute to Retail spot followed by Schools. 
 
 ## 5.6 Doubly constrained SIM
 
@@ -1520,11 +1508,7 @@ With the aid of R-squared statistics , we will compute the proportion of varianc
 CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
 ```
 
-```{r}
-r2_mcfadden(dbcSIM)
-```
-
-With reference to the R-squared (R2) above, we can conclude that the model accounts for about 40% of the variation of flows in the system. In addition, the p-value is \<0.05, we can reject the null hypothesis. We also note that there is a relatively improvmenet in the R2 value.
+With reference to the R-squared (R2) above, we can conclude that the model accounts for about 57% of the variation of flows in the system. In addition, the p-value is \<0.05, we can reject the null hypothesis. We also note that there is a relatively improvement in the R2 value.
 
 ## 5.7 Model Comparison
 
@@ -1618,36 +1602,46 @@ unc_p <- ggplot(data = flow_data2,
                 aes(x = uncTRIPS,
                     y = TRIPS)) +
   geom_point() +
-  geom_smooth(method = lm)
+  geom_smooth(method = lm) +
+  theme_minimal()
 
 orc_p <- ggplot(data = flow_data2,
                 aes(x = orcTRIPS,
                     y = TRIPS)) +
   geom_point() +
-  geom_smooth(method = lm)
+  geom_smooth(method = lm) +
+    theme_minimal()
 
 dec_p <- ggplot(data = flow_data2,
                 aes(x = decTRIPS,
                     y = TRIPS)) +
   geom_point() +
-  geom_smooth(method = lm)
+  geom_smooth(method = lm) +
+    theme_minimal()
 
 dbc_p <- ggplot(data = flow_data2,
                 aes(x = dbcTRIPS,
                     y = TRIPS)) +
   geom_point() +
-  geom_smooth(method = lm)
+  geom_smooth(method = lm) +
+    theme_minimal()
 
-ggarrange(unc_p, orc_p, dec_p, dbc_p,
+#arrange graphs 
+plot <- ggarrange(unc_p, orc_p, dec_p, dbc_p,
           ncol = 2,
           nrow = 2)
+
+#add title 
+annotate_figure(plot, top = text_grob("Scatterplots across SLM Models"))
+  
 ```
+The plot above reveals that there are a few statistical outliers that have relatively frequent trips.  The slope seems to be smoother for uncTRIPs, followed by orcTRIPs and gradually, become steeper. All of the models have positive correlation. 
 
 # 6. Conclusion and Future Work
 
 In our exercise, we examine the urban mobility patterns of commuters on the time period of Weekday Morning 0600 -0900 by looking at the explanatory variables - `Business`, `Financial` `Service`, `HDB`, `Retail`, and `School` based on hexagonal grid. We used Spatial Interaction Models and found out that the Doubly Constrained SIM yields better results in R2 and RMSE.
 
-To improve our study, after the initial stage of exploring the model, we could perform stepwise regression by adding and removing independent variables, in the predictive model, in order to find the subset of variables in the data set which results in the best performing model.
+To improve our study, after the initial stage of exploring the model, we could perform stepwise regression by adding and removing independent variables, in the predictive model, in order to find the subset of variables in the data set which results in the best performing model. However, it is important to note that adding variables might improve the score of R2, it might causes overfitting issues. 
 
 # References:
 

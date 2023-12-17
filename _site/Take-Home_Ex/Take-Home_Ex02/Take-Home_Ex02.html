@@ -1856,7 +1856,7 @@ $ dist &lt;dbl&gt; 200.000, 1299.038, 2598.076, 3897.114, 5196.152, 750.000, 198
 <p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-57-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>From the graph above, we are to visualize a better linear relationship in comparison to the previous scatterplot. Also ,as observe earlier , we can confirmed that the number of trips decreases, as the distance increases.</p>
+<p>From the graph above, we are able to visualize a better linear relationship in comparison to the previous scatterplot. Also ,as observe earlier , we can confirmed that as the number of trips decreases, as the distance increases.</p>
 </section>
 <section id="checking-for-variables-with-zero-values" class="level2">
 <h2 class="anchored" data-anchor-id="checking-for-variables-with-zero-values">5.2 Checking for variables with zero values</h2>
@@ -1898,7 +1898,7 @@ $ dist &lt;dbl&gt; 200.000, 1299.038, 2598.076, 3897.114, 5196.152, 750.000, 198
                                                   </code></pre>
 </div>
 </div>
-<p>From the summary statistics, we confirmed that we have removed intra-flow as the min of <strong>FlowNoIntra</strong> is 1. However, all our variables - <code>ORIGIN_BUSINESS</code>, <code>ORIGIN_FINSER</code>, <strong><code>ORIGIN_HDB</code></strong>, <code>ORIGIN_RETAIL</code>, <code>ORIGIN_SCHOOLS</code>, <code>DESTIN_BUSINESS</code>, <code>DESTIN_FINSER</code>, <code>DESTIN_HDB</code>, <code>DESTIN_RETAIL</code>, <code>DESTIN_SCHOOLS</code> consinst of 0 values.</p>
+<p>From the summary statistics, we confirmed that we have removed intra-flow as the min of <strong>FlowNoIntra</strong> is 1. However, all our variables - <code>ORIGIN_BUSINESS</code>, <code>ORIGIN_FINSER</code>, <strong><code>ORIGIN_HDB</code></strong>, <code>ORIGIN_RETAIL</code>, <code>ORIGIN_SCHOOLS</code>, <code>DESTIN_BUSINESS</code>, <code>DESTIN_FINSER</code>, <code>DESTIN_HDB</code>, <code>DESTIN_RETAIL</code>, <code>DESTIN_SCHOOLS</code> contains 0 values.</p>
 <p>As such, we will use the code chunk below to replace it with 0.99.</p>
 <div class="cell">
 <details>
@@ -2100,15 +2100,7 @@ Residual Deviance: 50260000     AIC: 50610000</code></pre>
 <pre><code>[1] 0.2214091</code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="fu">r2_mcfadden</span>(uncSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># R2 for Generalized Linear Regression
-       R2: 0.487
-  adj. R2: 0.487</code></pre>
-</div>
-</div>
-<p>With reference to the R-squared above, we can conclude that the model accounts for about 22% of the variation of flows in the system. The value of R2 tells that the ten explanatory variables can account for 22% of the variation. However, it does not bring in more insights on which variables to look at.</p>
+<p>With reference to the R-squared above, we can conclude that the model accounts for about 22% of the variation of flows in the system. Since the p-value is less than the alpha of 0.05, we will reject the null hypothesis that the mean is a good estimator for the explanatory variables. However, it does not bring in more insights on which variables to look at since the value of R2 tells that the ten explanatory variables can account for 22% of the variation.</p>
 </section>
 </section>
 <section id="origin-production-constrained-sim" class="level2">
@@ -2117,19 +2109,19 @@ Residual Deviance: 50260000     AIC: 50610000</code></pre>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
-<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a>                 ORIGIN_ID <span class="sc">+</span></span>
-<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_BUSINESS) <span class="sc">+</span></span>
-<span id="cb109-4"><a href="#cb109-4" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_FINSER) <span class="sc">+</span></span>
-<span id="cb109-5"><a href="#cb109-5" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_HDB) <span class="sc">+</span></span>
-<span id="cb109-6"><a href="#cb109-6" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_RETAIL) <span class="sc">+</span></span>
-<span id="cb109-7"><a href="#cb109-7" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_SCHOOLS) <span class="sc">+</span></span>
-<span id="cb109-8"><a href="#cb109-8" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(dist),</span>
-<span id="cb109-9"><a href="#cb109-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
-<span id="cb109-10"><a href="#cb109-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
-<span id="cb109-11"><a href="#cb109-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
-<span id="cb109-12"><a href="#cb109-12" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
-<span id="cb109-13"><a href="#cb109-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(orcSIM, <span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
+<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>                 ORIGIN_ID <span class="sc">+</span></span>
+<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_BUSINESS) <span class="sc">+</span></span>
+<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_FINSER) <span class="sc">+</span></span>
+<span id="cb107-5"><a href="#cb107-5" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_HDB) <span class="sc">+</span></span>
+<span id="cb107-6"><a href="#cb107-6" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_RETAIL) <span class="sc">+</span></span>
+<span id="cb107-7"><a href="#cb107-7" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(DESTIN_SCHOOLS) <span class="sc">+</span></span>
+<span id="cb107-8"><a href="#cb107-8" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">log</span>(dist),</span>
+<span id="cb107-9"><a href="#cb107-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
+<span id="cb107-10"><a href="#cb107-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
+<span id="cb107-11"><a href="#cb107-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
+<span id="cb107-12"><a href="#cb107-12" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
+<span id="cb107-13"><a href="#cb107-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(orcSIM, <span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>As we are not executing the code chunk above, we will load <strong>orcSIM</strong> into the R environment.</p>
@@ -2146,7 +2138,7 @@ Load orcSIM RDS
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Load RDS">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a>orcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/orcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -2165,7 +2157,7 @@ Summary(orcSIM)
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(orcSIM)">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(orcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(orcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -3025,21 +3017,13 @@ Number of Fisher Scoring iterations: 7</code></pre>
 <h3 class="anchored" data-anchor-id="goodness-of-fit-1">Goodness of fit</h3>
 <p>With the aid of R-squared statistics , we will compute the proportion of variance in the dependent variables.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(orcSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, orcSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(orcSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, orcSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.3257997</code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="fu">r2_mcfadden</span>(orcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># R2 for Generalized Linear Regression
-       R2: 0.615
-  adj. R2: 0.615</code></pre>
-</div>
-</div>
-<p>With reference to the R-squared above, we can conclude that the model accounts for about 33% of the variation of flows in the system. The value of R2 tells that the five DESTIN explanatory variables can account for 33% of the variation. In addition, the p-value is &lt;0.05, we can reject the null hypothesis.</p>
-<p>Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Business, Schools, and Financial Service. We also note that their relationship are not the same as HDB results in negative value.</p>
+<p>With reference to the R-squared above, we can conclude that the model accounts for about 33% of the variation of flows in the system. The value of R2 tells that the five DESTIN explanatory variables can account for 33% of the variation. In addition, the p-value is less than the alpha of 0.05, we will reject the null hypothesis that the mean is a good estimator for the five DESTIN variables.</p>
+<p>Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Business, Schools, and Financial Service. We also note that their relationship are not the same as HDB results in negative value.As such, we are to infer that housing location (HDB) is a propulsive factor.</p>
 </section>
 </section>
 <section id="destination-constrained-sim" class="level2">
@@ -3048,19 +3032,19 @@ Number of Fisher Scoring iterations: 7</code></pre>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
-<span id="cb117-2"><a href="#cb117-2" aria-hidden="true" tabindex="-1"></a>                DESTIN_ID <span class="sc">+</span> </span>
-<span id="cb117-3"><a href="#cb117-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_BUSINESS) <span class="sc">+</span> </span>
-<span id="cb117-4"><a href="#cb117-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_FINSER) <span class="sc">+</span> </span>
-<span id="cb117-5"><a href="#cb117-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_HDB) <span class="sc">+</span> </span>
-<span id="cb117-6"><a href="#cb117-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_RETAIL) <span class="sc">+</span> </span>
-<span id="cb117-7"><a href="#cb117-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_SCHOOLS) <span class="sc">+</span> </span>
-<span id="cb117-8"><a href="#cb117-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
-<span id="cb117-9"><a href="#cb117-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
-<span id="cb117-10"><a href="#cb117-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
-<span id="cb117-11"><a href="#cb117-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
-<span id="cb117-12"><a href="#cb117-12" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
-<span id="cb117-13"><a href="#cb117-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(decSIM, <span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
+<span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a>                DESTIN_ID <span class="sc">+</span> </span>
+<span id="cb113-3"><a href="#cb113-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_BUSINESS) <span class="sc">+</span> </span>
+<span id="cb113-4"><a href="#cb113-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_FINSER) <span class="sc">+</span> </span>
+<span id="cb113-5"><a href="#cb113-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_HDB) <span class="sc">+</span> </span>
+<span id="cb113-6"><a href="#cb113-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_RETAIL) <span class="sc">+</span> </span>
+<span id="cb113-7"><a href="#cb113-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(ORIGIN_SCHOOLS) <span class="sc">+</span> </span>
+<span id="cb113-8"><a href="#cb113-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
+<span id="cb113-9"><a href="#cb113-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
+<span id="cb113-10"><a href="#cb113-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
+<span id="cb113-11"><a href="#cb113-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
+<span id="cb113-12"><a href="#cb113-12" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
+<span id="cb113-13"><a href="#cb113-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(decSIM, <span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>As we are not executing the code chunk above, we will load <strong>decSIM</strong> into the R environment.</p>
@@ -3077,7 +3061,7 @@ Load decSIM RDS
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Load RDS">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>decSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/decSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -3096,7 +3080,7 @@ Summary(decSIM)
 <div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(decSIM)">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(decSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(decSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -3957,21 +3941,13 @@ Number of Fisher Scoring iterations: 8</code></pre>
 <h3 class="anchored" data-anchor-id="goodness-of-fit-2">Goodness of fit</h3>
 <p>With the aid of R-squared statistics , we will compute the proportion of variance in the dependent variables.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(decSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, decSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(decSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, decSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.3991156</code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a><span class="fu">r2_mcfadden</span>(decSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># R2 for Generalized Linear Regression
-       R2: 0.626
-  adj. R2: 0.626</code></pre>
-</div>
-</div>
-<p>With reference to the R-squared above, we can conclude that the model accounts for about 40% of the variation of flows in the system. In addition, the p-value is &lt;0.05, we can reject the null hypothesis.</p>
-<p>Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Schools, Financial Service, and HDB. We also note that their relationship are not the same as HDB results in negative value.</p>
+<p>With reference to the R-squared above, we can conclude that the model accounts for about 40% of the variation of flows in the system. In addition, the p-value is less than the alpha of 0.05, we will reject the null hypothesis that the mean is a good estimator for the five ORIGIN variables.</p>
+<p>Looking at the explanatory variables, we note that Retail contributed the most in commuting flow , followed by Schools, Financial Service, and HDB. We also note that their relationship are not the same as Business results in negative value. We could infer that most people commute to Retail spot followed by Schools.</p>
 </section>
 </section>
 <section id="doubly-constrained-sim" class="level2">
@@ -3980,15 +3956,15 @@ Number of Fisher Scoring iterations: 8</code></pre>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
-<span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a>                ORIGIN_ID <span class="sc">+</span> </span>
-<span id="cb125-3"><a href="#cb125-3" aria-hidden="true" tabindex="-1"></a>                DESTIN_ID <span class="sc">+</span> </span>
-<span id="cb125-4"><a href="#cb125-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
-<span id="cb125-5"><a href="#cb125-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
-<span id="cb125-6"><a href="#cb125-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
-<span id="cb125-7"><a href="#cb125-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
-<span id="cb125-8"><a href="#cb125-8" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
-<span id="cb125-9"><a href="#cb125-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(dbcSIM, <span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="at">formula =</span> TRIPS <span class="sc">~</span> </span>
+<span id="cb119-2"><a href="#cb119-2" aria-hidden="true" tabindex="-1"></a>                ORIGIN_ID <span class="sc">+</span> </span>
+<span id="cb119-3"><a href="#cb119-3" aria-hidden="true" tabindex="-1"></a>                DESTIN_ID <span class="sc">+</span> </span>
+<span id="cb119-4"><a href="#cb119-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">log</span>(dist),</span>
+<span id="cb119-5"><a href="#cb119-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>),</span>
+<span id="cb119-6"><a href="#cb119-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> flow_data2,</span>
+<span id="cb119-7"><a href="#cb119-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">na.action =</span> na.exclude)</span>
+<span id="cb119-8"><a href="#cb119-8" aria-hidden="true" tabindex="-1"></a><span class="co">#save RDS</span></span>
+<span id="cb119-9"><a href="#cb119-9" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(dbcSIM, <span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>As we are not executing the code chunk above, we will load <strong>orcSIM</strong> into the R environment.</p>
@@ -4005,7 +3981,7 @@ Load dbcSIM RDS
 <div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Load RDS">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb126"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a>dbcSIM <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/dbcSIM.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -4024,7 +4000,7 @@ Summary(dbcSIM)
 <div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body" title="Summary(dbcSIM)">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb121"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -5697,35 +5673,27 @@ Number of Fisher Scoring iterations: 7</code></pre>
 <h3 class="anchored" data-anchor-id="goodness-of-fit-3">Goodness of fit</h3>
 <p>With the aid of R-squared statistics , we will compute the proportion of variance in the dependent variables.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(dbcSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, dbcSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a><span class="fu">CalcRSquared</span>(dbcSIM<span class="sc">$</span>data<span class="sc">$</span>TRIPS, dbcSIM<span class="sc">$</span>fitted.values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.5737163</code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a><span class="fu">r2_mcfadden</span>(dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># R2 for Generalized Linear Regression
-       R2: 0.742
-  adj. R2: 0.742</code></pre>
-</div>
-</div>
-<p>With reference to the R-squared (R2) above, we can conclude that the model accounts for about 40% of the variation of flows in the system. In addition, the p-value is &lt;0.05, we can reject the null hypothesis. We also note that there is a relatively improvmenet in the R2 value.</p>
+<p>With reference to the R-squared (R2) above, we can conclude that the model accounts for about 57% of the variation of flows in the system. In addition, the p-value is &lt;0.05, we can reject the null hypothesis. We also note that there is a relatively improvement in the R2 value.</p>
 </section>
 </section>
 <section id="model-comparison" class="level2">
 <h2 class="anchored" data-anchor-id="model-comparison">5.7 Model Comparison</h2>
 <p>After running all models, we will use another statistical measures to compare the performance. We will be using <code>performance:compare_performance()</code> to measure the Root Mean Squared Error (RMSE). Generally, when we look at RMSE, the performance is better when the number is smaller.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb133"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>model_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">unconstrained=</span>uncSIM,</span>
-<span id="cb133-2"><a href="#cb133-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">originConstrained=</span>orcSIM,</span>
-<span id="cb133-3"><a href="#cb133-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">destinationConstrained=</span>decSIM,</span>
-<span id="cb133-4"><a href="#cb133-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">doublyConstrained=</span>dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>model_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">unconstrained=</span>uncSIM,</span>
+<span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">originConstrained=</span>orcSIM,</span>
+<span id="cb125-3"><a href="#cb125-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">destinationConstrained=</span>decSIM,</span>
+<span id="cb125-4"><a href="#cb125-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">doublyConstrained=</span>dbcSIM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next, we will compute the <strong>RMSE</strong> of all the models in <code>model_list</code> file by using the code chunk below.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb134"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a><span class="fu">compare_performance</span>(model_list,</span>
-<span id="cb134-2"><a href="#cb134-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="st">"RMSE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb126"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a><span class="fu">compare_performance</span>(model_list,</span>
+<span id="cb126-2"><a href="#cb126-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">metrics =</span> <span class="st">"RMSE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># Comparison of Model Performance Indices
 
@@ -5748,50 +5716,50 @@ doublyConstrained      |   glm | 1175.151</code></pre>
 <div class="tab-content">
 <div id="tabset-5-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-5-1-tab">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb136"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb136-1"><a href="#cb136-1" aria-hidden="true" tabindex="-1"></a><span class="co">#extract fitted values</span></span>
-<span id="cb136-2"><a href="#cb136-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(uncSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
-<span id="cb136-3"><a href="#cb136-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
-<span id="cb136-4"><a href="#cb136-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb136-5"><a href="#cb136-5" aria-hidden="true" tabindex="-1"></a><span class="co">#append fitted values</span></span>
-<span id="cb136-6"><a href="#cb136-6" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
-<span id="cb136-7"><a href="#cb136-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
-<span id="cb136-8"><a href="#cb136-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">uncTRIPS =</span> <span class="st">"uncSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a><span class="co">#extract fitted values</span></span>
+<span id="cb128-2"><a href="#cb128-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(uncSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
+<span id="cb128-3"><a href="#cb128-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
+<span id="cb128-4"><a href="#cb128-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb128-5"><a href="#cb128-5" aria-hidden="true" tabindex="-1"></a><span class="co">#append fitted values</span></span>
+<span id="cb128-6"><a href="#cb128-6" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
+<span id="cb128-7"><a href="#cb128-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
+<span id="cb128-8"><a href="#cb128-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">uncTRIPS =</span> <span class="st">"uncSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-5-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-2-tab">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb137"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a><span class="co">#extract fitted values</span></span>
-<span id="cb137-2"><a href="#cb137-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(orcSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
-<span id="cb137-3"><a href="#cb137-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
-<span id="cb137-4"><a href="#cb137-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb137-5"><a href="#cb137-5" aria-hidden="true" tabindex="-1"></a><span class="co">#append fitted values</span></span>
-<span id="cb137-6"><a href="#cb137-6" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
-<span id="cb137-7"><a href="#cb137-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
-<span id="cb137-8"><a href="#cb137-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">orcTRIPS =</span> <span class="st">"orcSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a><span class="co">#extract fitted values</span></span>
+<span id="cb129-2"><a href="#cb129-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(orcSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
+<span id="cb129-3"><a href="#cb129-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
+<span id="cb129-4"><a href="#cb129-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb129-5"><a href="#cb129-5" aria-hidden="true" tabindex="-1"></a><span class="co">#append fitted values</span></span>
+<span id="cb129-6"><a href="#cb129-6" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
+<span id="cb129-7"><a href="#cb129-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
+<span id="cb129-8"><a href="#cb129-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">orcTRIPS =</span> <span class="st">"orcSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-5-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-3-tab">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb138"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb138-1"><a href="#cb138-1" aria-hidden="true" tabindex="-1"></a><span class="co">#extract fitted values</span></span>
-<span id="cb138-2"><a href="#cb138-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(decSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
-<span id="cb138-3"><a href="#cb138-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
-<span id="cb138-4"><a href="#cb138-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb138-5"><a href="#cb138-5" aria-hidden="true" tabindex="-1"></a><span class="co">#append fitted values</span></span>
-<span id="cb138-6"><a href="#cb138-6" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
-<span id="cb138-7"><a href="#cb138-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
-<span id="cb138-8"><a href="#cb138-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">decTRIPS =</span> <span class="st">"decSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb130"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a><span class="co">#extract fitted values</span></span>
+<span id="cb130-2"><a href="#cb130-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(decSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
+<span id="cb130-3"><a href="#cb130-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
+<span id="cb130-4"><a href="#cb130-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb130-5"><a href="#cb130-5" aria-hidden="true" tabindex="-1"></a><span class="co">#append fitted values</span></span>
+<span id="cb130-6"><a href="#cb130-6" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
+<span id="cb130-7"><a href="#cb130-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
+<span id="cb130-8"><a href="#cb130-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">decTRIPS =</span> <span class="st">"decSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-5-4" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-4-tab">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb139"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb139-1"><a href="#cb139-1" aria-hidden="true" tabindex="-1"></a><span class="co">#extract fitted values</span></span>
-<span id="cb139-2"><a href="#cb139-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dbcSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
-<span id="cb139-3"><a href="#cb139-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
-<span id="cb139-4"><a href="#cb139-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb139-5"><a href="#cb139-5" aria-hidden="true" tabindex="-1"></a><span class="co">#append fitted values</span></span>
-<span id="cb139-6"><a href="#cb139-6" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
-<span id="cb139-7"><a href="#cb139-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
-<span id="cb139-8"><a href="#cb139-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">dbcTRIPS =</span> <span class="st">"dbcSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a><span class="co">#extract fitted values</span></span>
+<span id="cb131-2"><a href="#cb131-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(dbcSIM<span class="sc">$</span>fitted.values) <span class="sc">%&gt;%</span></span>
+<span id="cb131-3"><a href="#cb131-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="at">digits =</span> <span class="dv">0</span>)</span>
+<span id="cb131-4"><a href="#cb131-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb131-5"><a href="#cb131-5" aria-hidden="true" tabindex="-1"></a><span class="co">#append fitted values</span></span>
+<span id="cb131-6"><a href="#cb131-6" aria-hidden="true" tabindex="-1"></a>flow_data2 <span class="ot">&lt;-</span> flow_data2 <span class="sc">%&gt;%</span></span>
+<span id="cb131-7"><a href="#cb131-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cbind</span>(df) <span class="sc">%&gt;%</span></span>
+<span id="cb131-8"><a href="#cb131-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">dbcTRIPS =</span> <span class="st">"dbcSIM$fitted.values"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -5803,44 +5771,53 @@ doublyConstrained      |   glm | 1175.151</code></pre>
 <div class="cell">
 <details>
 <summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb140"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a>unc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb140-2"><a href="#cb140-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> uncTRIPS,</span>
-<span id="cb140-3"><a href="#cb140-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb140-4"><a href="#cb140-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb140-5"><a href="#cb140-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
-<span id="cb140-6"><a href="#cb140-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb140-7"><a href="#cb140-7" aria-hidden="true" tabindex="-1"></a>orc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb140-8"><a href="#cb140-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> orcTRIPS,</span>
-<span id="cb140-9"><a href="#cb140-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb140-10"><a href="#cb140-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb140-11"><a href="#cb140-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
-<span id="cb140-12"><a href="#cb140-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb140-13"><a href="#cb140-13" aria-hidden="true" tabindex="-1"></a>dec_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb140-14"><a href="#cb140-14" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> decTRIPS,</span>
-<span id="cb140-15"><a href="#cb140-15" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb140-16"><a href="#cb140-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb140-17"><a href="#cb140-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
-<span id="cb140-18"><a href="#cb140-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb140-19"><a href="#cb140-19" aria-hidden="true" tabindex="-1"></a>dbc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
-<span id="cb140-20"><a href="#cb140-20" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> dbcTRIPS,</span>
-<span id="cb140-21"><a href="#cb140-21" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
-<span id="cb140-22"><a href="#cb140-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb140-23"><a href="#cb140-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm)</span>
-<span id="cb140-24"><a href="#cb140-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb140-25"><a href="#cb140-25" aria-hidden="true" tabindex="-1"></a><span class="fu">ggarrange</span>(unc_p, orc_p, dec_p, dbc_p,</span>
-<span id="cb140-26"><a href="#cb140-26" aria-hidden="true" tabindex="-1"></a>          <span class="at">ncol =</span> <span class="dv">2</span>,</span>
-<span id="cb140-27"><a href="#cb140-27" aria-hidden="true" tabindex="-1"></a>          <span class="at">nrow =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb132"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a>unc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb132-2"><a href="#cb132-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> uncTRIPS,</span>
+<span id="cb132-3"><a href="#cb132-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb132-4"><a href="#cb132-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb132-5"><a href="#cb132-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm) <span class="sc">+</span></span>
+<span id="cb132-6"><a href="#cb132-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb132-7"><a href="#cb132-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb132-8"><a href="#cb132-8" aria-hidden="true" tabindex="-1"></a>orc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb132-9"><a href="#cb132-9" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> orcTRIPS,</span>
+<span id="cb132-10"><a href="#cb132-10" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb132-11"><a href="#cb132-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb132-12"><a href="#cb132-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm) <span class="sc">+</span></span>
+<span id="cb132-13"><a href="#cb132-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span>
+<span id="cb132-14"><a href="#cb132-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb132-15"><a href="#cb132-15" aria-hidden="true" tabindex="-1"></a>dec_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb132-16"><a href="#cb132-16" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> decTRIPS,</span>
+<span id="cb132-17"><a href="#cb132-17" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb132-18"><a href="#cb132-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb132-19"><a href="#cb132-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm) <span class="sc">+</span></span>
+<span id="cb132-20"><a href="#cb132-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span>
+<span id="cb132-21"><a href="#cb132-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb132-22"><a href="#cb132-22" aria-hidden="true" tabindex="-1"></a>dbc_p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> flow_data2,</span>
+<span id="cb132-23"><a href="#cb132-23" aria-hidden="true" tabindex="-1"></a>                <span class="fu">aes</span>(<span class="at">x =</span> dbcTRIPS,</span>
+<span id="cb132-24"><a href="#cb132-24" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> TRIPS)) <span class="sc">+</span></span>
+<span id="cb132-25"><a href="#cb132-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb132-26"><a href="#cb132-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> lm) <span class="sc">+</span></span>
+<span id="cb132-27"><a href="#cb132-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span>
+<span id="cb132-28"><a href="#cb132-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb132-29"><a href="#cb132-29" aria-hidden="true" tabindex="-1"></a><span class="co">#arrange graphs </span></span>
+<span id="cb132-30"><a href="#cb132-30" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> <span class="fu">ggarrange</span>(unc_p, orc_p, dec_p, dbc_p,</span>
+<span id="cb132-31"><a href="#cb132-31" aria-hidden="true" tabindex="-1"></a>          <span class="at">ncol =</span> <span class="dv">2</span>,</span>
+<span id="cb132-32"><a href="#cb132-32" aria-hidden="true" tabindex="-1"></a>          <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb132-33"><a href="#cb132-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb132-34"><a href="#cb132-34" aria-hidden="true" tabindex="-1"></a><span class="co">#add title </span></span>
+<span id="cb132-35"><a href="#cb132-35" aria-hidden="true" tabindex="-1"></a><span class="fu">annotate_figure</span>(plot, <span class="at">top =</span> <span class="fu">text_grob</span>(<span class="st">"Scatterplots across SLM Models"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-89-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-85-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>The plot above reveals that there are a few statistical outliers that have relatively frequent trips. The slope seems to be smoother for uncTRIPs, followed by orcTRIPs and gradually, become steeper. All of the models have positive correlation.</p>
 </section>
 </section>
 <section id="conclusion-and-future-work" class="level1">
 <h1>6. Conclusion and Future Work</h1>
 <p>In our exercise, we examine the urban mobility patterns of commuters on the time period of Weekday Morning 0600 -0900 by looking at the explanatory variables - <code>Business</code>, <code>Financial</code> <code>Service</code>, <code>HDB</code>, <code>Retail</code>, and <code>School</code> based on hexagonal grid. We used Spatial Interaction Models and found out that the Doubly Constrained SIM yields better results in R2 and RMSE.</p>
-<p>To improve our study, after the initial stage of exploring the model, we could perform stepwise regression by adding and removing independent variables, in the predictive model, in order to find the subset of variables in the data set which results in the best performing model.</p>
+<p>To improve our study, after the initial stage of exploring the model, we could perform stepwise regression by adding and removing independent variables, in the predictive model, in order to find the subset of variables in the data set which results in the best performing model. However, it is important to note that adding variables might improve the score of R2, it might causes overfitting issues.</p>
 </section>
 <section id="references" class="level1">
 <h1>References:</h1>
